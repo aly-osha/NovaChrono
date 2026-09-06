@@ -178,6 +178,13 @@
                 Add to Vault Cart
               </button>
             </form>
+            {% if user.is_authenticated and user.is_staff_member %}
+            <div style="margin-top:6px; text-align:center;">
+              <a href="{% url 'dashboard:product_edit' product.id %}" target="_blank" style="font-size:0.75rem; color:var(--accent-cosmic); font-weight:600; text-decoration:none;">
+                ✏️ Edit Product Details
+              </a>
+            </div>
+            {% endif %}
           </div>
         </div>
         {% endfor %}

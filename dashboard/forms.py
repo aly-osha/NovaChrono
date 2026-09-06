@@ -7,10 +7,40 @@ User = get_user_model()
 
 
 class ProductAdminForm(forms.ModelForm):
-    stock_quantity = forms.IntegerField(min_value=0, initial=10, help_text="Initial inventory stock level.")
-    low_stock_threshold = forms.IntegerField(min_value=1, initial=5)
-    image_url_1 = forms.URLField(required=False, label="Primary Image URL", widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}))
-    image_url_2 = forms.URLField(required=False, label="Secondary Image URL", widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://...'}))
+    stock_quantity = forms.IntegerField(
+        min_value=0,
+        initial=10,
+        required=True,
+        label="Stock Quantity",
+        widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '0'})
+    )
+    low_stock_threshold = forms.IntegerField(
+        min_value=1,
+        initial=5,
+        required=True,
+        label="Low Stock Alert Threshold",
+        widget=forms.NumberInput(attrs={'class': 'form-input', 'min': '1'})
+    )
+    image_url_1 = forms.URLField(
+        required=False,
+        label="Primary Image URL",
+        widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://images.unsplash.com/...'})
+    )
+    image_file_1 = forms.ImageField(
+        required=False,
+        label="Or Upload Primary Image File",
+        widget=forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'})
+    )
+    image_url_2 = forms.URLField(
+        required=False,
+        label="Secondary Showcase Image URL (optional)",
+        widget=forms.URLInput(attrs={'class': 'form-input', 'placeholder': 'https://images.unsplash.com/...'})
+    )
+    image_file_2 = forms.ImageField(
+        required=False,
+        label="Or Upload Secondary Image File",
+        widget=forms.FileInput(attrs={'class': 'form-input', 'accept': 'image/*'})
+    )
 
     class Meta:
         model = Product

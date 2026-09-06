@@ -13,22 +13,6 @@
         <p style="color:var(--text-secondary); font-size:0.92rem;">Access your NovaChrono vault and order history.</p>
       </div>
 
-      <!-- Quick Demo Account Fill Pills -->
-      <div style="background:#FAF8F5; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:14px; margin-bottom:24px; font-size:0.8rem;">
-        <div style="font-weight:700; color:var(--text-primary); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em;">Demo Test Credentials:</div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('collector_ash', 'buyer123')">
-            👤 <b>Buyer:</b> collector_ash / buyer123
-          </button>
-          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('staff_alex', 'staff123')">
-            🛠️ <b>Staff:</b> staff_alex / staff123
-          </button>
-          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('superadmin', 'admin123')">
-            ⚡ <b>Super Admin:</b> superadmin / admin123
-          </button>
-        </div>
-      </div>
-
       <form method="POST" action="{% url 'accounts:login' %}?next={{ next }}">
         {% csrf_token %}
 
@@ -53,13 +37,4 @@
     </div>
   </div>
 </div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-function fillLogin(u, p) {
-  document.getElementById('loginUsername').value = u;
-  document.getElementById('loginPassword').value = p;
-}
-</script>
 {% endblock %}

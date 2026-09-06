@@ -33,11 +33,18 @@
 
     <!-- Right Column: Product Meta & Purchase -->
     <div>
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-        <span class="badge-tag badge-tcg">{{ product.tcg.name }}</span>
-        <span class="badge-tag" style="background:#EBE6DB; color:var(--text-primary);">{{ product.category.name }}</span>
-        {% if product.is_preorder %}
-        <span class="badge-tag badge-preorder">Pre-Order Allocation</span>
+      <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="badge-tag badge-tcg">{{ product.tcg.name }}</span>
+          <span class="badge-tag" style="background:#EBE6DB; color:var(--text-primary);">{{ product.category.name }}</span>
+          {% if product.is_preorder %}
+          <span class="badge-tag badge-preorder">Pre-Order Allocation</span>
+          {% endif %}
+        </div>
+        {% if user.is_authenticated and user.is_staff_member %}
+        <a href="{% url 'dashboard:product_edit' product.id %}" class="btn-chrono btn-chrono-subtle btn-sm" style="font-weight:600; padding:5px 12px; font-size:0.82rem; border-color:var(--accent-cosmic); color:var(--accent-cosmic);">
+          ✏️ Edit Product Details
+        </a>
         {% endif %}
       </div>
 

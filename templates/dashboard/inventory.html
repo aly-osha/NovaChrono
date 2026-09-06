@@ -60,13 +60,18 @@
         </td>
         <td>
           <!-- Quick Inline Update Form -->
-          <form action="{% url 'dashboard:update_inventory_stock' inv.id %}" method="POST" style="display:flex; align-items:center; gap:8px;">
-            {% csrf_token %}
-            <input type="number" name="stock_quantity" value="{{ inv.stock_quantity }}" min="0" class="form-input" style="width:80px; padding:6px 10px; font-size:0.88rem;">
-            <button type="submit" class="btn-chrono btn-chrono-dark btn-sm" style="padding:6px 12px; font-size:0.8rem;">
-              Update
-            </button>
-          </form>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <form action="{% url 'dashboard:update_inventory_stock' inv.id %}" method="POST" style="display:flex; align-items:center; gap:6px; margin:0;">
+              {% csrf_token %}
+              <input type="number" name="stock_quantity" value="{{ inv.stock_quantity }}" min="0" class="form-input" style="width:75px; padding:5px 8px; font-size:0.85rem;">
+              <button type="submit" class="btn-chrono btn-chrono-dark btn-sm" style="padding:5px 10px; font-size:0.78rem;">
+                Update
+              </button>
+            </form>
+            <a href="{% url 'dashboard:product_edit' inv.product.id %}" class="btn-chrono btn-chrono-subtle btn-sm" style="padding:5px 10px; font-size:0.78rem;" title="Edit Product Details">
+              Edit Details
+            </a>
+          </div>
         </td>
       </tr>
       {% empty %}

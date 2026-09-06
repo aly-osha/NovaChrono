@@ -107,7 +107,7 @@ def products_list_view(request):
 @staff_required
 def product_add_view(request):
     if request.method == 'POST':
-        form = ProductAdminForm(request.POST)
+        form = ProductAdminForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save()
 
@@ -121,12 +121,27 @@ def product_add_view(request):
             )
 
             # Images
-            img1 = form.cleaned_data.get('image_url_1')
-            if img1:
-                ProductImage.objects.create(product=product, image_url=img1, is_primary=True, display_order=1)
-            img2 = form.cleaned_data.get('image_url_2')
-            if img2:
-                ProductImage.objects.create(product=product, image_url=img2, is_primary=False, display_order=2)
+            img1_file = form.cleaned_data.get('image_file_1')
+            img1_url = form.cleaned_data.get('image_url_1')
+            if img1_file or img1_url:
+                ProductImage.objects.create(
+                    product=product,
+                    image=img1_file,
+                    image_url=img1_url or '',
+                    is_primary=True,
+                    display_order=1
+                )
+
+            img2_file = form.cleaned_data.get('image_file_2')
+            img2_url = form.cleaned_data.get('image_url_2')
+            if img2_file or img2_url:
+                ProductImage.objects.create(
+                    product=product,
+                    image=img2_file,
+                    image_url=img2_url or '',
+                    is_primary=False,
+                    display_order=2
+                )
 
             ActivityLog.log(request.user, f"Added Product: {product.name}", f"SKU: {product.sku}, Stock: {stock_qty}")
             messages.success(request, f"Product '{product.name}' created successfully.")
@@ -139,32 +154,66 @@ def product_add_view(request):
 
 @staff_required
 def product_edit_view(request, product_id):
-    product = get_object_or_404(Product.objects.select_related('inventory'), id=product_id)
+    product = get_object_or_404(Product.objects.select_related('inventory').prefetch_related('images'), id=product_id)
 
     if request.method == 'POST':
-        form = ProductAdminForm(request.POST, instance=product)
+        form = ProductAdminForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             product = form.save()
 
-            # Update inventory
-            if hasattr(product, 'inventory'):
-                inv = product.inventory
-                inv.stock_quantity = form.cleaned_data.get('stock_quantity', inv.stock_quantity)
-                inv.low_stock_threshold = form.cleaned_data.get('low_stock_threshold', inv.low_stock_threshold)
-                inv.save()
+            # Update or create inventory
+            stock_qty = form.cleaned_data.get('stock_quantity', 10)
+            low_thresh = form.cleaned_data.get('low_stock_threshold', 5)
+            inv, _ = Inventory.objects.get_or_create(
+                product=product,
+                defaults={'stock_quantity': stock_qty, 'low_stock_threshold': low_thresh}
+            )
+            inv.stock_quantity = stock_qty
+            inv.low_stock_threshold = low_thresh
+            inv.save()
 
-            # Update primary image if provided
-            img1 = form.cleaned_data.get('image_url_1')
-            if img1:
-                pri = product.images.filter(is_primary=True).first()
+            # Primary Image
+            img1_file = form.cleaned_data.get('image_file_1')
+            img1_url = form.cleaned_data.get('image_url_1')
+            pri = product.images.filter(is_primary=True).first()
+            if img1_file or img1_url:
                 if pri:
-                    pri.image_url = img1
+                    if img1_file:
+                        pri.image = img1_file
+                    if img1_url:
+                        pri.image_url = img1_url
                     pri.save()
                 else:
-                    ProductImage.objects.create(product=product, image_url=img1, is_primary=True)
+                    ProductImage.objects.create(
+                        product=product,
+                        image=img1_file,
+                        image_url=img1_url or '',
+                        is_primary=True,
+                        display_order=1
+                    )
+
+            # Secondary Image
+            img2_file = form.cleaned_data.get('image_file_2')
+            img2_url = form.cleaned_data.get('image_url_2')
+            sec = product.images.filter(is_primary=False).first()
+            if img2_file or img2_url:
+                if sec:
+                    if img2_file:
+                        sec.image = img2_file
+                    if img2_url:
+                        sec.image_url = img2_url
+                    sec.save()
+                else:
+                    ProductImage.objects.create(
+                        product=product,
+                        image=img2_file,
+                        image_url=img2_url or '',
+                        is_primary=False,
+                        display_order=2
+                    )
 
             ActivityLog.log(request.user, f"Updated Product: {product.name}", f"SKU: {product.sku}")
-            messages.success(request, f"Product '{product.name}' updated.")
+            messages.success(request, f"Product '{product.name}' updated successfully.")
             return redirect('dashboard:products_list')
     else:
         initial = {}
@@ -173,14 +222,23 @@ def product_edit_view(request, product_id):
             initial['low_stock_threshold'] = product.inventory.low_stock_threshold
         primary_img = product.images.filter(is_primary=True).first()
         if primary_img:
-            initial['image_url_1'] = primary_img.get_image_url()
+            initial['image_url_1'] = primary_img.image_url or (primary_img.image.url if primary_img.image else '')
         second_img = product.images.filter(is_primary=False).first()
         if second_img:
-            initial['image_url_2'] = second_img.get_image_url()
+            initial['image_url_2'] = second_img.image_url or (second_img.image.url if second_img.image else '')
 
         form = ProductAdminForm(instance=product, initial=initial)
 
-    return render(request, 'dashboard/product_form.html', {'form': form, 'product': product, 'title': f'Edit {product.name}'})
+    primary_image_obj = product.images.filter(is_primary=True).first()
+    secondary_image_obj = product.images.filter(is_primary=False).first()
+
+    return render(request, 'dashboard/product_form.html', {
+        'form': form,
+        'product': product,
+        'primary_image_obj': primary_image_obj,
+        'secondary_image_obj': secondary_image_obj,
+        'title': f'Edit {product.name}'
+    })
 
 
 @staff_required
