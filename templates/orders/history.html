@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Order History — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="padding: 30px 0 20px;">
+    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">MY ORDERS</h1>
+    <p style="color: var(--text-secondary);">Track shipments, access historical invoices, and review order timelines.</p>
+  </div>
+
+  <!-- Filter Tabs & Search Bar -->
+  <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom: 30px; border-bottom: 1px solid var(--border-light); padding-bottom: 16px;">
+    <!-- Tabs -->
+    <div style="display:flex; gap:10px;">
+      <a href="?status=all" class="btn-chrono {% if status_filter == 'all' or not status_filter %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+        All Orders
+      </a>
+      <a href="?status=active" class="btn-chrono {% if status_filter == 'active' %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+        Active Shipments
+      </a>
+      <a href="?status=delivered" class="btn-chrono {% if status_filter == 'delivered' %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+        Delivered
+      </a>
+      <a href="?status=cancelled" class="btn-chrono {% if status_filter == 'cancelled' %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+        Cancelled
+      </a>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" style="display:flex; gap:8px;">
+      <input type="text" name="q" value="{{ search_q }}" placeholder="Search by Order ID..." class="form-input" style="padding:6px 14px; font-size:0.88rem; width:220px;">
+      <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">Search</button>
+    </form>
+  </div>
+
+  {% if orders %}
+  <div style="display:flex; flex-direction:column; gap:20px; margin-bottom: 80px;">
+    {% for order in orders %}
+    <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:24px 28px; box-shadow:var(--shadow-sm); transition:border-color var(--transition-fast);">
+      <!-- Card Header -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; padding-bottom:16px; border-bottom:1px solid var(--border-light); margin-bottom:18px;">
+        <div style="display:flex; align-items:center; gap:16px;">
+          <div>
+            <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Order ID</span>
+            <div style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700; color:var(--accent-cosmic);">
+              #{{ order.order_number }}
+            </div>
+          </div>
+          <div>
+            <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Date Placed</span>
+            <div style="font-size:0.95rem; font-weight:500;">
+              {{ order.created_at|date:"M d, Y" }}
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:10px;">
+          <!-- Status Pill -->
+          <span class="status-pill status-{{ order.status|lower }}">
+            ● {{ order.get_status_display }}
+          </span>
+          <span style="font-size:0.75rem; font-weight:700; background:#DCFCE7; color:#166534; padding:4px 8px; border-radius:4px;">
+            PAID
+          </span>
+        </div>
+      </div>
+
+      <!-- Card Body -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:20px;">
+        <div>
+          <div style="font-size:0.95rem; font-weight:600; margin-bottom:4px;">
+            {{ order.total_items }} item{% if order.total_items > 1 %}s{% endif %} in shipment
+          </div>
+          <div style="font-size:0.85rem; color:var(--text-muted);">
+            {% for item in order.items.all|slice:":3" %}
+              {{ item.quantity }}x {{ item.product_name_snapshot }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+            {% if order.items.count > 3 %} + {{ order.items.count|add:"-3" }} more{% endif %}
+          </div>
+        </div>
+
+        <div style="display:flex; align-items:center; gap:24px;">
+          <div style="text-align:right;">
+            <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Total Paid</div>
+            <div style="font-family:var(--font-heading); font-size:1.35rem; font-weight:700;">
+              ${{ order.total_amount }}
+            </div>
+          </div>
+
+          <div style="display:flex; gap:8px;">
+            <a href="{% url 'orders:detail' order.order_number %}" class="btn-chrono btn-chrono-dark btn-sm">
+              View Order Details →
+            </a>
+            <a href="{% url 'orders:invoice_detail' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-subtle btn-sm" title="View Printable Invoice">
+              🖨 Invoice
+            </a>
+            <a href="{% url 'orders:invoice_pdf' order.order_number %}" class="btn-chrono btn-chrono-subtle btn-sm" title="Download PDF">
+              PDF ↓
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <!-- Empty State -->
+  <div style="background:var(--bg-surface); border-radius:var(--radius-xl); border:1px solid var(--border-light); padding:80px 40px; text-align:center; margin:30px 0;">
+    <div style="font-size:3.5rem; margin-bottom:16px;">📦</div>
+    <h2 style="font-size:1.8rem; margin-bottom:8px;">NO ORDERS FOUND.</h2>
+    <p style="color:var(--text-secondary); max-width:420px; margin:0 auto 24px;">
+      You haven't placed any orders matching this filter yet. Browse our collector catalog to build your collection.
+    </p>
+    <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-cosmic btn-lg">
+      Explore Products →
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

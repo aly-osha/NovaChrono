@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}403 — Vault Access Restricted | NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="max-width: 600px; margin: 80px auto 120px; text-align: center;">
+    <div style="font-family: var(--font-heading); font-size: 6rem; font-weight: 700; color: #DC2626; line-height: 1;">
+      403
+    </div>
+    <div class="starburst-badge" style="position: relative; display: inline-block; top: 0; right: 0; margin-bottom: 20px; background: #DC2626;">
+      PERMISSION DENIED
+    </div>
+    <h1 style="font-size: 2rem; margin-bottom: 12px;">RESTRICTED VAULT ACCESS</h1>
+    <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6;">
+      This portal area requires specific staff authorization or Super Administrator privileges.
+    </p>
+    <div style="display: flex; justify-content: center; gap: 14px;">
+      <a href="{% url 'accounts:login' %}" class="btn-chrono btn-chrono-dark btn-lg">
+        Staff Login
+      </a>
+      <a href="{% url 'catalog:home' %}" class="btn-chrono btn-chrono-subtle btn-lg">
+        Return to Store
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

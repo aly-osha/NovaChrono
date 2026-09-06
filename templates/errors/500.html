@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}500 — System Anomaly | NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="max-width: 600px; margin: 80px auto 120px; text-align: center;">
+    <div style="font-family: var(--font-heading); font-size: 6rem; font-weight: 700; color: var(--accent-gold); line-height: 1;">
+      500
+    </div>
+    <div class="starburst-badge" style="position: relative; display: inline-block; top: 0; right: 0; margin-bottom: 20px; background: var(--accent-gold); color: #000;">
+      SYSTEM ANOMALY
+    </div>
+    <h1 style="font-size: 2rem; margin-bottom: 12px;">TEMPORARY VAULT INTERFERENCE</h1>
+    <p style="color: var(--text-secondary); font-size: 1.05rem; margin-bottom: 30px; line-height: 1.6;">
+      An unexpected internal server error occurred while retrieving collector data. Our operations team has been notified.
+    </p>
+    <a href="{% url 'catalog:home' %}" class="btn-chrono btn-chrono-cosmic btn-lg">
+      Return to Storefront
+    </a>
+  </div>
+</div>
+{% endblock %}

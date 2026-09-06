@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Confirmed #{{ order.order_number }} — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="max-width: 760px; margin: 50px auto 80px; text-align: center;">
+    <!-- Animated Checkmark Circle -->
+    <div style="width: 80px; height: 80px; border-radius: 50%; background: #DCFCE7; color: #166534; font-size: 2.5rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; box-shadow: 0 10px 25px rgba(22, 101, 52, 0.15);">
+      ✓
+    </div>
+
+    <span class="hero-pill-tag cosmic" style="margin-bottom: 12px;">Payment Authorized &amp; Verified</span>
+    <h1 style="font-size: clamp(2.4rem, 4vw, 3.2rem); margin-bottom: 8px;">ORDER CONFIRMED.</h1>
+    <p style="font-size: 1.15rem; color: var(--text-secondary); margin-bottom: 30px;">
+      Thank you, <b>{{ order.shipping_name }}</b>! Your allocation has been secured in the NovaChrono vault.
+    </p>
+
+    <!-- Order Highlights Card -->
+    <div style="background: var(--bg-surface); border-radius: var(--radius-xl); border: 1px solid var(--border-light); padding: 32px; box-shadow: var(--shadow-md); text-align: left; margin-bottom: 36px;">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid var(--border-light);">
+        <div>
+          <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Order Reference</div>
+          <div style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700; color: var(--accent-cosmic);">
+            #{{ order.order_number }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Grand Total Paid</div>
+          <div style="font-family: var(--font-heading); font-size: 1.3rem; font-weight: 700;">
+            ${{ order.total_amount }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Fulfillment Carrier</div>
+          <div style="font-weight: 600; font-size: 0.95rem;">
+            {{ order.carrier }}
+          </div>
+        </div>
+        <div>
+          <div style="font-size: 0.8rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted);">Shipping Address</div>
+          <div style="font-size: 0.9rem; color: var(--text-secondary);">
+            {{ order.shipping_address_line1 }}, {{ order.shipping_city }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Itemized Preview -->
+      <div style="padding-top: 24px;">
+        <div style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px;">Items in this Shipment ({{ order.total_items }})</div>
+        {% for item in order.items.all %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.92rem;">
+          <span>{{ item.quantity }}x {{ item.product_name_snapshot }} <font color="#888">[{{ item.tcg_snapshot }}]</font></span>
+          <span style="font-weight: 600;">${{ item.subtotal }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap;">
+      <a href="{% url 'orders:detail' order.order_number %}" class="btn-chrono btn-chrono-cosmic btn-lg">
+        View Order Timeline &amp; Status →
+      </a>
+      <a href="{% url 'orders:invoice_detail' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-outline btn-lg">
+        Print Invoice 🖨
+      </a>
+      <a href="{% url 'orders:invoice_pdf' order.order_number %}" class="btn-chrono btn-chrono-subtle btn-lg">
+        Download PDF Invoice ↓
+      </a>
+      <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-subtle btn-lg">
+        Continue Shopping
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

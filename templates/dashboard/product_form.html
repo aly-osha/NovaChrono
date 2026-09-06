@@ -1,0 +1,129 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block dashboard_content %}
+<div style="max-width: 900px; margin: 0 auto 60px;">
+  <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:36px; box-shadow:var(--shadow-sm);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; padding-bottom:16px; border-bottom:1px solid var(--dash-border);">
+      <h2 style="font-size:1.35rem;">{{ title }}</h2>
+      <a href="{% url 'dashboard:products_list' %}" class="btn-chrono btn-chrono-subtle btn-sm">
+        ← Back to Products
+      </a>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr; gap:20px;">
+        <div class="form-group">
+          <label class="form-label">Product Title</label>
+          {{ form.name }}
+          {% if form.name.errors %}<div style="color:#DC2626; font-size:0.8rem;">{{ form.name.errors }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label class="form-label">SKU (Unique Identifier)</label>
+          {{ form.sku }}
+          {% if form.sku.errors %}<div style="color:#DC2626; font-size:0.8rem;">{{ form.sku.errors }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">TCG Universe</label>
+          {{ form.tcg }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category</label>
+          {{ form.category }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Product Type</label>
+          {{ form.product_type }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Condition</label>
+          {{ form.condition }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Language</label>
+          {{ form.language }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Edition / Set Name</label>
+          {{ form.edition }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Selling Price ($)</label>
+          {{ form.price }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Compare-at Price ($)</label>
+          {{ form.compare_at_price }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Stock Quantity</label>
+          <input type="number" name="stock_quantity" value="{{ form.initial.stock_quantity|default:10 }}" min="0" required class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Low Stock Threshold</label>
+          <input type="number" name="low_stock_threshold" value="{{ form.initial.low_stock_threshold|default:5 }}" min="1" required class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Short Summary (Featured Snippet)</label>
+        {{ form.short_description }}
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Full Product Lore &amp; Details</label>
+        {{ form.description }}
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Primary Image URL</label>
+          <input type="url" name="image_url_1" value="{{ form.initial.image_url_1|default:'' }}" placeholder="https://..." class="form-input">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Secondary Showcase Image URL (optional)</label>
+          <input type="url" name="image_url_2" value="{{ form.initial.image_url_2|default:'' }}" placeholder="https://..." class="form-input">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Expected Release Date (for Pre-Orders)</label>
+        {{ form.release_date }}
+      </div>
+
+      <div style="display:flex; gap:24px; margin:20px 0; padding:16px; background:#FAF8F5; border-radius:var(--radius-md);">
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.88rem;">
+          {{ form.is_featured }} <span>Featured Card</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.88rem;">
+          {{ form.is_new }} <span>New Arrival</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.88rem;">
+          {{ form.is_preorder }} <span>Pre-Order Product</span>
+        </label>
+        <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:0.88rem;">
+          {{ form.is_active }} <span>Publish Active</span>
+        </label>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:12px;">
+        <a href="{% url 'dashboard:products_list' %}" class="btn-chrono btn-chrono-subtle">Cancel</a>
+        <button type="submit" class="btn-chrono btn-chrono-cosmic">Save Product</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

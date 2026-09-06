@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Shipping_Label_{{ order.order_number }} — NovaChrono Express</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    body {
+      background: #EFECE4;
+      padding: 40px 0;
+      color: #000;
+    }
+    .label-container {
+      width: 420px;
+      margin: 0 auto;
+      background: #FFF;
+      border: 3px solid #000;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+    }
+    .barcode-mock {
+      height: 60px;
+      background: repeating-linear-gradient(
+        90deg,
+        #000,
+        #000 2px,
+        #FFF 2px,
+        #FFF 5px,
+        #000 5px,
+        #000 8px,
+        #FFF 8px,
+        #FFF 10px
+      );
+      margin: 14px 0;
+    }
+    @media print {
+      body { background: #FFF; padding: 0; }
+      .label-container { border: 2px solid #000; width: 100%; max-width: 4in; height: 6in; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="chrono-container">
+    <div class="no-print" style="max-width:420px; margin:0 auto 20px; display:flex; justify-content:space-between;">
+      <a href="{% url 'orders:detail' order.order_number %}" class="btn-chrono btn-chrono-subtle btn-sm">
+        ← Back
+      </a>
+      <button type="button" class="btn-chrono btn-chrono-dark btn-sm" onclick="window.print()">
+        🖨 Print 4x6 Label
+      </button>
+    </div>
+
+    <!-- Carrier Shipping Label -->
+    <div class="label-container print-document-page">
+      <!-- Label Header -->
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid #000; padding-bottom:10px; margin-bottom:12px;">
+        <div>
+          <div style="font-size:1.2rem; font-weight:900;">NOVACHRONO</div>
+          <div style="font-size:0.75rem; font-weight:bold;">VAULT PRIORITY EXPRESS</div>
+        </div>
+        <div style="text-align:right;">
+          <div style="border:2px solid #000; padding:4px 8px; font-weight:900; font-size:1.1rem;">
+            PRIORITY
+          </div>
+        </div>
+      </div>
+
+      <!-- Sender Info -->
+      <div style="font-size:0.75rem; line-height:1.4; border-bottom:1px solid #000; padding-bottom:10px; margin-bottom:12px;">
+        <b>SHIP FROM:</b><br>
+        NovaChrono Collectibles Fulfillment Hub<br>
+        {{ store_settings.address_line1 }}, Suite 400<br>
+        {{ store_settings.city }}, {{ store_settings.state }} {{ store_settings.postal_code }}<br>
+        Tel: {{ store_settings.phone }}
+      </div>
+
+      <!-- Recipient Info (Large for Courier Scanning) -->
+      <div style="font-size:0.95rem; line-height:1.5; border-bottom:2px solid #000; padding-bottom:14px; margin-bottom:14px;">
+        <div style="font-size:0.75rem; font-weight:bold; text-transform:uppercase; margin-bottom:2px;">SHIP TO:</div>
+        <div style="font-size:1.15rem; font-weight:900;">{{ order.shipping_name }}</div>
+        <div>{{ order.shipping_address_line1 }}</div>
+        {% if order.shipping_address_line2 %}<div>{{ order.shipping_address_line2 }}</div>{% endif %}
+        <div style="font-size:1.1rem; font-weight:bold;">
+          {{ order.shipping_city }}, {{ order.shipping_state }} {{ order.shipping_postal_code }}
+        </div>
+        <div>{{ order.shipping_country }}</div>
+        <div style="font-size:0.8rem; margin-top:4px;">Phone: {{ order.shipping_phone }}</div>
+      </div>
+
+      <!-- Barcode & Tracking -->
+      <div style="text-align:center;">
+        <div class="barcode-mock"></div>
+        <div style="font-family:monospace; font-weight:bold; font-size:1rem; letter-spacing:0.08em;">
+          {{ order.tracking_number|default:"NC-9400-1002-8821-4920" }}
+        </div>
+      </div>
+
+      <!-- Label Footer Info -->
+      <div style="border-top:1px solid #000; margin-top:16px; padding-top:8px; display:flex; justify-content:space-between; font-size:0.75rem; font-weight:bold;">
+        <div>Order: #{{ order.order_number }}</div>
+        <div>Total Items: {{ order.total_items }}</div>
+        <div>Weight: 1.8 lbs</div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>

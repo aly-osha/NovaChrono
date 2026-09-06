@@ -1,0 +1,202 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block page_title %}Order Operations: #{{ order.order_number }}{% endblock %}
+
+{% block dashboard_content %}
+<!-- Top Action Bar -->
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:28px;">
+  <div style="display:flex; align-items:center; gap:14px;">
+    <a href="{% url 'dashboard:orders_list' %}" class="btn-chrono btn-chrono-subtle btn-sm">
+      ← Back to Orders
+    </a>
+    <h1 style="font-size:1.4rem;">Order #{{ order.order_number }}</h1>
+    <span class="status-pill status-{{ order.status|lower }}">
+      {{ order.get_status_display }}
+    </span>
+  </div>
+
+  <!-- Documents Operations Buttons (Prompt 19L) -->
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <a href="{% url 'orders:invoice_detail' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-dark btn-sm">
+      🖨 Printable Invoice
+    </a>
+    <a href="{% url 'orders:invoice_pdf' order.order_number %}" class="btn-chrono btn-chrono-cosmic btn-sm">
+      Download PDF Invoice ↓
+    </a>
+    <a href="{% url 'orders:packing_slip' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-subtle btn-sm">
+      Warehouse Packing Slip 📋
+    </a>
+    <a href="{% url 'orders:shipping_label' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-subtle btn-sm">
+      Shipping Label 🏷️
+    </a>
+  </div>
+</div>
+
+<div style="display:grid; grid-template-columns: 1.25fr 0.75fr; gap:28px; margin-bottom:60px;">
+  <!-- Left Column: Items, Status Updater & Notes -->
+  <div style="display:flex; flex-direction:column; gap:24px;">
+    <!-- Status Update Form Box -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:28px; box-shadow:var(--shadow-sm);">
+      <h3 style="font-size:1.15rem; margin-bottom:18px;">Update Fulfillment Status</h3>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="update_status">
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:14px;">
+          <div class="form-group">
+            <label class="form-label">New Status</label>
+            <select name="new_status" class="form-select">
+              {% for val, label in order_statuses %}
+              <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Carrier</label>
+            <input type="text" name="carrier" value="{{ order.carrier }}" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Tracking Number</label>
+          <input type="text" name="tracking_number" value="{{ order.tracking_number }}" placeholder="e.g. DHL-992841029" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status Update Audit Note</label>
+          <input type="text" name="note" placeholder="e.g. Inspected, packed into vault bubble mailer..." class="form-input">
+        </div>
+
+        <button type="submit" class="btn-chrono btn-chrono-cosmic btn-sm">
+          Update Order Status
+        </button>
+      </form>
+    </div>
+
+    <!-- Order Items Snapshot Table -->
+    <div class="dash-table-card" style="margin-bottom:0;">
+      <div class="dash-table-header">
+        <h3 style="font-size:1.15rem;">Ordered Collectibles ({{ order.total_items }})</h3>
+      </div>
+      <table class="dash-table">
+        <thead>
+          <tr>
+            <th>Product Snapshot</th>
+            <th>TCG / Condition</th>
+            <th>SKU</th>
+            <th>Price</th>
+            <th>Qty</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in order.items.all %}
+          <tr>
+            <td style="font-weight:600;">{{ item.product_name_snapshot }}</td>
+            <td style="font-size:0.85rem; color:var(--dash-muted);">{{ item.tcg_snapshot }} ({{ item.condition_snapshot }})</td>
+            <td style="font-family:monospace; font-size:0.82rem;">{{ item.sku_snapshot }}</td>
+            <td>${{ item.unit_price }}</td>
+            <td style="font-weight:700;">{{ item.quantity }}</td>
+            <td style="font-family:var(--font-heading); font-weight:700;">${{ item.subtotal }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <!-- Order Totals Breakdown -->
+      <div style="padding:20px 24px; background:#FAF8F5; display:flex; justify-content:flex-end;">
+        <div style="width:260px; font-size:0.9rem;">
+          <div class="summary-row">
+            <span>Items Subtotal:</span>
+            <span>${{ order.subtotal }}</span>
+          </div>
+          {% if order.discount_amount > 0 %}
+          <div class="summary-row" style="color:#00875A;">
+            <span>Discount:</span>
+            <span>-${{ order.discount_amount }}</span>
+          </div>
+          {% endif %}
+          <div class="summary-row">
+            <span>Shipping:</span>
+            <span>{% if order.shipping_amount > 0 %}${{ order.shipping_amount }}{% else %}FREE{% endif %}</span>
+          </div>
+          <div class="summary-row">
+            <span>Tax (7%):</span>
+            <span>${{ order.tax_amount }}</span>
+          </div>
+          <div class="summary-row total">
+            <span>Grand Total:</span>
+            <span style="color:var(--accent-cosmic);">${{ order.total_amount }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Internal Notes Box -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:28px; box-shadow:var(--shadow-sm);">
+      <h3 style="font-size:1.15rem; margin-bottom:14px;">Internal Staff Notes (Private)</h3>
+      <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="save_notes">
+        <textarea name="admin_notes" rows="3" placeholder="Special verification notes, customer communication records..." class="form-textarea" style="margin-bottom:14px;">{{ order.admin_notes }}</textarea>
+        <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">
+          Save Internal Notes
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Right Column: Customer Info, Addresses, and Status Audit Log -->
+  <div style="display:flex; flex-direction:column; gap:24px;">
+    <!-- Customer Details -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:24px; box-shadow:var(--shadow-sm);">
+      <h4 style="font-size:1rem; margin-bottom:12px; font-weight:700;">Customer Information</h4>
+      <div style="font-size:0.9rem; line-height:1.6;">
+        <b>Username:</b> {{ order.user.username }}<br>
+        <b>Email:</b> {{ order.user.email }}<br>
+        <b>Customer Name:</b> {{ order.shipping_name }}<br>
+        <b>Phone:</b> {{ order.shipping_phone }}
+      </div>
+    </div>
+
+    <!-- Shipping Address -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:24px; box-shadow:var(--shadow-sm);">
+      <h4 style="font-size:1rem; margin-bottom:12px; font-weight:700;">Shipping Address</h4>
+      <div style="font-size:0.9rem; line-height:1.6; color:var(--dash-muted); white-space:pre-line;">
+        {{ order.full_shipping_address }}
+      </div>
+    </div>
+
+    <!-- Payment & Invoice Info -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:24px; box-shadow:var(--shadow-sm);">
+      <h4 style="font-size:1rem; margin-bottom:12px; font-weight:700;">Payment &amp; Invoice</h4>
+      <div style="font-size:0.88rem; line-height:1.6;">
+        <b>Invoice Ref:</b> <code>{{ order.invoice.invoice_number|default:"Pending" }}</code><br>
+        <b>Payment ID:</b> {{ order.payment.payment_id }}<br>
+        <b>Method:</b> {{ order.payment.get_payment_method_display }}<br>
+        <b>Card Brand:</b> {{ order.payment.card_brand }} (ending **** {{ order.payment.card_last4 }})<br>
+        <b>Status:</b> <span style="color:#166534; font-weight:700;">● {{ order.payment.get_status_display }}</span>
+      </div>
+    </div>
+
+    <!-- Status Change History (Prompt 19J) -->
+    <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:24px; box-shadow:var(--shadow-sm);">
+      <h4 style="font-size:1rem; margin-bottom:14px; font-weight:700;">Audit Timeline History</h4>
+      <div style="display:flex; flex-direction:column; gap:12px; max-height:280px; overflow-y:auto;">
+        {% for h in order.status_history.all %}
+        <div style="border-left:3px solid var(--accent-cosmic); padding-left:12px; font-size:0.85rem;">
+          <div style="font-weight:700; color:var(--dash-text);">
+            {{ h.previous_status }} → {{ h.new_status }}
+          </div>
+          <div style="color:var(--dash-muted); margin:2px 0;">{{ h.note }}</div>
+          <div style="font-size:0.75rem; color:#999;">
+            {{ h.timestamp|date:"M d, Y · H:i" }} by {{ h.changed_by.username|default:"System" }}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

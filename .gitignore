@@ -1,0 +1,80 @@
+# ==========================================
+# NovaChrono - Django Project .gitignore
+# ==========================================
+
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Environments & Secret Keys
+.env
+.env.*
+!.env.example
+!.env.template
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Django Database & Local Configs
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+local_settings.py
+
+# Static & Media Files
+staticfiles/
+media/*
+!media/.gitkeep
+!media/products/
+media/products/*
+!media/products/.gitkeep
+
+# Logs
+*.log
+logs/
+
+# Testing & Code Quality
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# IDE & Code Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Operating System Files
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Node / Frontend (if build tools are added)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*

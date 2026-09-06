@@ -1,0 +1,101 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block page_title %}Orders &amp; Fulfillment Management{% endblock %}
+
+{% block dashboard_content %}
+<!-- Status Filter Pills & Search -->
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+  <!-- Filter Pills -->
+  <div style="display:flex; gap:8px; flex-wrap:wrap;">
+    <a href="?status=ALL" class="btn-chrono {% if status_filter == 'ALL' %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+      All
+    </a>
+    {% for val, label in order_statuses %}
+    <a href="?status={{ val }}" class="btn-chrono {% if status_filter == val %}btn-chrono-dark{% else %}btn-chrono-subtle{% endif %} btn-sm">
+      {{ label }}
+    </a>
+    {% endfor %}
+  </div>
+
+  <!-- Search by ID or Name -->
+  <form method="GET" style="display:flex; gap:8px;">
+    {% if status_filter and status_filter != 'ALL' %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search order #, name, or email..." class="form-input" style="width:260px; padding:6px 14px; font-size:0.88rem;">
+    <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">Search</button>
+  </form>
+</div>
+
+<!-- Orders Table -->
+<div class="dash-table-card">
+  <table class="dash-table">
+    <thead>
+      <tr>
+        <th>Order ID</th>
+        <th>Invoice No.</th>
+        <th>Customer</th>
+        <th>Date</th>
+        <th>Items</th>
+        <th>Total Amount</th>
+        <th>Payment</th>
+        <th>Order Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for order in orders %}
+      <tr>
+        <td>
+          <a href="{% url 'dashboard:order_detail' order.order_number %}" style="font-family:var(--font-heading); font-weight:700; color:var(--accent-cosmic);">
+            #{{ order.order_number }}
+          </a>
+        </td>
+        <td style="font-family:monospace; font-size:0.85rem; color:#555;">
+          {{ order.invoice.invoice_number|default:"Pending" }}
+        </td>
+        <td>
+          <div style="font-weight:600;">{{ order.shipping_name }}</div>
+          <div style="font-size:0.75rem; color:var(--dash-muted);">{{ order.user.email }}</div>
+        </td>
+        <td style="font-size:0.82rem; color:var(--dash-muted);">
+          {{ order.created_at|date:"M d, Y · H:i" }}
+        </td>
+        <td style="font-weight:600;">{{ order.total_items }}</td>
+        <td style="font-family:var(--font-heading); font-weight:700;">
+          ${{ order.total_amount }}
+        </td>
+        <td>
+          <span style="font-size:0.75rem; font-weight:700; background:#DCFCE7; color:#166534; padding:3px 8px; border-radius:4px;">
+            {{ order.payment.get_status_display|default:"PAID" }}
+          </span>
+        </td>
+        <td>
+          <span class="status-pill status-{{ order.status|lower }}">
+            {{ order.get_status_display }}
+          </span>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <a href="{% url 'dashboard:order_detail' order.order_number %}" class="btn-chrono btn-chrono-dark btn-sm" style="padding:4px 8px; font-size:0.75rem;">
+              Manage
+            </a>
+            <a href="{% url 'orders:invoice_detail' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-subtle btn-sm" style="padding:4px 8px; font-size:0.75rem;" title="Invoice">
+              Invoice
+            </a>
+            <a href="{% url 'orders:packing_slip' order.order_number %}" target="_blank" class="btn-chrono btn-chrono-subtle btn-sm" style="padding:4px 8px; font-size:0.75rem;" title="Packing Slip">
+              Slip
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" style="text-align:center; padding:40px; color:var(--dash-muted);">
+          No customer orders found matching this status filter.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

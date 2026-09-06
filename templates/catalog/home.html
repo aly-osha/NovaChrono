@@ -1,0 +1,327 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}NOVACHRONO — Collect. Discover. Trade.{% endblock %}
+
+{% block content %}
+<!-- 1. EDITORIAL HERO SECTION -->
+<section class="hero-section">
+  <div class="chrono-container">
+    <div class="hero-grid">
+      <!-- Left Column: Editorial Headline & Copy -->
+      <div>
+        <div class="hero-badges-row">
+          <span class="hero-pill-tag cosmic">✦ Authentic Centrally Managed Store</span>
+          <span class="hero-pill-tag">No Third-Party Sellers</span>
+        </div>
+        <h1 class="hero-headline">
+          COLLECT<br>
+          <span class="text-gradient">WHAT</span><br>
+          MATTERS.
+        </h1>
+        <p class="hero-subhead">
+          Discover trading cards, sealed treasures, and collectibles worth chasing. Direct from certified vault storage into your personal collection.
+        </p>
+        <div class="hero-actions">
+          <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-cosmic btn-lg">
+            Explore Collection →
+          </a>
+          <a href="#tcg-universes" class="btn-chrono btn-chrono-outline btn-lg">
+            Discover TCGs
+          </a>
+        </div>
+      </div>
+
+      <!-- Right Column: Layered Editorial Floating Card Visual (Fable reference inspired) -->
+      <div style="position: relative;">
+        <div class="starburst-badge">★ FRESH VAULT DROP</div>
+        <div class="hero-visual-card">
+          <div class="hero-card-header">
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-gold); font-weight: 700;">CHASE HIGHLIGHT</div>
+              <div style="font-size: 1.15rem; font-weight: 700;">Pokémon 151 Booster Box</div>
+            </div>
+            <span class="badge-tag badge-preorder">Japanese Import</span>
+          </div>
+          <div class="hero-card-img-wrap">
+            <img src="https://images.unsplash.com/photo-1613771404784-3a5686aa2be3?w=800&auto=format&fit=crop&q=80" alt="Pokemon 151 Booster Box">
+          </div>
+          <div class="hero-card-footer">
+            <div>
+              <div style="font-size: 0.75rem; color: #888;">VAULT ALLOCATION</div>
+              <div style="font-family: var(--font-heading); font-size: 1.4rem; font-weight: 700;">$189.99</div>
+            </div>
+            <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-dark btn-sm" style="background:#fff; color:#000;">
+              View Set Pulls
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. TRENDING TCG PILLS ROW -->
+<section style="padding: 10px 0 40px;">
+  <div class="chrono-container">
+    <div class="tcg-pill-row">
+      {% for tcg in tcgs %}
+      <a href="{% url 'catalog:shop_tcg' tcg.slug %}" class="tcg-pill-card">
+        <div class="tcg-pill-icon">{{ tcg.icon_symbol }}</div>
+        <span class="tcg-pill-name">{{ tcg.name }}</span>
+      </a>
+      {% endfor %}
+      <a href="{% url 'catalog:shop' %}?category=accessories" class="tcg-pill-card">
+        <div class="tcg-pill-icon">🛡️</div>
+        <span class="tcg-pill-name">Vault Accessories</span>
+      </a>
+      <a href="{% url 'catalog:shop' %}?stock=preorder" class="tcg-pill-card">
+        <div class="tcg-pill-icon">⏳</div>
+        <span class="tcg-pill-name">Upcoming Pre-Orders</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 3. FEATURED COLLECTION ("THE CHASE") -->
+<section style="padding: 50px 0;">
+  <div class="chrono-container">
+    <div class="section-header">
+      <div>
+        <span class="section-label">CURATED DROPS</span>
+        <h2 class="section-title">THE CHASE.</h2>
+        <p class="section-subtitle">Rare finds. Fresh pulls. Serious collector energy.</p>
+      </div>
+      <a href="{% url 'catalog:shop' %}?sort=featured" class="btn-chrono btn-chrono-subtle">View All Featured →</a>
+    </div>
+
+    <div class="product-grid">
+      {% for product in featured_products|slice:":4" %}
+      <div class="product-card">
+        <div class="card-badge-container">
+          <span class="badge-tag badge-tcg">{{ product.tcg.name }}</span>
+          {% if product.is_preorder %}
+          <span class="badge-tag badge-preorder">Pre-Order</span>
+          {% elif product.discount_percentage > 0 %}
+          <span class="badge-tag badge-discount">{{ product.discount_percentage }}% OFF</span>
+          {% endif %}
+        </div>
+
+        <button type="button" class="btn-card-wishlist btn-wishlist-toggle" data-product-id="{{ product.id }}" title="Save to Wishlist">
+          ♡
+        </button>
+
+        <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card-img-wrapper">
+          <img src="{{ product.primary_image }}" alt="{{ product.name }}" class="product-card-img" loading="lazy">
+          <div class="card-quick-overlay">
+            <button type="button" class="btn-quick-view" data-product-id="{{ product.id }}">Quick View</button>
+          </div>
+        </a>
+
+        <div class="product-card-body">
+          <span class="product-card-category">{{ product.category.name }}</span>
+          <a href="{% url 'catalog:product_detail' product.slug %}">
+            <h3 class="product-card-title">{{ product.name }}</h3>
+          </a>
+          <div class="product-card-pricing">
+            <span class="price-current">${{ product.price }}</span>
+            {% if product.compare_at_price %}
+            <span class="price-compare">${{ product.compare_at_price }}</span>
+            {% endif %}
+          </div>
+          <form action="{% url 'cart:add_to_cart' product.id %}" method="POST" class="ajax-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn-card-cart">
+              Add to Vault Cart
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 4. SHOP BY TCG UNIVERSE -->
+<section id="tcg-universes" style="padding: 60px 0; background-color: #EFECE4;">
+  <div class="chrono-container">
+    <div class="section-header">
+      <div>
+        <span class="section-label">UNIVERSE ARCHIVES</span>
+        <h2 class="section-title">CHOOSE YOUR TCG.</h2>
+        <p class="section-subtitle">Dedicated sealed products, single cards, and supplies for each world.</p>
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:20px;">
+      {% for tcg in tcgs %}
+      <a href="{% url 'catalog:shop_tcg' tcg.slug %}" class="tcg-universe-card">
+        <div style="width:64px; height:64px; border-radius:var(--radius-full); background:var(--bg-subtle); display:flex; align-items:center; justify-content:center; font-size:1.8rem; margin-bottom:14px;">
+          {{ tcg.icon_symbol }}
+        </div>
+        <h3 style="font-size:1.15rem; margin-bottom:6px;">{{ tcg.name }}</h3>
+        <span style="font-size:0.8rem; color:var(--text-muted); font-weight:600;">Explore Set Vault →</span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 5. EDITORIAL DARK SECTION: COLLECTOR'S PICKS (Fable Dark Screen Reference) -->
+<section style="padding: 20px 0;">
+  <div class="chrono-container">
+    <div class="editorial-dark-showcase">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; flex-wrap:wrap; gap:20px; position:relative; z-index:2;">
+        <div>
+          <span style="color:var(--accent-gold); font-size:0.82rem; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:8px;">HIGH-TIER VAULT</span>
+          <h2>COLLECTOR'S PICKS.</h2>
+          <p style="font-size:1.05rem; margin-top:8px;">Graded holy grails, museum-certified slabs, and vintage sealed displays.</p>
+        </div>
+        <a href="{% url 'catalog:shop' %}?category=singles" class="btn-chrono btn-chrono-cosmic">
+          Explore Graded Slabs →
+        </a>
+      </div>
+
+      <div class="product-grid" style="position:relative; z-index:2;">
+        {% for product in collectors_picks %}
+        <div class="product-card" style="background:#171424; border-color:rgba(255,255,255,0.1); color:#fff;">
+          <div class="card-badge-container">
+            <span class="badge-tag" style="background:var(--accent-gold); color:#000;">{{ product.get_condition_display }}</span>
+          </div>
+
+          <button type="button" class="btn-card-wishlist btn-wishlist-toggle" data-product-id="{{ product.id }}" title="Save to Wishlist" style="background:rgba(255,255,255,0.15); color:#fff;">
+            ♡
+          </button>
+
+          <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card-img-wrapper" style="background:#0D0A18;">
+            <img src="{{ product.primary_image }}" alt="{{ product.name }}" class="product-card-img" loading="lazy">
+            <div class="card-quick-overlay">
+              <button type="button" class="btn-quick-view" data-product-id="{{ product.id }}" style="background:#fff; color:#000;">Quick View</button>
+            </div>
+          </a>
+
+          <div class="product-card-body">
+            <span class="product-card-category" style="color:#A09EAD;">{{ product.tcg.name }} · {{ product.edition }}</span>
+            <a href="{% url 'catalog:product_detail' product.slug %}">
+              <h3 class="product-card-title" style="color:#fff;">{{ product.name }}</h3>
+            </a>
+            <div class="product-card-pricing">
+              <span class="price-current" style="color:#fff;">${{ product.price }}</span>
+              {% if product.compare_at_price %}
+              <span class="price-compare" style="color:#777;">${{ product.compare_at_price }}</span>
+              {% endif %}
+            </div>
+            <form action="{% url 'cart:add_to_cart' product.id %}" method="POST" class="ajax-cart-form">
+              {% csrf_token %}
+              <input type="hidden" name="quantity" value="1">
+              <button type="submit" class="btn-card-cart" style="background:rgba(255,255,255,0.1); color:#fff;">
+                Secure This Item
+              </button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. NEW ARRIVALS & FRESH DROPS -->
+<section style="padding: 60px 0;">
+  <div class="chrono-container">
+    <div class="section-header">
+      <div>
+        <span class="section-label">JUST RECEIVED</span>
+        <h2 class="section-title">NEW ARRIVALS.</h2>
+        <p class="section-subtitle">Freshly unpacked sealed boxes and latest tournament accessories.</p>
+      </div>
+      <a href="{% url 'catalog:shop' %}?sort=newest" class="btn-chrono btn-chrono-subtle">Browse All New →</a>
+    </div>
+
+    <div class="product-grid">
+      {% for product in new_arrivals|slice:":8" %}
+      <div class="product-card">
+        <div class="card-badge-container">
+          <span class="badge-tag badge-tcg">{{ product.tcg.name }}</span>
+          {% if product.is_preorder %}
+          <span class="badge-tag badge-preorder">Pre-Order</span>
+          {% elif product.is_new %}
+          <span class="badge-tag" style="background:#00875A; color:#fff;">New</span>
+          {% endif %}
+        </div>
+
+        <button type="button" class="btn-card-wishlist btn-wishlist-toggle" data-product-id="{{ product.id }}" title="Save to Wishlist">
+          ♡
+        </button>
+
+        <a href="{% url 'catalog:product_detail' product.slug %}" class="product-card-img-wrapper">
+          <img src="{{ product.primary_image }}" alt="{{ product.name }}" class="product-card-img" loading="lazy">
+          <div class="card-quick-overlay">
+            <button type="button" class="btn-quick-view" data-product-id="{{ product.id }}">Quick View</button>
+          </div>
+        </a>
+
+        <div class="product-card-body">
+          <span class="product-card-category">{{ product.category.name }}</span>
+          <a href="{% url 'catalog:product_detail' product.slug %}">
+            <h3 class="product-card-title">{{ product.name }}</h3>
+          </a>
+          <div class="product-card-pricing">
+            <span class="price-current">${{ product.price }}</span>
+            {% if product.compare_at_price %}
+            <span class="price-compare">${{ product.compare_at_price }}</span>
+            {% endif %}
+          </div>
+          <form action="{% url 'cart:add_to_cart' product.id %}" method="POST" class="ajax-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn-card-cart">
+              Add to Vault Cart
+            </button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- 7. WHY NOVACHRONO (Value Proposition Grid) -->
+<section style="padding: 40px 0;">
+  <div class="chrono-container">
+    <div class="section-header" style="text-align:center; justify-content:center;">
+      <div>
+        <span class="section-label">THE NOVACHRONO STANDARD</span>
+        <h2 class="section-title">BUILT FOR TRUE COLLECTORS.</h2>
+      </div>
+    </div>
+
+    <div class="benefits-grid">
+      <div class="benefit-card">
+        <div class="benefit-icon">🛡️</div>
+        <h3 class="benefit-title">100% Authentic</h3>
+        <p class="benefit-text">No counterfeit risks. We do NOT allow random third-party sellers. Every box and slab is certified in-house.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon">📦</div>
+        <h3 class="benefit-title">Vault Packaging</h3>
+        <p class="benefit-text">Triple-bubble wrapped with corner protectors and heavy-gauge corrugated outer boxes so your items arrive mint.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon">⚡</div>
+        <h3 class="benefit-title">Fast Courier Dispatch</h3>
+        <p class="benefit-text">Same-day processing for in-stock orders with tracked insured delivery via DHL &amp; FedEx Express.</p>
+      </div>
+
+      <div class="benefit-card">
+        <div class="benefit-icon">📜</div>
+        <h3 class="benefit-title">Official Invoices</h3>
+        <p class="benefit-text">Permanent order documents, sequential tax compliance invoices, and downloadable A4 PDF certificates.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

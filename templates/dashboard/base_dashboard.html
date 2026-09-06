@@ -1,0 +1,124 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NovaChrono Staff Portal{% endblock %}</title>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+  <!-- Chart.js CDN for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <div class="dashboard-wrapper">
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-star">✦</span>
+        <div style="line-height:1.2;">
+          <div style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700; color:#fff;">NOVACHRONO</div>
+          <div style="font-size:0.7rem; color:#9CA3AF; text-transform:uppercase; letter-spacing:0.06em;">Operations Portal</div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <a href="{% url 'dashboard:overview' %}" class="sidebar-link {% if request.resolver_match.url_name == 'overview' %}active{% endif %}">
+          📊 Dashboard Overview
+        </a>
+        <a href="{% url 'dashboard:products_list' %}" class="sidebar-link {% if 'products' in request.path %}active{% endif %}">
+          🗂 Product Catalog
+        </a>
+        <a href="{% url 'dashboard:inventory' %}" class="sidebar-link {% if 'inventory' in request.path %}active{% endif %}">
+          📦 Inventory &amp; Stock
+        </a>
+        <a href="{% url 'dashboard:orders_list' %}" class="sidebar-link {% if 'orders' in request.path %}active{% endif %}">
+          🛍 Orders &amp; Fulfillment
+        </a>
+
+        {% if user.is_super_admin %}
+        <div class="sidebar-section-title">Administration</div>
+        <a href="{% url 'dashboard:staff_list' %}" class="sidebar-link {% if 'staff' in request.path %}active{% endif %}">
+          👥 Staff Management
+        </a>
+        <a href="{% url 'dashboard:users_list' %}" class="sidebar-link {% if 'users' in request.path %}active{% endif %}">
+          👤 User Accounts
+        </a>
+        <a href="{% url 'dashboard:store_settings' %}" class="sidebar-link {% if 'settings' in request.path %}active{% endif %}">
+          ⚙️ Store &amp; Tax Settings
+        </a>
+        {% endif %}
+
+        <div class="sidebar-section-title">System &amp; Exports</div>
+        <a href="{% url 'dashboard:activity_logs' %}" class="sidebar-link {% if 'activity' in request.path %}active{% endif %}">
+          📜 Activity Audit Log
+        </a>
+        <a href="{% url 'dashboard:export_csv' 'orders' %}" class="sidebar-link">
+          📥 Export Orders CSV
+        </a>
+        <a href="{% url 'dashboard:export_csv' 'products' %}" class="sidebar-link">
+          📥 Export Products CSV
+        </a>
+        <a href="{% url 'dashboard:export_csv' 'inventory' %}" class="sidebar-link">
+          📥 Export Inventory CSV
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="{% url 'catalog:home' %}" class="sidebar-link" style="color:#FFF;">
+          ← View Storefront
+        </a>
+        <a href="{% url 'accounts:logout' %}" class="sidebar-link" style="color:#EF4444;">
+          Sign Out
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Section -->
+    <div class="dashboard-main">
+      <!-- Topbar -->
+      <header class="dashboard-topbar">
+        <div style="font-family:var(--font-heading); font-size:1.15rem; font-weight:700;">
+          {% block page_title %}Operations Dashboard{% endblock %}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:16px;">
+          <a href="{% url 'dashboard:product_add' %}" class="btn-chrono btn-chrono-cosmic btn-sm">
+            + Add New Product
+          </a>
+          <div style="display:flex; align-items:center; gap:10px; padding-left:14px; border-left:1px solid var(--dash-border);">
+            <div style="width:34px; height:34px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem;">
+              {{ user.username|first|upper }}
+            </div>
+            <div>
+              <div style="font-size:0.85rem; font-weight:700;">{{ user.username }}</div>
+              <div style="font-size:0.72rem; color:var(--dash-muted);">{{ user.get_role_display }}</div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Dashboard Flash Messages -->
+      {% if messages %}
+      <div style="padding: 16px 32px 0;">
+        {% for message in messages %}
+        <div class="chrono-alert chrono-alert-{{ message.tags|default:'info' }}">
+          <span>{{ message }}</span>
+          <button type="button" onclick="this.parentElement.remove()" style="font-size:1.1rem; color:inherit;">✕</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Dashboard Content Body -->
+      <main class="dashboard-content">
+        {% block dashboard_content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

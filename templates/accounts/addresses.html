@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Saved Addresses — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="padding: 30px 0 20px;">
+    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">SAVED ADDRESSES</h1>
+    <p style="color: var(--text-secondary);">Manage delivery locations for quick, streamlined vault checkouts.</p>
+  </div>
+
+  <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap:36px; margin-bottom: 80px;">
+    <!-- Saved Addresses List -->
+    <div>
+      <h3 style="font-size:1.25rem; margin-bottom:18px;">Address Book</h3>
+
+      {% if addresses %}
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:18px;">
+        {% for addr in addresses %}
+        <div class="address-card {% if addr.is_default_shipping %}is-default{% endif %}">
+          <div>
+            {% if addr.is_default_shipping %}
+            <span class="badge-tag" style="background:var(--accent-cosmic); color:#fff; margin-bottom:8px;">Default Shipping</span>
+            {% endif %}
+            <div style="font-weight:700; font-size:1rem; margin-bottom:4px;">{{ addr.full_name }}</div>
+            <div style="font-size:0.88rem; color:var(--text-secondary); line-height:1.5;">
+              {{ addr.address_line1 }}<br>
+              {% if addr.address_line2 %}{{ addr.address_line2 }}<br>{% endif %}
+              {{ addr.city }}, {{ addr.state }} {{ addr.postal_code }}<br>
+              {{ addr.country }}<br>
+              Phone: {{ addr.phone }}
+            </div>
+          </div>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:18px; padding-top:12px; border-top:1px solid var(--border-light);">
+            {% if not addr.is_default_shipping %}
+            <a href="{% url 'accounts:set_default_address' addr.id %}" style="font-size:0.8rem; color:var(--accent-cosmic); font-weight:600;">
+              Set as Default
+            </a>
+            {% else %}
+            <span></span>
+            {% endif %}
+            <a href="{% url 'accounts:delete_address' addr.id %}" onclick="return confirm('Remove this address?')" style="font-size:0.8rem; color:#DC2626; font-weight:600;">
+              Delete
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:40px; text-align:center; color:var(--text-muted);">
+        No saved addresses in your book yet. Add one using the form on the right.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Add New Address Form -->
+    <div>
+      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; box-shadow:var(--shadow-sm);">
+        <h3 style="font-size:1.25rem; margin-bottom:18px;">Add New Address</h3>
+
+        <form method="POST">
+          {% csrf_token %}
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            {{ form.full_name }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phone Number</label>
+            {{ form.phone }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Street Address</label>
+            {{ form.address_line1 }}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Apartment / Suite</label>
+            {{ form.address_line2 }}
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              {{ form.city }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">State</label>
+              {{ form.state }}
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+            <div class="form-group">
+              <label class="form-label">Postal Code</label>
+              {{ form.postal_code }}
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              {{ form.country }}
+            </div>
+          </div>
+          <div class="form-group">
+            <label style="display:flex; align-items:center; gap:8px; font-size:0.88rem; cursor:pointer;">
+              {{ form.is_default_shipping }}
+              <span>Set as default shipping address</span>
+            </label>
+          </div>
+          <button type="submit" class="btn-chrono btn-chrono-cosmic btn-sm" style="width:100%;">
+            Save Address
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

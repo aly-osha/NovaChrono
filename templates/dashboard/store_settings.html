@@ -1,0 +1,100 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block page_title %}Store Configuration &amp; Tax Settings{% endblock %}
+
+{% block dashboard_content %}
+<div style="max-width: 800px; margin: 0 auto 60px;">
+  <div style="background:#FFF; border-radius:var(--radius-lg); border:1px solid var(--dash-border); padding:36px; box-shadow:var(--shadow-sm);">
+    <div style="margin-bottom:24px; padding-bottom:14px; border-bottom:1px solid var(--dash-border);">
+      <h2 style="font-size:1.35rem;">Store Details &amp; Tax Configuration</h2>
+      <p style="font-size:0.88rem; color:var(--dash-muted);">These details are stamped on official printable invoices and generated PDF certificates.</p>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+
+      <div style="display:grid; grid-template-columns: 1.5fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Store Brand Name</label>
+          {{ form.store_name }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Invoice Prefix</label>
+          {{ form.invoice_prefix }}
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Brand Tagline</label>
+        {{ form.tagline }}
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Store Address Line 1</label>
+          {{ form.address_line1 }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Address Line 2</label>
+          {{ form.address_line2 }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:14px;">
+        <div class="form-group">
+          <label class="form-label">City</label>
+          {{ form.city }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">State</label>
+          {{ form.state }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Postal Code</label>
+          {{ form.postal_code }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Customer Support Email</label>
+          {{ form.email }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Store Phone Number</label>
+          {{ form.phone }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Tax ID / GSTIN Registration</label>
+          {{ form.tax_id }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Default Tax Rate (%)</label>
+          {{ form.default_tax_rate }}
+        </div>
+      </div>
+
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+        <div class="form-group">
+          <label class="form-label">Free Shipping Minimum Threshold ($)</label>
+          {{ form.free_shipping_threshold }}
+        </div>
+        <div class="form-group">
+          <label class="form-label">Standard Shipping Rate ($)</label>
+          {{ form.standard_shipping_rate }}
+        </div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; margin-top:24px;">
+        <button type="submit" class="btn-chrono btn-chrono-cosmic">
+          Save Configuration
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

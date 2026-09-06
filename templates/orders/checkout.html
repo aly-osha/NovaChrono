@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Vault Checkout — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="padding: 30px 0 20px;">
+    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">VAULT CHECKOUT</h1>
+    <p style="color: var(--text-secondary);">Complete your purchase with guaranteed authenticity and safe delivery.</p>
+  </div>
+
+  <form method="POST" action="{% url 'orders:checkout' %}">
+    {% csrf_token %}
+    <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 80px;">
+      <!-- Left Column: Multi-Step Checkout Form -->
+      <div>
+        <!-- Step 1: Customer Contact -->
+        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">1</span>
+            <h2 style="font-size:1.25rem;">Customer Information</h2>
+          </div>
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Full Name</label>
+              <input type="text" name="full_name" value="{{ user.get_full_name|default:user.username }}" required class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email Address</label>
+              <input type="email" value="{{ user.email }}" readonly class="form-input" style="background:#FAF8F5; cursor:not-allowed;">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Contact Phone</label>
+            <input type="tel" name="phone" value="{{ user.phone|default:'' }}" placeholder="+1 (555) 000-0000" required class="form-input">
+          </div>
+        </div>
+
+        <!-- Step 2: Shipping Destination -->
+        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">2</span>
+            <h2 style="font-size:1.25rem;">Shipping Address</h2>
+          </div>
+
+          {% if user_addresses %}
+          <div class="form-group" style="margin-bottom:18px;">
+            <label class="form-label">Select from Saved Addresses</label>
+            <select name="selected_address" id="addressSelector" class="form-select" onchange="toggleNewAddressFields(this.value)">
+              {% for addr in user_addresses %}
+              <option value="{{ addr.id }}" {% if addr.is_default_shipping %}selected{% endif %}>
+                {{ addr.full_name }} — {{ addr.address_line1 }}, {{ addr.city }} ({{ addr.postal_code }})
+              </option>
+              {% endfor %}
+              <option value="new">+ Enter a New Address</option>
+            </select>
+          </div>
+          {% endif %}
+
+          <div id="newAddressFields" class="{% if user_addresses %}chrono-hidden{% endif %}">
+            <div class="form-group">
+              <label class="form-label">Street Address</label>
+              <input type="text" name="address_line1" id="input_addr1" placeholder="123 Collector Blvd" class="form-input">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apartment, Suite, Unit (optional)</label>
+              <input type="text" name="address_line2" id="input_addr2" class="form-input">
+            </div>
+            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:14px;">
+              <div class="form-group">
+                <label class="form-label">City</label>
+                <input type="text" name="city" id="input_city" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">State / Province</label>
+                <input type="text" name="state" id="input_state" class="form-input">
+              </div>
+              <div class="form-group">
+                <label class="form-label">ZIP Code</label>
+                <input type="text" name="postal_code" id="input_postal" class="form-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Country</label>
+              <input type="text" name="country" value="United States" class="form-input">
+            </div>
+            <div style="margin-top:10px;">
+              <label style="display:flex; align-items:center; gap:8px; font-size:0.88rem; cursor:pointer;">
+                <input type="checkbox" name="save_address" checked>
+                <span>Save this address to my account address book</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Delivery Notes & Mock Payment Gateway -->
+        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; box-shadow:var(--shadow-sm);">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
+            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">3</span>
+            <h2 style="font-size:1.25rem;">Payment &amp; Authorization</h2>
+          </div>
+
+          <div style="background:#FAF8F5; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:16px 20px; margin-bottom:20px; font-size:0.88rem; line-height:1.5;">
+            <b>🔒 Safe Demo Gateway Architecture:</b> Simulated payment authorization. No real card will be charged. All transactions generate legitimate tax-compliant sequential invoices and inventory adjustments.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Payment Method</label>
+            <div style="display:flex; gap:12px; margin-bottom:16px;">
+              <label style="flex:1; border:1px solid var(--border-medium); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff;">
+                <input type="radio" name="payment_method" value="CREDIT_CARD" checked>
+                <span><b>Credit / Debit Card</b></span>
+              </label>
+              <label style="flex:1; border:1px solid var(--border-medium); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff;">
+                <input type="radio" name="payment_method" value="CHRONO_VAULT">
+                <span><b>NovaChrono Vault Pay</b></span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
+            <div class="form-group">
+              <label class="form-label">Card Brand</label>
+              <select name="card_brand" class="form-select">
+                <option value="Visa Platinum">Visa</option>
+                <option value="Mastercard World">Mastercard</option>
+                <option value="American Express">American Express</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Card Number (Last 4 digits)</label>
+              <input type="text" name="card_last4" value="4242" maxlength="4" class="form-input">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Delivery Instructions / Vault Notes</label>
+            <textarea name="customer_notes" rows="2" placeholder="e.g. Leave at front porch, ring doorbell, gate code..." class="form-textarea"></textarea>
+          </div>
+
+          <button type="submit" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%; font-size:1.1rem; padding:18px;">
+            Authorize &amp; Complete Order (${{ cart.total }}) →
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Column: Order Review Box -->
+      <div>
+        <div class="order-summary-card">
+          <h3 style="font-size:1.25rem; margin-bottom:18px; font-weight:700;">Order Items ({{ cart.item_count }})</h3>
+
+          <div style="display:flex; flex-direction:column; gap:12px; max-height:300px; overflow-y:auto; margin-bottom:20px; padding-right:6px;">
+            {% for item in cart.items.all %}
+            <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
+              <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#F3EFE6; padding:4px;">
+              <div style="flex:1;">
+                <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary);">{{ item.product.name }}</div>
+                <div style="font-size:0.75rem; color:var(--text-muted);">Qty: {{ item.quantity }} × ${{ item.product.price }}</div>
+              </div>
+              <div style="font-weight:700; font-family:var(--font-heading); font-size:0.95rem;">
+                ${{ item.line_total }}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="summary-row">
+            <span>Subtotal</span>
+            <span>${{ cart.subtotal }}</span>
+          </div>
+
+          {% if cart.discount_amount > 0 %}
+          <div class="summary-row" style="color:#00875A;">
+            <span>Voucher Discount</span>
+            <span>-${{ cart.discount_amount }}</span>
+          </div>
+          {% endif %}
+
+          <div class="summary-row">
+            <span>Insured Shipping</span>
+            <span>{% if cart.shipping_amount > 0 %}${{ cart.shipping_amount }}{% else %}FREE{% endif %}</span>
+          </div>
+
+          <div class="summary-row">
+            <span>Sales Tax (7%)</span>
+            <span>${{ cart.tax_amount }}</span>
+          </div>
+
+          <div class="summary-row total">
+            <span>Grand Total</span>
+            <span style="color:var(--accent-cosmic);">${{ cart.total }}</span>
+          </div>
+
+          <div style="margin-top:20px; font-size:0.8rem; color:var(--text-muted); line-height:1.5;">
+            ✓ Immediate invoice generation<br>
+            ✓ Certified tamper-evident packaging<br>
+            ✓ 7-Day sealed returns window
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleNewAddressFields(val) {
+  const fields = document.getElementById('newAddressFields');
+  if (fields) {
+    if (val === 'new') {
+      fields.classList.remove('chrono-hidden');
+      fields.style.display = 'block';
+    } else {
+      fields.classList.add('chrono-hidden');
+      fields.style.display = 'none';
+    }
+  }
+}
+</script>
+{% endblock %}

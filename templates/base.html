@@ -1,0 +1,235 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NovaChrono — Collect. Discover. Trade.{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}NovaChrono is the premium centrally managed trading-card store. Discover Pokémon, One Piece, Yu-Gi-Oh!, Magic: The Gathering, sealed booster boxes and PSA graded slabs.{% endblock %}">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="{% block og_title %}NovaChrono — Collect. Discover. Trade.{% endblock %}">
+  <meta property="og:description" content="Authentic trading cards, sealed booster boxes, and collector grails.">
+  <meta property="og:type" content="website">
+
+  <!-- Fonts & Stylesheet -->
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div style="background-color: var(--text-primary); color: #fff; font-size: 0.78rem; font-weight: 500; padding: 7px 0; text-align: center; letter-spacing: 0.04em;">
+    <div class="chrono-container">
+      ✦ FREE INSURED VAULT SHIPPING ON ORDERS OVER $150 · 100% SPECIALIST-VERIFIED AUTHENTICITY ✦
+    </div>
+  </div>
+
+  <!-- Sticky Luxury Navigation -->
+  <header class="chrono-nav">
+    <div class="chrono-container">
+      <div class="nav-inner">
+        <!-- Logo -->
+        <a href="{% url 'catalog:home' %}" class="nav-brand">
+          <span class="brand-star">✦</span>
+          <span class="brand-logo-text">NOVACHRONO</span>
+        </a>
+
+        <!-- Desktop Navigation Links -->
+        <ul class="nav-links">
+          <li><a href="{% url 'catalog:home' %}" class="nav-link">Discover</a></li>
+          <li><a href="{% url 'catalog:shop' %}" class="nav-link">Shop All</a></li>
+          <li><a href="{% url 'catalog:shop' %}?stock=preorder" class="nav-link">Pre-Orders</a></li>
+          <li><a href="{% url 'catalog:shop' %}?category=booster-boxes" class="nav-link">Booster Boxes</a></li>
+          <li><a href="{% url 'catalog:shop' %}?category=singles" class="nav-link">Graded Singles</a></li>
+          <li><a href="{% url 'catalog:shop' %}?category=accessories" class="nav-link">Accessories</a></li>
+          {% if user.is_authenticated and user.is_staff_member %}
+          <li><a href="{% url 'dashboard:overview' %}" class="nav-link text-cosmic" style="font-weight:700;">Admin Portal</a></li>
+          {% endif %}
+        </ul>
+
+        <!-- Action Buttons -->
+        <div class="nav-actions">
+          <!-- Search Button -->
+          <button type="button" id="navSearchBtn" class="nav-icon-btn" title="Search cards">
+            🔍
+          </button>
+
+          <!-- Wishlist Button -->
+          <a href="{% url 'wishlist:wishlist' %}" class="nav-icon-btn" title="Wishlist">
+            ♡
+            <span class="badge-counter nav-wishlist-badge {% if wishlist_count == 0 %}chrono-hidden{% endif %}">
+              {{ wishlist_count }}
+            </span>
+          </a>
+
+          <!-- Cart Button -->
+          <a href="{% url 'cart:cart_detail' %}" class="nav-icon-btn" title="Vault Cart">
+            🛍
+            <span class="badge-counter nav-cart-badge {% if cart_count == 0 %}chrono-hidden{% endif %}">
+              {{ cart_count }}
+            </span>
+          </a>
+
+          <!-- Account Pill / Dropdown -->
+          {% if user.is_authenticated %}
+          <div class="user-menu-wrapper">
+            <button type="button" id="userPillBtn" class="user-pill">
+              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-mint);"></span>
+              <span>{{ user.first_name|default:user.username }}</span>
+              <span style="font-size:0.75rem;">▾</span>
+            </button>
+            <div id="userDropdownMenu" class="user-dropdown">
+              <div style="padding:8px 14px 4px; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
+                {{ user.get_role_display }}
+              </div>
+              <a href="{% url 'orders:history' %}" class="dropdown-link">📦 My Orders</a>
+              <a href="{% url 'wishlist:wishlist' %}" class="dropdown-link">♡ My Wishlist</a>
+              <a href="{% url 'accounts:profile' %}" class="dropdown-link">👤 Account Profile</a>
+              <a href="{% url 'accounts:addresses' %}" class="dropdown-link">📍 Saved Addresses</a>
+              {% if user.is_staff_member %}
+              <div class="dropdown-divider"></div>
+              <a href="{% url 'dashboard:overview' %}" class="dropdown-link text-cosmic" style="font-weight:600;">⚡ Store Dashboard</a>
+              {% endif %}
+              <div class="dropdown-divider"></div>
+              <a href="{% url 'accounts:logout' %}" class="dropdown-link" style="color:#E53935;">Sign Out</a>
+            </div>
+          </div>
+          {% else %}
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a href="{% url 'accounts:login' %}" class="btn-chrono btn-chrono-subtle btn-sm">Sign In</a>
+            <a href="{% url 'accounts:register' %}" class="btn-chrono btn-chrono-dark btn-sm">Join</a>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  {% if messages %}
+  <div class="chrono-container" style="margin-top: 16px;">
+    {% for message in messages %}
+    <div class="chrono-alert chrono-alert-{{ message.tags|default:'info' }}">
+      <span>{{ message }}</span>
+      <button type="button" onclick="this.parentElement.remove()" style="font-size:1.1rem; color:inherit;">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Main Content Block -->
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Luxury Editorial Footer -->
+  <footer class="chrono-footer">
+    <div class="chrono-container">
+      <div class="footer-grid">
+        <!-- Col 1: Brand -->
+        <div>
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
+            <span class="brand-star">✦</span>
+            <span class="brand-logo-text" style="font-size:1.35rem;">NOVACHRONO</span>
+          </div>
+          <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.6; max-width:320px; margin-bottom:20px;">
+            A centrally curated trading-card store and archival collection destination. Every sealed box, single card, and collector drop is authenticated by certified specialists.
+          </p>
+          <div style="font-size:0.85rem; color:var(--text-muted);">
+            <b>Store ID:</b> {{ store_settings.tax_id }}<br>
+            {{ store_settings.address_line1 }}, {{ store_settings.city }}, {{ store_settings.state }}
+          </div>
+        </div>
+
+        <!-- Col 2: Shop Categories -->
+        <div>
+          <h4 class="footer-col-title">Shop by Category</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'catalog:shop' %}?category=booster-boxes">Booster Boxes</a></li>
+            <li><a href="{% url 'catalog:shop' %}?category=booster-packs">Booster Packs</a></li>
+            <li><a href="{% url 'catalog:shop' %}?category=elite-trainer-boxes">Elite Trainer Boxes</a></li>
+            <li><a href="{% url 'catalog:shop' %}?category=singles">Graded Singles</a></li>
+            <li><a href="{% url 'catalog:shop' %}?category=pre-orders">Pre-Orders</a></li>
+            <li><a href="{% url 'catalog:shop' %}?category=mystery-products">Mystery Vault Drops</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: TCG Universes -->
+        <div>
+          <h4 class="footer-col-title">TCG Universes</h4>
+          <ul class="footer-links">
+            {% for tcg in header_tcgs %}
+            <li><a href="{% url 'catalog:shop_tcg' tcg.slug %}">{{ tcg.icon_symbol }} {{ tcg.name }}</a></li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Col 4: Service & Orders -->
+        <div>
+          <h4 class="footer-col-title">Customer Care</h4>
+          <ul class="footer-links">
+            <li><a href="{% url 'orders:history' %}">Track My Order</a></li>
+            <li><a href="{% url 'wishlist:wishlist' %}">Saved Wishlist</a></li>
+            <li><a href="{% url 'accounts:profile' %}">Account Settings</a></li>
+            <li><a href="mailto:{{ store_settings.email }}">Authenticity Guarantee</a></li>
+            <li><a href="mailto:{{ store_settings.email }}">Vault Shipping Policy</a></li>
+            <li><a href="mailto:{{ store_settings.email }}">7-Day Sealed Return Policy</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 5: Newsletter Drop Alert -->
+        <div>
+          <h4 class="footer-col-title">Stay Ahead of Drops</h4>
+          <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:14px;">
+            Receive instantaneous notifications for Japanese imports, pre-orders, and limited sealed allocations.
+          </p>
+          <form onsubmit="event.preventDefault(); alert('You are subscribed to NovaChrono Drop Alerts!'); this.reset();" style="display:flex; flex-direction:column; gap:8px;">
+            <input type="email" placeholder="Enter your email" required class="form-input" style="background:#fff;">
+            <button type="submit" class="btn-chrono btn-chrono-dark btn-sm" style="width:100%;">
+              Join Collector List →
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 NOVACHRONO LLC. All Rights Reserved. "Collect. Discover. Trade."</div>
+        <div style="display:flex; gap:20px;">
+          <span>Privacy Policy</span>
+          <span>Terms of Service</span>
+          <span>Security Architecture</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Search Modal Overlay -->
+  <div id="searchModalBackdrop" class="chrono-modal-backdrop">
+    <div class="chrono-modal search-modal-content">
+      <button type="button" id="searchModalClose" class="modal-close-btn">✕</button>
+      <div style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700; margin-bottom:12px;">
+        Discover Trading Cards &amp; Collectibles
+      </div>
+      <form action="{% url 'catalog:search' %}" method="GET">
+        <input type="text" name="q" id="searchLiveInput" class="search-input-lg" placeholder="Search by card name, set, TCG, or SKU..." autocomplete="off">
+      </form>
+      <div id="searchSuggestionsContainer" class="search-suggestions-list">
+        <p style="color:var(--text-muted); padding:12px;">Type at least 2 characters to search...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick View Modal Overlay -->
+  <div id="quickViewBackdrop" class="chrono-modal-backdrop">
+    <div class="chrono-modal" style="max-width:720px;">
+      <button type="button" id="quickViewClose" class="modal-close-btn">✕</button>
+      <div id="quickViewBody"></div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="{% static 'js/main.js' %}"></script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

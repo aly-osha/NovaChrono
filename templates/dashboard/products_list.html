@@ -1,0 +1,115 @@
+{% extends 'dashboard/base_dashboard.html' %}
+{% load static %}
+
+{% block page_title %}Product Catalog Management{% endblock %}
+
+{% block dashboard_content %}
+<!-- Top Filter & Search Bar -->
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; margin-bottom:24px;">
+  <form method="GET" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+    <input type="text" name="q" value="{{ search_q }}" placeholder="Search name or SKU..." class="form-input" style="width:240px; padding:8px 14px; font-size:0.88rem;">
+
+    <select name="tcg" class="form-select" style="width:auto; padding:8px 14px; font-size:0.88rem;" onchange="this.form.submit()">
+      <option value="">All TCGs</option>
+      {% for t in tcgs %}
+      <option value="{{ t.slug }}" {% if tcg_filter == t.slug %}selected{% endif %}>{{ t.name }}</option>
+      {% endfor %}
+    </select>
+
+    <select name="category" class="form-select" style="width:auto; padding:8px 14px; font-size:0.88rem;" onchange="this.form.submit()">
+      <option value="">All Categories</option>
+      {% for c in categories %}
+      <option value="{{ c.slug }}" {% if category_filter == c.slug %}selected{% endif %}>{{ c.name }}</option>
+      {% endfor %}
+    </select>
+
+    <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">Filter</button>
+    {% if search_q or tcg_filter or category_filter %}
+    <a href="{% url 'dashboard:products_list' %}" class="btn-chrono btn-chrono-subtle btn-sm">Reset</a>
+    {% endif %}
+  </form>
+
+  <a href="{% url 'dashboard:product_add' %}" class="btn-chrono btn-chrono-cosmic btn-sm">
+    + Add Product
+  </a>
+</div>
+
+<!-- Products Table -->
+<div class="dash-table-card">
+  <table class="dash-table">
+    <thead>
+      <tr>
+        <th style="width:60px;">Image</th>
+        <th>Product Name</th>
+        <th>SKU</th>
+        <th>TCG / Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>
+          <img src="{{ product.primary_image }}" alt="{{ product.name }}" style="width:44px; height:44px; object-fit:contain; border-radius:6px; background:#F4F2EB; padding:4px;">
+        </td>
+        <td>
+          <div style="font-weight:600; font-size:0.92rem;">
+            <a href="{% url 'catalog:product_detail' product.slug %}" target="_blank" style="color:var(--dash-text);">
+              {{ product.name }} ↗
+            </a>
+          </div>
+          <div style="font-size:0.75rem; color:var(--dash-muted);">{{ product.get_condition_display }} · {{ product.edition }}</div>
+        </td>
+        <td style="font-family:monospace; font-size:0.85rem;">{{ product.sku }}</td>
+        <td style="font-size:0.85rem;">
+          <div><b>{{ product.tcg.name }}</b></div>
+          <div style="color:var(--dash-muted);">{{ product.category.name }}</div>
+        </td>
+        <td style="font-family:var(--font-heading); font-weight:700;">
+          ${{ product.price }}
+        </td>
+        <td>
+          <span class="status-pill status-{{ product.stock_status|slugify }}">
+            {{ product.current_stock }} units
+          </span>
+        </td>
+        <td>
+          {% if product.is_preorder %}
+          <span class="badge-tag badge-preorder" style="font-size:0.7rem;">Pre-Order</span>
+          {% elif product.is_featured %}
+          <span class="badge-tag" style="background:var(--accent-gold); color:#000; font-size:0.7rem;">Featured</span>
+          {% else %}
+          <span style="font-size:0.8rem; color:var(--dash-muted);">Standard</span>
+          {% endif %}
+        </td>
+        <td>
+          <form action="{% url 'dashboard:product_toggle_active' product.id %}" method="POST">
+            {% csrf_token %}
+            <button type="submit" class="{% if product.is_active %}badge-btn-active{% else %}badge-btn-inactive{% endif %}">
+              {% if product.is_active %}Active{% else %}Inactive{% endif %}
+            </button>
+          </form>
+        </td>
+        <td>
+          <div style="display:flex; gap:6px;">
+            <a href="{% url 'dashboard:product_edit' product.id %}" class="btn-chrono btn-chrono-subtle btn-sm" style="padding:4px 10px; font-size:0.78rem;">
+              Edit
+            </a>
+          </div>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" style="text-align:center; padding:40px; color:var(--dash-muted);">
+          No products found. Add a new product to your catalog.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

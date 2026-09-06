@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Sign In — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="chrono-container">
+  <div style="max-width: 480px; margin: 60px auto 100px;">
+    <div style="background:var(--bg-surface); border-radius:var(--radius-xl); border:1px solid var(--border-light); padding:40px; box-shadow:var(--shadow-md);">
+      <div style="text-align:center; margin-bottom:28px;">
+        <span class="brand-star" style="margin-bottom:12px;">✦</span>
+        <h1 style="font-size:1.8rem; margin-bottom:6px;">WELCOME BACK</h1>
+        <p style="color:var(--text-secondary); font-size:0.92rem;">Access your NovaChrono vault and order history.</p>
+      </div>
+
+      <!-- Quick Demo Account Fill Pills -->
+      <div style="background:#FAF8F5; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:14px; margin-bottom:24px; font-size:0.8rem;">
+        <div style="font-weight:700; color:var(--text-primary); margin-bottom:8px; text-transform:uppercase; letter-spacing:0.04em;">Demo Test Credentials:</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('collector_ash', 'buyer123')">
+            👤 <b>Buyer:</b> collector_ash / buyer123
+          </button>
+          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('staff_alex', 'staff123')">
+            🛠️ <b>Staff:</b> staff_alex / staff123
+          </button>
+          <button type="button" class="btn-chrono btn-chrono-subtle btn-sm" style="text-align:left; justify-content:flex-start;" onclick="fillLogin('superadmin', 'admin123')">
+            ⚡ <b>Super Admin:</b> superadmin / admin123
+          </button>
+        </div>
+      </div>
+
+      <form method="POST" action="{% url 'accounts:login' %}?next={{ next }}">
+        {% csrf_token %}
+
+        <div class="form-group">
+          <label class="form-label">Username or Email</label>
+          <input type="text" name="username" id="loginUsername" required autofocus class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" id="loginPassword" required class="form-input">
+        </div>
+
+        <button type="submit" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%; margin-top:8px;">
+          Sign In to Vault →
+        </button>
+      </form>
+
+      <div style="margin-top:24px; text-align:center; font-size:0.9rem; color:var(--text-secondary);">
+        New to NovaChrono? <a href="{% url 'accounts:register' %}" style="color:var(--accent-cosmic); font-weight:600;">Create a Buyer Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function fillLogin(u, p) {
+  document.getElementById('loginUsername').value = u;
+  document.getElementById('loginPassword').value = p;
+}
+</script>
+{% endblock %}
