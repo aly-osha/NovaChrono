@@ -1,5 +1,10 @@
-Django>=5.0
-pillow>=10.0.0
-reportlab>=4.0.0
-python-dotenv>=1.0.0
-# psycopg2-binary>=2.9.9  # Uncomment for PostgreSQL production
+# NovaChrono runtime dependencies.
+#
+# The previous manifest also pinned pillow, reportlab and python-dotenv.
+# None of those are imported anywhere in the codebase any more:
+#   - pillow    was only needed by the old catalog image handling
+#   - reportlab was only needed by orders/pdf.py (removed in 3be6de6)
+#   - dotenv    was never wired up; settings reads os.environ directly
+#
+# Django is pinned to the version this project is verified against.
+Django==5.2.17
