@@ -1,222 +1,150 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Vault Checkout — NovaChrono{% endblock %}
+{% extends "base.html" %}
+{% block title %}Checkout — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="chrono-container">
-  <div style="padding: 30px 0 20px;">
-    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">VAULT CHECKOUT</h1>
-    <p style="color: var(--text-secondary);">Complete your purchase with guaranteed authenticity and safe delivery.</p>
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">SECURE CHECKOUT</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Complete your collector order</p>
+    </div>
   </div>
 
-  <form method="POST" action="{% url 'orders:checkout' %}">
-    {% csrf_token %}
-    <div style="display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 40px; margin-bottom: 80px;">
-      <!-- Left Column: Multi-Step Checkout Form -->
-      <div>
-        <!-- Step 1: Customer Contact -->
-        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
-            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">1</span>
-            <h2 style="font-size:1.25rem;">Customer Information</h2>
-          </div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label class="form-label">Full Name</label>
-              <input type="text" name="full_name" value="{{ user.get_full_name|default:user.username }}" required class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              <input type="email" value="{{ user.email }}" readonly class="form-input" style="background:#FAF8F5; cursor:not-allowed;">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Contact Phone</label>
-            <input type="tel" name="phone" value="{{ user.phone|default:'' }}" placeholder="+1 (555) 000-0000" required class="form-input">
-          </div>
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-space-xl">
+    <!-- Shipping Address -->
+    <div class="lg:col-span-2 space-y-space-lg">
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <div class="flex items-center gap-space-xs mb-space-lg">
+          <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">location_on</span>
+          <h2 class="font-display text-lg font-bold text-on-surface">Shipping Address</h2>
         </div>
 
-        <!-- Step 2: Shipping Destination -->
-        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; margin-bottom:24px; box-shadow:var(--shadow-sm);">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
-            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">2</span>
-            <h2 style="font-size:1.25rem;">Shipping Address</h2>
-          </div>
-
-          {% if user_addresses %}
-          <div class="form-group" style="margin-bottom:18px;">
-            <label class="form-label">Select from Saved Addresses</label>
-            <select name="selected_address" id="addressSelector" class="form-select" onchange="toggleNewAddressFields(this.value)">
-              {% for addr in user_addresses %}
-              <option value="{{ addr.id }}" {% if addr.is_default_shipping %}selected{% endif %}>
-                {{ addr.full_name }} — {{ addr.address_line1 }}, {{ addr.city }} ({{ addr.postal_code }})
-              </option>
-              {% endfor %}
-              <option value="new">+ Enter a New Address</option>
-            </select>
-          </div>
-          {% endif %}
-
-          <div id="newAddressFields" class="{% if user_addresses %}chrono-hidden{% endif %}">
-            <div class="form-group">
-              <label class="form-label">Street Address</label>
-              <input type="text" name="address_line1" id="input_addr1" placeholder="123 Collector Blvd" class="form-input">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Apartment, Suite, Unit (optional)</label>
-              <input type="text" name="address_line2" id="input_addr2" class="form-input">
-            </div>
-            <div style="display:grid; grid-template-columns: 2fr 1fr 1fr; gap:14px;">
-              <div class="form-group">
-                <label class="form-label">City</label>
-                <input type="text" name="city" id="input_city" class="form-input">
-              </div>
-              <div class="form-group">
-                <label class="form-label">State / Province</label>
-                <input type="text" name="state" id="input_state" class="form-input">
-              </div>
-              <div class="form-group">
-                <label class="form-label">ZIP Code</label>
-                <input type="text" name="postal_code" id="input_postal" class="form-input">
-              </div>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Country</label>
-              <input type="text" name="country" value="United States" class="form-input">
-            </div>
-            <div style="margin-top:10px;">
-              <label style="display:flex; align-items:center; gap:8px; font-size:0.88rem; cursor:pointer;">
-                <input type="checkbox" name="save_address" checked>
-                <span>Save this address to my account address book</span>
+        {% if addresses %}
+          <div class="space-y-space-sm">
+            {% for addr in addresses %}
+              <label class="flex items-start gap-space-md p-space-md rounded-lg bg-surface-container-high border border-surface-container-high cursor-pointer hover:border-secondary-dim hover:bg-surface-container transition-colors {% if forloop.first %}border-secondary-dim{% endif %}">
+                <input type="radio" name="address" value="{{ addr.pk }}"
+                       {% if forloop.first %}checked{% endif %}
+                       class="mt-1 w-4 h-4 rounded bg-surface-container-highest accent-primary shrink-0"/>
+                <div class="flex-1 min-w-0">
+                  <span class="font-display text-sm font-bold text-on-surface block">{{ addr.line1 }}</span>
+                  <span class="text-on-surface-variant text-sm block">{{ addr.line2 }}</span>
+                  <span class="text-on-surface-variant font-mono text-xs block mt-space-2xs">
+                    {{ addr.city }}, {{ addr.state }} — {{ addr.postal_code }} · {{ addr.country }}
+                  </span>
+                  {% if addr.is_default %}
+                    <span class="inline-block mt-space-xs px-space-xs py-space-2xs rounded bg-tertiary-container/20 text-tertiary font-mono text-[10px] font-bold uppercase tracking-wider">Default</span>
+                  {% endif %}
+                </div>
               </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 3: Delivery Notes & Mock Payment Gateway -->
-        <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; box-shadow:var(--shadow-sm);">
-          <div style="display:flex; align-items:center; gap:10px; margin-bottom:18px;">
-            <span style="width:28px; height:28px; border-radius:50%; background:var(--accent-cosmic); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.85rem;">3</span>
-            <h2 style="font-size:1.25rem;">Payment &amp; Authorization</h2>
-          </div>
-
-          <div style="background:#FAF8F5; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:16px 20px; margin-bottom:20px; font-size:0.88rem; line-height:1.5;">
-            <b>🔒 End-to-End Encrypted Checkout:</b> 256-bit SSL secured transaction authorization. All orders generate tax-compliant sequential invoices and verified order receipts.
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Payment Method</label>
-            <div style="display:flex; gap:12px; margin-bottom:16px;">
-              <label style="flex:1; border:1px solid var(--border-medium); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff;">
-                <input type="radio" name="payment_method" value="CREDIT_CARD" checked>
-                <span><b>Credit / Debit Card</b></span>
-              </label>
-              <label style="flex:1; border:1px solid var(--border-medium); border-radius:var(--radius-md); padding:14px; display:flex; align-items:center; gap:10px; cursor:pointer; background:#fff;">
-                <input type="radio" name="payment_method" value="CHRONO_VAULT">
-                <span><b>NovaChrono Vault Pay</b></span>
-              </label>
-            </div>
-          </div>
-
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label class="form-label">Card Brand</label>
-              <select name="card_brand" class="form-select">
-                <option value="Visa Platinum">Visa</option>
-                <option value="Mastercard World">Mastercard</option>
-                <option value="American Express">American Express</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Card Number (Last 4 digits)</label>
-              <input type="text" name="card_last4" value="4242" maxlength="4" class="form-input">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Delivery Instructions / Vault Notes</label>
-            <textarea name="customer_notes" rows="2" placeholder="e.g. Leave at front porch, ring doorbell, gate code..." class="form-textarea"></textarea>
-          </div>
-
-          <button type="submit" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%; font-size:1.1rem; padding:18px;">
-            Authorize &amp; Complete Order (${{ cart.total }}) →
-          </button>
-        </div>
-      </div>
-
-      <!-- Right Column: Order Review Box -->
-      <div>
-        <div class="order-summary-card">
-          <h3 style="font-size:1.25rem; margin-bottom:18px; font-weight:700;">Order Items ({{ cart.item_count }})</h3>
-
-          <div style="display:flex; flex-direction:column; gap:12px; max-height:300px; overflow-y:auto; margin-bottom:20px; padding-right:6px;">
-            {% for item in cart.items.all %}
-            <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid var(--border-light);">
-              <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}" style="width:48px; height:48px; object-fit:contain; border-radius:6px; background:#F3EFE6; padding:4px;">
-              <div style="flex:1;">
-                <div style="font-size:0.88rem; font-weight:600; color:var(--text-primary);">{{ item.product.name }}</div>
-                <div style="font-size:0.75rem; color:var(--text-muted);">Qty: {{ item.quantity }} × ${{ item.product.price }}</div>
-              </div>
-              <div style="font-weight:700; font-family:var(--font-heading); font-size:0.95rem;">
-                ${{ item.line_total }}
-              </div>
-            </div>
             {% endfor %}
           </div>
-
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <span>${{ cart.subtotal }}</span>
+        {% else %}
+          <div class="text-center py-space-3xl">
+            <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">location_off</span>
+            <p class="text-on-surface-variant font-mono text-sm mb-space-lg">No addresses saved. Please add one first.</p>
+            <a href="{% url 'address_create' %}"
+               class="inline-flex px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+              + Add Address
+            </a>
           </div>
+        {% endif %}
+      </div>
 
-          {% if cart.discount_amount > 0 %}
-          <div class="summary-row" style="color:#00875A;">
-            <span>Voucher Discount</span>
-            <span>-${{ cart.discount_amount }}</span>
-          </div>
-          {% endif %}
-
-          <div class="summary-row">
-            <span>Insured Shipping</span>
-            <span>{% if cart.shipping_amount > 0 %}${{ cart.shipping_amount }}{% else %}FREE{% endif %}</span>
-          </div>
-
-          <div class="summary-row">
-            <span>Sales Tax (7%)</span>
-            <span>${{ cart.tax_amount }}</span>
-          </div>
-
-          <div class="summary-row total">
-            <span>Grand Total</span>
-            <span style="color:var(--accent-cosmic);">${{ cart.total }}</span>
-          </div>
-
-          <div style="margin-top:20px; font-size:0.8rem; color:var(--text-muted); line-height:1.5;">
-            ✓ Immediate invoice generation<br>
-            ✓ Certified tamper-evident packaging<br>
-            ✓ 7-Day sealed returns window
-          </div>
+      <!-- Payment Method -->
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <div class="flex items-center gap-space-xs mb-space-lg">
+          <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">payments</span>
+          <h2 class="font-display text-lg font-bold text-on-surface">Payment Method</h2>
+        </div>
+        <div class="space-y-space-sm">
+          <label class="flex items-center gap-space-md p-space-md rounded-lg bg-surface-container-high border border-surface-container-high cursor-pointer hover:border-secondary-dim hover:bg-surface-container transition-colors">
+            <input type="radio" name="payment_method" value="sandbox" checked
+                   class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+            <div>
+              <span class="font-display text-sm font-bold text-on-surface block">Sandbox / Mock Payment</span>
+              <span class="text-on-surface-variant text-xs font-mono block">Test mode — successful payment guaranteed</span>
+            </div>
+          </label>
+          <label class="flex items-center gap-space-md p-space-md rounded-lg bg-surface-container-high border border-surface-container-high cursor-pointer hover:border-secondary-dim hover:bg-surface-container transition-colors">
+            <input type="radio" name="payment_method" value="upi" class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+            <div>
+              <span class="font-display text-sm font-bold text-on-surface block">UPI</span>
+              <span class="text-on-surface-variant text-xs font-mono block">Unified Payments Interface</span>
+            </div>
+          </label>
+          <label class="flex items-center gap-space-md p-space-md rounded-lg bg-surface-container-high border border-surface-container-high cursor-pointer hover:border-secondary-dim hover:bg-surface-container transition-colors">
+            <input type="radio" name="payment_method" value="card" class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+            <div>
+              <span class="font-display text-sm font-bold text-on-surface block">Card</span>
+              <span class="text-on-surface-variant text-xs font-mono block">Credit / Debit Card</span>
+            </div>
+          </label>
         </div>
       </div>
     </div>
-  </form>
-</div>
-{% endblock %}
 
-{% block extra_js %}
-<script>
-function toggleNewAddressFields(val) {
-  const fields = document.getElementById('newAddressFields');
-  if (fields) {
-    if (val === 'new') {
-      fields.classList.remove('chrono-hidden');
-      fields.style.display = 'block';
-    } else {
-      fields.classList.add('chrono-hidden');
-      fields.style.display = 'none';
-    }
-  }
-}
-</script>
+    <!-- Order Summary -->
+    <div class="space-y-space-lg">
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high sticky top-24">
+        <div class="flex items-center gap-space-xs mb-space-lg">
+          <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">receipt_long</span>
+          <h2 class="font-display text-lg font-bold text-on-surface">Order Summary</h2>
+        </div>
+
+        <div class="space-y-space-sm mb-space-lg">
+          {% for item in cart.items.all %}
+            <div class="flex items-center gap-space-md">
+              <div class="w-12 h-12 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+                {% if item.product.images.first %}
+                  <img src="{{ item.product.images.first.image.url }}" class="w-full h-full object-cover" alt="{{ item.product.name }}"/>
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-on-surface-variant font-mono text-xs">
+                    <span class="material-symbols-outlined">image</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div class="flex-1 min-w-0">
+                <span class="font-display text-sm font-bold text-on-surface block truncate">{{ item.product.name }}</span>
+                <span class="text-on-surface-variant font-mono text-xs">× {{ item.quantity }}</span>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="font-display text-sm font-bold text-on-surface">₹{{ item.line_total }}</span>
+              </div>
+            </div>
+          {% empty %}
+            <div class="text-center py-space-2xl text-on-surface-variant font-mono text-sm">
+              Your cart is empty
+            </div>
+          {% endfor %}
+        </div>
+
+        <div class="border-t border-surface-container-high pt-space-md space-y-space-sm text-sm">
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant font-mono">Subtotal</span>
+            <span class="font-display font-bold text-on-surface">₹{{ cart.subtotal }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant font-mono">Shipping</span>
+            <span class="font-mono text-secondary-fixed-dim">Free over ₹5,000</span>
+          </div>
+          <div class="border-t border-surface-container-high pt-space-sm flex justify-between">
+            <span class="text-on-surface font-mono">Total Payable</span>
+            <span class="font-display text-xl font-bold text-secondary-fixed">₹{{ cart.subtotal }}</span>
+          </div>
+        </div>
+
+        <a href="{% url 'checkout' %}"
+           class="w-full mt-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center justify-center gap-space-xs hover:bg-primary hover:text-on-primary-fixed transition-colors shadow-lg shadow-primary-container/30">
+          <span class="material-symbols-outlined text-base">lock</span>
+          Place Order · ₹{{ cart.subtotal }}
+        </a>
+
+        <p class="text-center text-on-surface-variant text-[11px] font-mono mt-space-md">
+          By placing this order, you agree to our terms of service.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

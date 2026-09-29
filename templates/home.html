@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+{% block title %}Home — NovaChrono{% endblock %}
+
+{% block content %}
+<!-- Hero: Celestial Chronometer -->
+<section class="relative overflow-hidden pt-space-3xl pb-space-3xl">
+  <div class="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[550px] bg-primary-container/15 blur-[120px] rounded-full pointer-events-none -z-10"></div>
+  <div class="absolute top-1/3 right-10 w-[450px] h-[450px] bg-secondary-fixed-dim/10 blur-[130px] rounded-full pointer-events-none -z-10"></div>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-center">
+    <div class="lg:col-span-6 flex flex-col items-start gap-space-lg">
+      <div class="inline-flex items-center gap-space-xs px-space-sm py-space-2xs rounded-full bg-surface-container-high text-on-surface">
+        <span class="material-symbols-outlined text-[16px] text-secondary-fixed-dim animate-spin" style="animation-duration:6s">track_changes</span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-on-surface-variant">Institutional Provenance Protocol</span>
+        <span class="text-tertiary-fixed-dim font-mono text-[11px] font-bold ml-space-2xs">V3.4</span>
+      </div>
+      <div class="space-y-space-xs">
+        <span class="font-mono text-[12px] uppercase tracking-[0.25em] text-secondary-fixed-dim font-bold">COLLECT · VERIFY · DISCOVER</span>
+        <h1 class="font-display text-4xl md:text-5xl text-on-surface leading-tight tracking-tight">
+          THE NEXT ERA OF <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary">COLLECTING</span>
+        </h1>
+      </div>
+      <p class="text-on-surface-variant text-lg max-w-xl">
+        Discover authentic trading cards, sealed booster displays, and collector grails with cryptographic verification, tamper-evidence, and real-time market telemetry.
+      </p>
+      <div class="flex flex-wrap items-center gap-space-md pt-space-xs">
+        <a href="{% url 'catalogue' %}"
+           class="px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center gap-space-xs shadow-xl shadow-primary-container/30 hover:bg-primary hover:text-on-primary-fixed transition-all group">
+          <span>Explore Collection</span>
+          <span class="material-symbols-outlined text-lg group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </a>
+        <a href="#featured-inventory"
+           class="px-space-lg py-space-sm rounded-lg bg-surface-container text-on-surface font-mono text-sm font-medium flex items-center gap-space-xs hover:bg-surface-container-high hover:text-secondary-fixed-dim transition-all">
+          <span class="material-symbols-outlined text-lg">auto_awesome_motion</span>
+          <span>New Arrivals</span>
+        </a>
+      </div>
+      <div class="grid grid-cols-3 gap-space-md pt-space-md w-full max-w-lg">
+        <div class="flex flex-col">
+          <span class="font-display text-xl font-bold text-on-surface">₹48.2M+</span>
+          <span class="font-mono text-[11px] text-outline uppercase tracking-wider">Vaulted Value</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display text-xl font-bold text-secondary-fixed-dim">100.0%</span>
+          <span class="font-mono text-[11px] text-outline uppercase tracking-wider">Pass Rate Audit</span>
+        </div>
+        <div class="flex flex-col">
+          <span class="font-display text-xl font-bold text-tertiary-fixed">14,280+</span>
+          <span class="font-mono text-[11px] text-outline uppercase tracking-wider">Active Collectors</span>
+        </div>
+      </div>
+    </div>
+    <div class="lg:col-span-6 relative flex items-center justify-center py-space-xl min-h-[460px]">
+      <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <svg class="w-[420px] h-[420px] animate-spin" fill="none" style="animation-duration:40s" viewBox="0 0 200 200">
+          <circle class="text-primary/30" cx="100" cy="100" r="92" stroke="currentColor" stroke-dasharray="4 6" stroke-width="1.5"/>
+          <circle class="text-secondary-fixed-dim/40" cx="100" cy="100" r="80" stroke="currentColor" stroke-dasharray="1 3" stroke-width="1"/>
+          <circle class="text-primary-container/20" cx="100" cy="100" r="64" stroke="currentColor" stroke-width="2"/>
+          <line class="text-secondary-fixed-dim" stroke="currentColor" stroke-width="2.5" x1="100" x2="100" y1="5" y2="15"/>
+          <line class="text-secondary-fixed-dim" stroke="currentColor" stroke-width="2" x1="100" x2="100" y1="185" y2="195"/>
+          <line class="text-secondary-fixed-dim" stroke="currentColor" stroke-width="2" x1="5" x2="15" y1="100" y2="100"/>
+          <line class="text-secondary-fixed-dim" stroke="currentColor" stroke-width="2" x1="185" x2="195" y1="100" y2="100"/>
+          <ellipse class="text-secondary-container/80" cx="100" cy="100" rx="88" ry="42" stroke="currentColor" stroke-width="2" transform="rotate(-32 100 100)"/>
+        </svg>
+      </div>
+      <!-- 3D layered cards mosaic (Stitch hero: tilted singles + center grail) -->
+      <div class="relative z-10 w-full max-w-[420px] h-[400px] flex items-center justify-center" id="hero-mosaic">
+        <!-- Shared aura bed: flares + recolors toward the hovered card -->
+        <div id="mosaic-aura" class="absolute -inset-10 rounded-full bg-primary-container/25 blur-[100px] pointer-events-none transition-all duration-500"></div>
+        {% if hero_left %}
+        <!-- Underlay left single -->
+        <a href="{% url 'product_detail' hero_left.pk %}"
+           class="mosaic-card mosaic-enter absolute -left-6 top-8 w-44 sm:w-52 h-64 rounded-xl bg-surface-container-high shadow-2xl transform -rotate-12 -translate-y-2 hover:translate-y-0 hover:scale-[1.07] hover:shadow-[0_0_50px_rgba(121,40,202,0.55)] hover:z-40 transition-all duration-300 overflow-hidden group cursor-pointer" data-aura="violet" style="animation-delay:.1s">
+          <div class="w-full h-44 overflow-hidden bg-surface-container-lowest flex items-center justify-center">
+            {% if hero_left.images.first %}
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ hero_left.images.first.image.url }}" alt="{{ hero_left.name }}"/>
+            {% else %}
+              <span class="material-symbols-outlined text-5xl text-outline group-hover:text-primary group-hover:scale-110 transition-all">style</span>
+            {% endif %}
+          </div>
+          <div class="p-space-xs space-y-space-3xs bg-surface-container">
+            <span class="font-mono text-[10px] text-tertiary-fixed uppercase font-semibold">{{ hero_left.set.game.name|default:"TCG"|truncatechars:14 }}</span>
+            <p class="text-[12px] text-on-surface font-semibold truncate">{{ hero_left.name }}</p>
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[11px] text-secondary-fixed-dim">₹{{ hero_left.price }}</span>
+              <span class="font-mono text-[9px] text-outline">{{ hero_left.single_card.get_condition_display|default:"Single"|upper|truncatechars:12 }}</span>
+            </div>
+          </div>
+        </a>
+        {% endif %}
+        {% if hero_right %}
+        <!-- Underlay right single -->
+        <a href="{% url 'product_detail' hero_right.pk %}"
+           class="mosaic-card mosaic-enter absolute -right-4 top-16 w-44 sm:w-52 h-64 rounded-xl bg-surface-container-high shadow-2xl transform rotate-12 translate-y-3 hover:translate-y-1 hover:scale-[1.07] hover:shadow-[0_0_50px_rgba(0,240,255,0.4)] hover:z-40 transition-all duration-300 overflow-hidden group cursor-pointer" data-aura="cyan" style="animation-delay:.4s">
+          <div class="w-full h-44 overflow-hidden bg-surface-container-lowest flex items-center justify-center">
+            {% if hero_right.images.first %}
+              <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ hero_right.images.first.image.url }}" alt="{{ hero_right.name }}"/>
+            {% else %}
+              <span class="material-symbols-outlined text-5xl text-outline group-hover:text-secondary-fixed-dim group-hover:scale-110 transition-all">style</span>
+            {% endif %}
+          </div>
+          <div class="p-space-xs space-y-space-3xs bg-surface-container">
+            <span class="font-mono text-[10px] text-secondary-fixed-dim uppercase font-semibold">{{ hero_right.set.game.name|default:"TCG"|truncatechars:14 }}</span>
+            <p class="text-[12px] text-on-surface font-semibold truncate">{{ hero_right.name }}</p>
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[11px] text-secondary-fixed-dim">₹{{ hero_right.price }}</span>
+              <span class="font-mono text-[9px] text-primary">{{ hero_right.single_card.rarity|default:"Single"|upper|truncatechars:12 }}</span>
+            </div>
+          </div>
+        </a>
+        {% endif %}
+        {% if hero_center %}
+        <!-- Center grail -->
+        <div class="mosaic-card mosaic-enter relative z-20 w-56 sm:w-64 rounded-2xl bg-surface-container-highest shadow-[0_20px_50px_rgba(121,40,202,0.4)] transform hover:scale-105 hover:z-40 hover:shadow-[0_20px_70px_rgba(121,40,202,0.7)] transition-all duration-300 overflow-hidden" data-aura="gold" style="animation-delay:.25s">
+          <div class="relative h-56 bg-surface-container-high overflow-hidden">
+            {% if hero_center.images.first %}
+              <img class="w-full h-full object-cover" src="{{ hero_center.images.first.image.url }}" alt="{{ hero_center.name }}"/>
+            {% else %}
+              <div class="w-full h-full bg-surface-container-lowest flex items-center justify-center">
+                <span class="material-symbols-outlined text-6xl text-outline">inventory_2</span>
+              </div>
+            {% endif %}
+            <div class="absolute top-2 left-2 flex items-center gap-1 bg-surface-container-lowest/90 px-space-xs py-0.5 rounded-full">
+              <span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+              <span class="font-mono text-[9px] text-on-surface uppercase font-bold tracking-widest">CERTIFIED SEAL</span>
+            </div>
+            <div class="absolute bottom-2 right-2 bg-tertiary-container text-on-tertiary px-space-xs py-0.5 rounded font-mono text-[10px] font-bold">
+              MINT 10 VAULT
+            </div>
+          </div>
+          <div class="p-space-sm bg-surface-container space-y-space-2xs">
+            <div class="flex items-center justify-between">
+              <span class="font-mono text-[10px] text-outline uppercase font-semibold">{{ hero_center.set.game.name|default:"TCG"|truncatechars:16 }}</span>
+              <span class="font-mono text-[10px] text-tertiary-fixed-dim">{{ hero_center.stock }} IN VAULT</span>
+            </div>
+            <a href="{% url 'product_detail' hero_center.pk %}" class="font-display text-[16px] text-on-surface font-bold hover:text-primary transition-colors block truncate">{{ hero_center.name }}</a>
+            <div class="flex items-center justify-between pt-space-2xs">
+              <div>
+                <span class="font-mono text-[10px] text-on-surface-variant block">INSTANT BUY</span>
+                <span class="font-display text-[18px] font-bold text-secondary-fixed">₹{{ hero_center.price }}</span>
+              </div>
+              <a href="{% url 'cart_add' hero_center.pk %}" aria-label="Add to cart"
+                 class="w-9 h-9 rounded-lg bg-primary-container text-on-primary flex items-center justify-center hover:bg-primary hover:shadow-[0_0_20px_rgba(121,40,202,0.6)] hover:scale-110 active:scale-95 transition-all" title="Add to cart">
+                <span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Bar -->
+<section class="py-space-lg">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+    <div class="flex items-start gap-space-sm p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group">
+      <div class="w-12 h-12 rounded-xl bg-secondary-fixed-dim/10 text-secondary-fixed-dim flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined text-xl">verified_user</span>
+      </div>
+      <div>
+        <span class="font-display text-base font-bold text-on-surface block">Authenticity Verified</span>
+        <p class="text-on-surface-variant text-sm leading-snug">Every sealed case and graded single carries tamper-proof verification.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-space-sm p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group">
+      <div class="w-12 h-12 rounded-xl bg-primary-container/20 text-primary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined text-xl">enhanced_encryption</span>
+      </div>
+      <div>
+        <span class="font-display text-base font-bold text-on-surface block">Secure Checkout</span>
+        <p class="text-on-surface-variant text-sm leading-snug">Protected payment routing with sandbox testing.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-space-sm p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group">
+      <div class="w-12 h-12 rounded-xl bg-secondary-fixed/10 text-secondary-fixed flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined text-xl">sensors</span>
+      </div>
+      <div>
+        <span class="font-display text-base font-bold text-on-surface block">Live Inventory</span>
+        <p class="text-on-surface-variant text-sm leading-snug">Real-time stock telemetry from climate-controlled vaults.</p>
+      </div>
+    </div>
+    <div class="flex items-start gap-space-sm p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all group">
+      <div class="w-12 h-12 rounded-xl bg-tertiary-container/20 text-tertiary flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined text-xl">shield_with_heart</span>
+      </div>
+      <div>
+        <span class="font-display text-base font-bold text-on-surface block">Collector Shipping</span>
+        <p class="text-on-surface-variant text-sm leading-snug">Corner guards, humidity-sealed pouches, tamper-evident wrap.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Explore Games -->
+<section id="featured-inventory" class="py-space-2xl">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-space-xl gap-space-sm">
+    <div>
+      <div class="flex items-center gap-space-xs mb-space-2xs">
+        <span class="w-2 h-2 rounded-full bg-primary"></span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-primary font-bold">DISCOVERY VAULT</span>
+      </div>
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-on-surface">EXPLORE YOUR GAME</h2>
+    </div>
+    <div class="font-mono text-[11px] text-on-surface-variant">5 SUPPORTED UNIVERSES · THOUSANDS OF LISTINGS</div>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-space-md">
+    {% for game in games %}
+      {% with count=game.active_product_count %}
+      <a href="{% url 'catalogue' %}?game={{ game.pk }}"
+         class="{% if forloop.counter0 == 0 %}lg:col-span-7{% elif forloop.counter0 == 1 %}lg:col-span-5{% else %}lg:col-span-4{% endif %} relative rounded-2xl overflow-hidden bg-surface-container group h-72 flex flex-col justify-end p-space-xl cursor-pointer shadow-lg hover:shadow-primary-container/20 transition-all">
+        <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/60 to-transparent"></div>
+        <div class="relative z-10 space-y-space-xs">
+          <div class="flex items-center gap-space-xs">
+            <span class="px-space-xs py-space-3xs rounded bg-surface-container-highest/90 text-primary font-mono text-[11px] font-semibold">{{ count }}+ PRODUCTS</span>
+          </div>
+          <h3 class="font-display text-2xl md:text-3xl font-bold text-on-surface">{{ game.name }}</h3>
+          <p class="text-on-surface-variant text-sm max-w-sm line-clamp-2">Explore the full catalogue of sealed products, singles, and accessories.</p>
+          <div class="pt-space-xs flex items-center gap-space-xs text-secondary-fixed-dim font-mono text-sm font-semibold group-hover:translate-x-1 transition-transform">
+            <span>Browse Vault</span>
+            <span class="material-symbols-outlined text-[16px]">north_east</span>
+          </div>
+        </div>
+      </a>
+      {% endwith %}
+    {% endfor %}
+  </div>
+</section>
+
+<!-- Trending Products -->
+<section class="py-space-2xl bg-surface-container-low/40">
+  <div class="flex flex-col md:flex-row md:items-end justify-between mb-space-xl gap-space-sm">
+    <div>
+      <div class="flex items-center gap-space-xs mb-space-2xs">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+        <span class="font-mono text-[11px] uppercase tracking-widest text-secondary-fixed-dim font-bold">VAULT ARRIVALS</span>
+      </div>
+      <h2 class="font-display text-2xl md:text-3xl font-bold text-on-surface">TRENDING COLLECTIBLES</h2>
+    </div>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+    {% for product in featured %}
+      {% include "products/_product_card.html" with product=product %}
+    {% endfor %}
+    {% if not featured %}
+      <div class="col-span-full text-center py-space-3xl text-on-surface-variant font-mono text-sm">No products yet. Admin — start building the catalogue.</div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+  /* Mosaic spotlight: hovered card pops forward, siblings fall back. */
+  #hero-mosaic .mosaic-card {
+    transition: transform .45s cubic-bezier(0.34, 1.25, 0.64, 1),
+                box-shadow .45s ease, filter .45s ease, opacity .45s ease;
+    will-change: transform, filter;
+  }
+  #hero-mosaic.mosaic-focus .mosaic-card { filter: brightness(.68) saturate(.85); }
+  #hero-mosaic.mosaic-focus .mosaic-card.is-front { filter: none; }
+  /* Fluid staggered entrance (independent translate/scale props compose
+     with the Tailwind rotate transforms instead of fighting them). */
+  @keyframes mosaic-in {
+    from { opacity: 0; translate: 0 56px; scale: .88; }
+    60% { opacity: 1; }
+    to { opacity: 1; translate: 0 0; scale: 1; }
+  }
+  #hero-mosaic .mosaic-enter {
+    animation: mosaic-in .95s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  }
+  #mosaic-aura {
+    transition-duration: .65s;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #hero-mosaic .mosaic-enter { animation: none; }
+  }
+</style>
+<script>
+  // Hero mosaic drift: the card constellation breathes toward the cursor
+  // while the chronometer orbit spins behind it (Stitch hero system).
+  (function() {
+    const mosaic = document.getElementById('hero-mosaic');
+    if (!mosaic) return;
+    const stage = mosaic.closest('section') || document;
+    stage.addEventListener('mousemove', (e) => {
+      const r = mosaic.getBoundingClientRect();
+      const x = (e.clientX - (r.left + r.width / 2)) / r.width;
+      const y = (e.clientY - (r.top + r.height / 2)) / r.height;
+      mosaic.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 7}deg)`;
+    });
+    stage.addEventListener('mouseleave', () => {
+      mosaic.style.transform = 'perspective(900px) rotateY(0deg) rotateX(0deg)';
+    });
+    mosaic.style.transition = 'transform 0.35s ease-out';
+
+    // Spotlight: hovered card comes to front, aura flares + recolors, rest dim.
+    const aura = document.getElementById('mosaic-aura');
+    const AURAS = {
+      violet: 'bg-primary-container/25',
+      cyan: 'bg-secondary-fixed-dim/25',
+      gold: 'bg-tertiary-container/30'
+    };
+    const cards = mosaic.querySelectorAll('.mosaic-card');
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        mosaic.classList.add('mosaic-focus');
+        cards.forEach(c => c.classList.remove('is-front'));
+        card.classList.add('is-front');
+        if (aura) {
+          Object.values(AURAS).forEach(cls => aura.classList.remove(cls));
+          aura.classList.add(AURAS[card.dataset.aura] || AURAS.violet);
+          aura.style.opacity = '0.9';
+          aura.style.transform = 'scale(1.25)';
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        mosaic.classList.remove('mosaic-focus');
+        card.classList.remove('is-front');
+        if (aura) {
+          aura.style.opacity = '';
+          aura.style.transform = '';
+        }
+      });
+    });
+  })();
+</script>
+{% endblock %}

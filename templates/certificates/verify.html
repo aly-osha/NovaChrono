@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Autenticity Verification — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-space-3xl text-center">
+  <div class="mb-space-3xl">
+    <span class="material-symbols-outlined text-6xl text-secondary-fixed-dim block mb-space-lg">qr_code_2</span>
+    <h1 class="font-display text-3xl md:text-4xl font-bold text-on-surface mb-space-md">VERIFY AUTHENTICITY</h1>
+    <p class="text-on-surface-variant text-lg max-w-md mx-auto">
+      Enter the certificate code found on your NovaChrono-authenticated product to verify its provenance.
+    </p>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-xl border border-surface-container-high max-w-md mx-auto">
+    <form method="get" class="flex gap-space-md">
+      <input type="text" name="code" value="{{ code }}"
+             class="flex-1 px-space-md py-space-md rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all uppercase tracking-wider"
+             placeholder="e.g. NC-8921-XF"
+             required/>
+      <button type="submit" class="px-space-lg py-space-md rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Verify
+      </button>
+    </form>
+
+    <div class="mt-space-md flex items-center justify-center gap-space-xs text-on-surface-variant text-xs font-mono">
+      <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">info</span>
+      <span>Certificates can also be scanned via QR code.</span>
+    </div>
+  </div>
+
+  {% if code %}
+    <div class="mt-space-3xl">
+      {% if found and cert %}
+        <div class="bg-surface-container rounded-xl p-space-xl border border-surface-container-high text-left">
+          <div class="flex items-center gap-space-xs mb-space-lg">
+            <span class="material-symbols-outlined text-tertiary-fixed text-2xl">verified</span>
+            <span class="font-display text-xl font-bold text-on-surface">Certificate Valid — Authenticity Confirmed</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-space-lg text-sm">
+            <div>
+              <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Verification ID</span>
+              <span class="text-on-surface font-mono font-bold text-lg">{{ cert.verification_code }}</span>
+            </div>
+            <div>
+              <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Product</span>
+              <span class="text-on-surface font-semibold">{{ cert.product.name }}</span>
+            </div>
+            <div>
+              <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Game</span>
+              <span class="text-on-surface">{{ cert.product.set.game.name|default:"—" }}</span>
+            </div>
+            <div>
+              <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Issued At</span>
+              <span class="text-on-surface">{{ cert.issued_at|date:"M d, Y" }}</span>
+            </div>
+          </div>
+
+          {% if cert.qr_code_url %}
+            <div class="mt-space-xl">
+              <a href="{{ cert.qr_code_url }}" target="_blank" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-secondary-container/10 text-secondary-fixed-dim font-mono text-sm hover:bg-secondary-container/20 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
+                View QR Certificate
+              </a>
+            </div>
+          {% endif %}
+
+          <div class="mt-space-xl pt-space-lg border-t border-surface-container-high text-xs text-on-surface-variant font-mono">
+            This certificate is registered in the NovaChrono immutable provenance ledger.
+          </div>
+        </div>
+      {% else %}
+        <div class="bg-surface-container rounded-xl p-space-xl border border-error/20 text-left">
+          <div class="flex items-center gap-space-3 mb-space-lg">
+            <span class="material-symbols-outlined text-error text-3xl">cancel</span>
+            <span class="font-display text-xl font-bold text-error">Certificate Not Found</span>
+          </div>
+          <p class="text-on-surface-variant text-sm">
+            The verification code <strong class="text-on-surface font-mono">{{ code }}</strong> does not match any active NovaChrono certificate.
+            Please check the code and try again, or contact support.
+          </p>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if not code %}
+    <div class="mt-space-3xl text-center">
+      <p class="text-on-surface-variant text-sm font-mono">Scan a QR code or enter a code above to verify.</p>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

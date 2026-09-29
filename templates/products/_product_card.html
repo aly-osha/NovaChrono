@@ -1,0 +1,81 @@
+{# NovaChrono market card: dual-layer slab, specular bevel, hover lift + glow, wishlist heart. #}
+<div class="rounded-xl bg-surface-container overflow-hidden group flex flex-col justify-between shadow-md hover:shadow-xl hover:shadow-primary-container/20 hover:-translate-y-1 hover:border hover:border-primary/40 border border-transparent transition-all duration-300">
+  <div>
+    <div class="relative h-60 bg-surface-container-high overflow-hidden">
+      {% with product.images.first as img %}
+        {% if img %}
+          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ img.image.url }}" alt="{{ product.name }}" loading="lazy"/>
+        {% else %}
+          <div class="w-full h-full bg-surface-container-lowest flex items-center justify-center">
+            <span class="material-symbols-outlined text-4xl text-outline">style</span>
+          </div>
+        {% endif %}
+      {% endwith %}
+      <!-- Specular highlight pass across the upper bevel -->
+      <div class="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/10 to-transparent pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <!-- Ambient reflection sweep on hover -->
+      <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 group-hover:via-white/5 to-transparent pointer-events-none transition-all duration-500"></div>
+      <div class="absolute top-2.5 left-2.5 flex flex-col gap-space-2xs items-start">
+        {% if product.single_card %}
+          <span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-mono text-[10px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(121,40,202,0.5)]">SINGLE CARD</span>
+        {% elif product.product_type == 'sealed' %}
+          <span class="px-space-xs py-0.5 rounded bg-tertiary-container text-on-tertiary font-mono text-[10px] font-bold tracking-wider uppercase">SEALED</span>
+        {% else %}
+          <span class="px-space-xs py-0.5 rounded bg-secondary-container/10 text-secondary-fixed-dim font-mono text-[10px] font-bold tracking-wider uppercase">RELATED</span>
+        {% endif %}
+        {% if product.stock <= 3 and product.stock > 0 %}
+          <span class="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-mono text-[10px] font-bold tracking-wider uppercase animate-pulse">LOW STOCK ({{ product.stock }})</span>
+        {% endif %}
+        {% if product.stock == 0 %}
+          <span class="px-space-xs py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] font-bold tracking-wider uppercase">OUT OF STOCK</span>
+        {% endif %}
+      </div>
+      <a href="{% url 'wishlist_add' product.pk %}" aria-label="Add to Wishlist"
+         class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-surface-container-lowest/80 backdrop-blur text-on-surface-variant hover:text-primary flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-[0_0_16px_rgba(121,40,202,0.45)]">
+        <span class="material-symbols-outlined text-lg">favorite</span>
+      </a>
+      <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between font-mono text-[10px] gap-space-2xs">
+        {% if product.set %}
+          <span class="text-on-surface-variant bg-surface-container-lowest/80 backdrop-blur px-space-xs py-1 rounded truncate">{{ product.set.game.name }} · {{ product.set.name }}</span>
+        {% endif %}
+        {% if product.avg_rating %}
+          <span class="text-secondary-fixed-dim bg-surface-container-lowest/80 backdrop-blur px-space-xs py-1 rounded shrink-0">★ {{ product.avg_rating|floatformat:1 }}</span>
+        {% endif %}
+      </div>
+    </div>
+    <a href="{% url 'product_detail' product.pk %}" class="block p-space-md space-y-space-xs">
+      <h3 class="font-display text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+        {{ product.name }}
+      </h3>
+      {% if product.description %}
+        <p class="text-on-surface-variant text-xs line-clamp-2">{{ product.description|truncatewords:15 }}</p>
+      {% endif %}
+      {% if product.single_card %}
+        <div class="flex items-center gap-space-2xs font-mono text-[10px] text-outline">
+          {% if product.single_card.rarity %}<span class="text-primary">{{ product.single_card.rarity }}</span><span>·</span>{% endif %}
+          {% if product.single_card.language %}<span>{{ product.single_card.language }}</span><span>·</span>{% endif %}
+          {% if product.single_card.condition %}<span>{{ product.single_card.get_condition_display }}</span>{% endif %}
+        </div>
+      {% endif %}
+    </a>
+  </div>
+  <div class="p-space-md pt-0">
+    <div class="flex items-center justify-between pt-space-xs border-t border-surface-container-high">
+      <div>
+        <span class="font-mono text-[10px] text-outline block">PRICE</span>
+        <span class="font-display text-lg font-bold text-on-surface group-hover:text-secondary-fixed transition-colors">₹{{ product.price }}</span>
+      </div>
+      {% if product.is_available %}
+        <a href="{% url 'cart_add' product.pk %}"
+           class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center gap-space-2xs hover:bg-primary hover:text-on-primary-fixed hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-base">add_shopping_cart</span>
+          ADD
+        </a>
+      {% else %}
+        <button class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-outline font-mono text-sm cursor-not-allowed" disabled>
+          SOLD OUT
+        </button>
+      {% endif %}
+    </div>
+  </div>
+</div>

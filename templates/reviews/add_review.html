@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Write a Review — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'product_detail' product.pk %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Write a Review</h1>
+      <p class="text-on-surface-variant text-sm font-mono">{{ product.name }}</p>
+    </div>
+  </div>
+
+  {% if existing %}
+    <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high mb-space-xl">
+      <p class="text-tertiary-fixed-dim font-mono text-sm mb-space-md">You have already reviewed this product.</p>
+      <div class="flex items-center gap-space-xs">
+        {% for i in "12345" %}
+          <span class="text-{% if forloop.counter0 < existing.rating %}tertiary-fixed{% else %}outline{% endif %} text-lg">★</span>
+        {% endfor %}
+        <span class="text-on-surface-variant text-sm font-mono ml-space-sm">{{ existing.rating }} / 5</span>
+      </div>
+      {% if existing.comment %}
+        <p class="text-on-surface-variant text-sm mt-space-sm">"{{ existing.comment }}"</p>
+      {% endif %}
+      <a href="{% url 'edit_review' existing.pk %}"
+         class="mt-space-md inline-flex px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Edit Review
+      </a>
+    </div>
+  {% endif %}
+
+  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+    <form method="post" class="space-y-space-lg">
+      {% csrf_token %}
+
+      <!-- Rating -->
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-sm">Your Rating</label>
+        <div class="flex items-center gap-space-2xs" id="star-rating">
+          {% for i in "12345" %}
+            <button type="button" data-rating="{{ forloop.counter }}"
+                    class="w-12 h-12 rounded-lg bg-surface-container-high text-outline hover:bg-primary-container hover:text-on-primary transition-colors flex items-center justify-center text-2xl"
+                    onclick="setRating({{ forloop.counter }})">
+              ★
+            </button>
+          {% endfor %}
+          <input type="hidden" name="rating" id="rating-input" value="5" required/>
+        </div>
+      </div>
+
+      <!-- Comment -->
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Review</label>
+        <textarea name="comment" rows="4"
+                  class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all resize-none"
+                  placeholder="Share your experience with this product..."></textarea>
+      </div>
+
+      <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Submit Review
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+let currentRating = 5;
+function setRating(val) {
+  currentRating = val;
+  document.getElementById('rating-input').value = val;
+  document.querySelectorAll('#star-rating button').forEach((btn, i) => {
+    const star = i + 1;
+    if (star <= val) {
+      btn.style.color = '#D4AF37';
+      btn.style.fill = '#D4AF37';
+    } else {
+      btn.style.color = '#4B5563';
+      btn.style.fill = 'transparent';
+    }
+  });
+}
+setRating(5);
+</script>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Admin — Categories — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">CATEGORIES</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage product categorization and hierarchy</p>
+    </div>
+    <a href="{% url 'admin_category_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs">
+      <span class="material-symbols-outlined text-[16px]">add</span>
+      Add Category
+    </a>
+  </div>
+
+  {% if categories %}
+    <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-surface-container-high">
+          <tr>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Category</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Parent</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Products</th>
+            <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Status</th>
+            <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container-high">
+          {% for cat in categories %}
+            <tr>
+              <td class="px-space-md py-space-md">
+                <span class="font-display text-base font-bold text-on-surface">{{ cat.name }}</span>
+                {% if cat.parent %}
+                  <span class="text-on-surface-variant text-xs font-mono ml-space-2xs">under {{ cat.parent.name }}</span>
+                {% endif %}
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ cat.parent.name|default:"— (root)" }}
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ cat.products.count }}
+              </td>
+              <td class="px-space-md py-space-md text-center">
+                {% if cat.is_active %}
+                  <span class="inline-flex items-center gap-space-2xs text-tertiary font-mono text-[11px] font-semibold">
+                    <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    Active
+                  </span>
+                {% else %}
+                  <span class="inline-flex items-center gap-space-2xs text-error font-mono text-[11px]">
+                    <span class="material-symbols-outlined text-[12px]">cancel</span>
+                    Inactive
+                  </span>
+                {% endif %}
+              </td>
+              <td class="px-space-md py-space-md text-center">
+                <div class="flex items-center justify-center gap-space-2xs">
+                  <a href="{% url 'admin_category_edit' cat.pk %}" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                  </a>
+                  <form method="post" action="{% url 'admin_category_toggle' cat.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors" title="Toggle active">
+                      <span class="material-symbols-outlined text-[16px]">toggle_off</span>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+      <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">category</span>
+      <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">No Categories Yet</h2>
+      <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Organize products with categories.</p>
+      <a href="{% url 'admin_category_create' %}" class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        + Add Category
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

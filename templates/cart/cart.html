@@ -1,185 +1,138 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Your Vault Cart — NovaChrono{% endblock %}
+{% extends "base.html" %}
+{% block title %}Shopping Cart — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="chrono-container">
-  <div style="padding: 30px 0 20px;">
-    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">VAULT CART</h1>
-    <p style="color: var(--text-secondary);">Review your selected trading cards and supplies before secure checkout.</p>
-  </div>
-
-  {% if items %}
-  <!-- Free Shipping Progress Indicator -->
-  <div style="background:#FAF8F4; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:16px 24px; margin-bottom:30px;">
-    {% if free_shipping_remaining > 0 %}
-    <div style="font-size:0.92rem; font-weight:600; margin-bottom:8px;">
-      Add <span style="color:var(--accent-cosmic);">${{ free_shipping_remaining }}</span> more to unlock <b>FREE INSURED COURIER SHIPPING</b>!
-    </div>
-    <div class="shipping-meter-wrap">
-      <div id="shippingMeterFill" class="shipping-meter-fill" data-pct="{{ cart.subtotal|floatformat:0 }}"></div>
-    </div>
-    {% else %}
-    <div style="font-size:0.92rem; font-weight:600; color:var(--accent-mint); display:flex; align-items:center; gap:8px;">
-      <span>✓</span> You have unlocked <b>FREE INSURED COURIER SHIPPING</b>!
-    </div>
-    {% endif %}
-  </div>
-
-  <div class="cart-layout">
-    <!-- Left: Cart Items Table -->
-    <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:24px; box-shadow:var(--shadow-sm); height:fit-content;">
-      <table class="cart-items-table">
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Price</th>
-            <th>Quantity</th>
-            <th>Total</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for item in items %}
-          <tr id="cartRow-{{ item.id }}">
-            <td>
-              <div class="cart-product-cell">
-                <a href="{% url 'catalog:product_detail' item.product.slug %}" class="cart-img-thumb">
-                  <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}">
-                </a>
-                <div>
-                  <span style="font-size:0.75rem; text-transform:uppercase; font-weight:700; color:var(--text-muted);">{{ item.product.tcg.name }}</span>
-                  <a href="{% url 'catalog:product_detail' item.product.slug %}" style="display:block; font-weight:600; font-size:0.95rem; color:var(--text-primary);">
-                    {{ item.product.name }}
-                  </a>
-                  <span style="font-size:0.8rem; color:var(--text-muted);">SKU: {{ item.product.sku }}</span>
-                </div>
-              </div>
-            </td>
-            <td style="font-weight:600; font-family:var(--font-heading); font-size:1.05rem;">
-              ${{ item.product.price }}
-            </td>
-            <td>
-              <div class="qty-control">
-                <button type="button" class="qty-btn btn-cart-qty" data-item-id="{{ item.id }}" data-action="decrement">−</button>
-                <span class="qty-val" id="qtyVal-{{ item.id }}">{{ item.quantity }}</span>
-                <button type="button" class="qty-btn btn-cart-qty" data-item-id="{{ item.id }}" data-action="increment">+</button>
-              </div>
-            </td>
-            <td style="font-weight:700; font-family:var(--font-heading); font-size:1.1rem; color:var(--text-primary);" id="lineTotal-{{ item.id }}">
-              ${{ item.line_total }}
-            </td>
-            <td>
-              <form action="{% url 'cart:remove_item' item.id %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" style="color:#E53935; font-size:1.2rem; cursor:pointer;" title="Remove Item">✕</button>
-              </form>
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-
-      <div style="margin-top:24px; display:flex; justify-content:space-between; align-items:center;">
-        <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-subtle btn-sm">
-          ← Continue Browsing
-        </a>
-
-        <!-- Voucher Code Input Form -->
-        <form action="{% url 'cart:apply_coupon' %}" method="POST" style="display:flex; gap:8px;">
-          {% csrf_token %}
-          <input type="text" name="coupon_code" placeholder="Voucher / Promo Code" required class="form-input" style="padding:8px 14px; font-size:0.88rem; width:180px; text-transform:uppercase;">
-          <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">Apply</button>
-        </form>
-      </div>
-
-      {% if cart.coupon %}
-      <div style="margin-top:14px; padding:10px 16px; background:#EDE9FE; border-radius:var(--radius-md); display:flex; justify-content:space-between; align-items:center; font-size:0.88rem;">
-        <span style="color:#5B21B6; font-weight:600;">
-          ✓ Voucher Active: <b>{{ cart.coupon.code }}</b>
-          {% if cart.coupon.discount_percentage > 0 %}({{ cart.coupon.discount_percentage }}% Off){% else %}(${{ cart.coupon.discount_amount }} Off){% endif %}
-        </span>
-        <form action="{% url 'cart:remove_coupon' %}" method="POST">
-          {% csrf_token %}
-          <button type="submit" style="color:#5B21B6; font-size:0.85rem; font-weight:700;">Remove</button>
-        </form>
-      </div>
+<div class="flex flex-col md:flex-row gap-space-xl">
+  <!-- Cart Items -->
+  <div class="flex-1">
+    <div class="flex items-center justify-between mb-space-xl">
+      <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">SHOPPING CART</h1>
+      {% if items %}
+        <span class="font-mono text-[11px] text-outline">{{ cart.item_count }} item{{ cart.item_count|pluralize }}</span>
       {% endif %}
     </div>
 
-    <!-- Right: Order Summary Card -->
-    <div>
-      <div class="order-summary-card">
-        <h3 style="font-size:1.25rem; margin-bottom:20px; font-weight:700;">Summary</h3>
+    {% if items %}
+      <div class="space-y-space-md">
+        {% for item in items %}
+          <div class="flex gap-space-lg bg-surface-container rounded-xl p-space-lg border border-surface-container-high hover:border-surface-container-high transition-colors">
+            <div class="w-24 h-24 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+              {% if item.product.images.first %}
+                <img src="{{ item.product.images.first.image.url }}" class="w-full h-full object-cover" alt="{{ item.product.name }}"/>
+              {% else %}
+                <div class="w-full h-full flex items-center justify-center text-on-surface-variant font-mono text-xs">
+                  <span class="material-symbols-outlined">image</span>
+                </div>
+              {% endif %}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-space-md">
+                <div>
+                  <a href="{% url 'product_detail' item.product.pk %}"
+                     class="font-display text-base font-bold text-on-surface hover:text-primary transition-colors block mb-space-2xs">
+                    {{ item.product.name }}
+                  </a>
+                  {% if item.product.set %}
+                    <span class="font-mono text-[11px] text-outline">{{ item.product.set.game.name }} · {{ item.product.set.name }}</span>
+                  {% endif %}
+                  {% if item.product.single_card %}
+                    <div class="flex items-center gap-space-sm mt-space-xs">
+                      {% if item.product.single_card.rarity %}
+                        <span class="font-mono text-[11px] text-primary">{{ item.product.single_card.rarity }}</span>
+                      {% endif %}
+                      {% if item.product.single_card.condition %}
+                        <span class="font-mono text-[11px] text-outline">{{ item.product.single_card.get_condition_display }}</span>
+                      {% endif %}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="text-right shrink-0">
+                  <div class="font-display text-lg font-bold text-on-surface">₹{{ item.product.price }}</div>
+                  <span class="font-mono text-[11px] text-outline">each</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-space-md mt-space-md">
+                <div class="flex items-center border border-surface-container-high rounded-lg overflow-hidden">
+                  <button onclick="updateCart({{ item.pk }}, {{ item.quantity|add:-1 }})"
+                          class="px-space-sm py-space-xs bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container transition-colors">−</button>
+                  <span class="px-space-md py-space-xs bg-surface-container-high text-on-surface font-mono text-sm min-w-[3rem] text-center">{{ item.quantity }}</span>
+                  <button onclick="updateCart({{ item.pk }}, {{ item.quantity|add:1 }})"
+                          class="px-space-sm py-space-xs bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container transition-colors">+</button>
+                </div>
+                <div class="flex-1 text-right">
+                  <span class="font-display text-base font-bold text-on-surface">₹{{ item.line_total }}</span>
+                </div>
+                <form method="post" action="{% url 'cart_remove' item.product.pk %}" class="inline">
+                  {% csrf_token %}
+                  <button type="submit" class="text-error hover:text-error/80 transition-colors p-space-2xs" title="Remove item">
+                    <span class="material-symbols-outlined text-lg">close</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+        <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">shopping_cart</span>
+        <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">Your Cart is Empty</h2>
+        <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Discover rare cards and sealed products.</p>
+        <a href="{% url 'catalogue' %}"
+           class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+          Explore Catalogue
+        </a>
+      </div>
+    {% endif %}
+  </div>
 
-        <div class="summary-row">
-          <span>Items Subtotal</span>
-          <span id="cartSummarySubtotal" style="font-weight:600;">${{ cart.subtotal }}</span>
+  <!-- Order Summary Sidebar -->
+  {% if items %}
+    <div class="md:w-96 space-y-space-lg">
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high sticky top-24">
+        <h2 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-lg">Order Summary</h2>
+
+        <div class="space-y-space-sm text-sm">
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant font-mono">Subtotal ({{ cart.item_count }} items)</span>
+            <span class="font-display font-bold text-on-surface">₹{{ cart.subtotal }}</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-on-surface-variant font-mono">Shipping</span>
+            <span class="font-mono text-secondary-fixed-dim">Calculated at checkout</span>
+          </div>
+          <div class="border-t border-surface-container-high pt-space-sm flex justify-between">
+            <span class="text-on-surface font-mono text-sm">Total</span>
+            <span class="font-display text-lg font-bold text-secondary-fixed">₹{{ cart.subtotal }}</span>
+          </div>
         </div>
 
-        {% if cart.discount_amount > 0 %}
-        <div class="summary-row" style="color:#00875A;">
-          <span>Promotional Voucher</span>
-          <span id="cartSummaryDiscount" style="font-weight:600;">-${{ cart.discount_amount }}</span>
-        </div>
-        {% endif %}
+        <a href="{% url 'checkout' %}"
+           class="w-full mt-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center justify-center gap-space-xs hover:bg-primary hover:text-on-primary-fixed transition-colors shadow-lg shadow-primary-container/30">
+          <span class="material-symbols-outlined text-base">lock</span>
+          Secure Checkout
+        </a>
 
-        <div class="summary-row">
-          <span>Courier Shipping</span>
-          <span id="cartSummaryShipping" style="font-weight:600;">
-            {% if cart.shipping_amount > 0 %}${{ cart.shipping_amount }}{% else %}FREE{% endif %}
-          </span>
-        </div>
-
-        <div class="summary-row">
-          <span>Estimated Sales Tax (7%)</span>
-          <span id="cartSummaryTax" style="font-weight:600;">${{ cart.tax_amount }}</span>
-        </div>
-
-        <div class="summary-row total">
-          <span>Grand Total</span>
-          <span id="cartSummaryTotal" style="color:var(--accent-cosmic);">${{ cart.total }}</span>
-        </div>
-
-        <div style="margin-top:24px;">
-          <a href="{% url 'orders:checkout' %}" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%;">
-            Proceed to Vault Checkout →
-          </a>
-        </div>
-
-        <div style="margin-top:20px; font-size:0.8rem; color:var(--text-muted); text-align:center; line-height:1.5;">
-          🔒 256-Bit SSL Encrypted Vault Checkout<br>
-          Direct store fulfillment · No third-party marketplace risk
+        <div class="flex items-center justify-center gap-space-xs text-on-surface-variant text-[11px] font-mono mt-space-md">
+          <span class="material-symbols-outlined text-[14px] text-tertiary-fixed">verified_user</span>
+          <span>100% Authenticity Guaranteed</span>
         </div>
       </div>
     </div>
-  </div>
-
-  {% else %}
-  <!-- Empty Cart State -->
-  <div style="background:var(--bg-surface); border-radius:var(--radius-xl); border:1px solid var(--border-light); padding:90px 40px; text-align:center; margin:40px 0;">
-    <div style="font-size:3.5rem; margin-bottom:16px;">🛍️</div>
-    <h2 style="font-size:1.9rem; margin-bottom:8px;">YOUR VAULT CART IS EMPTY.</h2>
-    <p style="color:var(--text-secondary); max-width:440px; margin:0 auto 28px;">
-      You haven't added any sealed displays or singles to your vault yet. Begin discovering new arrivals from Pokémon, One Piece, and Yu-Gi-Oh!
-    </p>
-    <a href="{% url 'catalog:shop' %}" class="btn-chrono btn-chrono-cosmic btn-lg">
-      Explore Products →
-    </a>
-  </div>
   {% endif %}
 </div>
-{% endblock %}
 
-{% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const meter = document.getElementById('shippingMeterFill');
-  if (meter) {
-    const pct = Math.min(100, Math.max(0, parseInt(meter.getAttribute('data-pct')) || 0));
-    meter.style.width = pct + '%';
-  }
-});
+function updateCart(itemId, newQty) {
+  if (newQty < 1) return;
+  fetch(`/cart/update/${itemId}/`, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || (document.cookie.match(/csrftoken=([^;]+)/)||[])[1],
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: `quantity=${newQty}`
+  }).then(() => location.reload());
+}
 </script>
 {% endblock %}

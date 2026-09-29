@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Admin — Games — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">TCG GAMES</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage supported trading card games</p>
+    </div>
+    <a href="{% url 'admin_game_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs">
+      <span class="material-symbols-outlined text-[16px]">add</span>
+      Add Game
+    </a>
+  </div>
+
+  {% if games %}
+    <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-surface-container-high">
+          <tr>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Game</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Sets</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Products</th>
+            <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container-high">
+          {% for game in games %}
+            <tr>
+              <td class="px-space-md py-space-md">
+                <div class="flex items-center gap-space-3">
+                  <div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center shrink-0">
+                    <span class="font-display text-lg font-bold text-primary">{{ game.name|truncatechars:2|upper }}</span>
+                  </div>
+                  <span class="font-display text-base font-bold text-on-surface">{{ game.name }}</span>
+                </div>
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ game.sets.count }}
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ game.active_product_count }}
+              </td>
+              <td class="px-space-md py-space-md text-center">
+                <div class="flex items-center justify-center gap-space-2xs">
+                  <a href="{% url 'admin_game_edit' game.pk %}" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                  </a>
+                  <form method="post" action="{% url 'admin_game_delete' game.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-error hover:text-white transition-colors">
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+      <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">sports_esports</span>
+      <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">No Games Yet</h2>
+      <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Add your first TCG game to start building the catalogue.</p>
+      <a href="{% url 'admin_game_create' %}" class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        + Add Game
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

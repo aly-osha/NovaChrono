@@ -1,235 +1,288 @@
-{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+{% load static %}
+<html class="dark" lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{% block title %}NovaChrono — Collect. Discover. Trade.{% endblock %}</title>
-  <meta name="description" content="{% block meta_description %}NovaChrono is the premium centrally managed trading-card store. Discover Pokémon, One Piece, Yu-Gi-Oh!, Magic: The Gathering, sealed booster boxes and PSA graded slabs.{% endblock %}">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="{% block og_title %}NovaChrono — Collect. Discover. Trade.{% endblock %}">
-  <meta property="og:description" content="Authentic trading cards, sealed booster boxes, and collector grails.">
-  <meta property="og:type" content="website">
-
-  <!-- Fonts & Stylesheet -->
-  <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  {% block extra_css %}{% endblock %}
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <link rel="icon" type="image/jpeg" href="{% static 'img/novachrono-logo.jpg' %}"/>
+  <title>{% block title %}NovaChrono{% endblock %} — Collect · Verify · Discover</title>
+  <link href="https://fonts.googleapis.com" rel="preconnect"/>
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "surface-container-highest": "#343439",
+            "secondary-fixed-dim": "#00dbe9",
+            "on-surface": "#e3e2e8",
+            "primary": "#dbb8ff",
+            "tertiary-fixed": "#ffe088",
+            "tertiary-fixed-dim": "#e9c349",
+            "surface": "#121317",
+            "surface-container": "#1f1f24",
+            "on-background": "#e3e2e8",
+            "secondary-fixed": "#7df4ff",
+            "surface-bright": "#38393e",
+            "on-error": "#690005",
+            "on-tertiary": "#3c2f00",
+            "primary-fixed": "#efdbff",
+            "surface-container-lowest": "#0d0e12",
+            "on-primary-fixed": "#2b0052",
+            "inverse-primary": "#7f30d0",
+            "primary-container": "#7928ca",
+            "surface-container-high": "#292a2e",
+            "on-secondary": "#00363a",
+            "outline": "#988d9f",
+            "inverse-on-surface": "#2f3035",
+            "secondary": "#d3fbff",
+            "secondary-container": "#00eefc",
+            "on-secondary-fixed": "#002022",
+            "on-primary": "#470083",
+            "surface-container-low": "#1a1b20",
+            "on-tertiary-container": "#4f3e00",
+            "on-tertiary-fixed": "#241a00",
+            "tertiary-container": "#cca830",
+            "surface-dim": "#121317",
+            "surface-variant": "#343439",
+            "background": "#121317",
+            "on-error-container": "#ffdad6",
+            "outline-variant": "#4c4354",
+            "on-surface-variant": "#cec2d6",
+            "on-secondary-fixed-variant": "#004f54",
+            "tertiary": "#e9c349",
+            "error": "#ffb4ab",
+            "surface-tint": "#dbb8ff",
+            "on-primary-container": "#e1c4ff",
+            "error-container": "#93000a",
+            "primary-fixed-dim": "#dbb8ff",
+            "on-primary-fixed-variant": "#6600b7",
+            "on-secondary-container": "#00686f",
+            "inverse-surface": "#e3e2e8",
+          },
+          borderRadius: { DEFAULT: "0.125rem", lg: "0.25rem", xl: "0.5rem", full: "0.75rem" },
+          spacing: {
+            "space-3xs": "0.125rem", "space-2xs": "0.25rem", "space-xs": "0.5rem",
+            "space-sm": "0.75rem", "space-md": "1rem", "space-lg": "1.5rem",
+            "space-xl": "2rem", "space-2xl": "3rem", "space-3xl": "4rem",
+            "margin-mobile": "1rem", "margin-tablet": "2rem", "margin-desktop": "4rem",
+          },
+          fontFamily: {
+            display: ["Plus Jakarta Sans", "sans-serif"],
+            body: ["Inter", "sans-serif"],
+            mono: ["JetBrains Mono", "monospace"],
+          },
+        }
+      }
+    };
+  </script>
+  <style>
+    @layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; }
+      main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; }
+      ::-webkit-scrollbar { display: none; }
+    }
+    .material-symbols-outlined { font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24; }
+    /* Vault motion system (project-wide): scroll reveal + ambient loops */
+    .nc-reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .nc-reveal.nc-in { opacity: 1; transform: translateY(0); }
+    @keyframes nc-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    @keyframes nc-glow-pulse { 0%,100% { box-shadow: 0 0 16px rgba(121,40,202,.35); } 50% { box-shadow: 0 0 32px rgba(121,40,202,.65); } }
+    @keyframes nc-cyan-ping { 0% { box-shadow: 0 0 0 0 rgba(0,240,255,.45); } 70% { box-shadow: 0 0 0 9px rgba(0,240,255,0); } 100% { box-shadow: 0 0 0 0 rgba(0,240,255,0); } }
+    .nc-float { animation: nc-float 5s ease-in-out infinite; }
+    .nc-glow-pulse { animation: nc-glow-pulse 2.6s ease-in-out infinite; }
+    .nc-cyan-ping { animation: nc-cyan-ping 2s cubic-bezier(0,0,.2,1) infinite; }
+    @media (prefers-reduced-motion: reduce) {
+      .nc-reveal { opacity: 1; transform: none; transition: none; }
+      .nc-float, .nc-glow-pulse, .nc-cyan-ping { animation: none; }
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
 </head>
-<body>
+<body class="bg-surface text-on-surface font-body antialiased min-h-screen">
 
-  <!-- Top Announcement Bar -->
-  <div style="background-color: var(--text-primary); color: #fff; font-size: 0.78rem; font-weight: 500; padding: 7px 0; text-align: center; letter-spacing: 0.04em;">
-    <div class="chrono-container">
-      ✦ FREE INSURED VAULT SHIPPING ON ORDERS OVER $150 · 100% SPECIALIST-VERIFIED AUTHENTICITY ✦
+  <!-- Live Telemetry Ticker -->
+  {% block ticker %}
+  <section class="relative px-margin-mobile py-space-xs bg-surface-container-lowest overflow-hidden shadow-sm">
+    <div class="flex items-center justify-between gap-space-md">
+      <div class="flex items-center gap-space-2xs shrink-0">
+        <span class="inline-flex items-center px-space-xs py-space-3xs rounded-full bg-secondary-container/10 text-secondary-fixed-dim font-mono text-[11px]">
+          <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim animate-ping mr-space-2xs"></span>
+          LIVE ORBIT
+        </span>
+      </div>
+      <div class="flex-1 overflow-x-auto whitespace-nowrap text-on-surface-variant font-mono text-[11px]">
+        <span class="text-surface-bright mx-space-md">•</span>
+        <span>🔥 Charizard ex SAR #{134}/108 — ₹34,500 <span class="text-secondary-fixed-dim">(+4.2%)</span></span>
+        <span class="text-surface-bright mx-space-md">•</span>
+        <span>⚡ Luffy Manga Foil — ₹98,000 <span class="text-tertiary-fixed-dim">ATH</span></span>
+        <span class="text-surface-bright mx-space-md">•</span>
+        <span>✦ The One Ring 001/001 — ₹1,45,000 <span class="text-outline">VAULT</span></span>
+        <span class="text-surface-bright mx-space-md">•</span>
+        <span>📦 Prismatic Evolutions ETB — Pre-order</span>
+      </div>
     </div>
-  </div>
+  </section>
+  {% endblock %}
 
-  <!-- Sticky Luxury Navigation -->
-  <header class="chrono-nav">
-    <div class="chrono-container">
-      <div class="nav-inner">
-        <!-- Logo -->
-        <a href="{% url 'catalog:home' %}" class="nav-brand">
-          <span class="brand-star">✦</span>
-          <span class="brand-logo-text">NOVACHRONO</span>
-        </a>
+  <!-- Header / Nav -->
+  <header class="sticky top-0 z-50 bg-surface-container-lowest/90 backdrop-blur-md border-b border-surface-container-high">
+    <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex items-center justify-between h-[64px]">
+      <a href="{% url 'home' %}" class="flex items-center gap-space-sm group">
+        <img alt="NovaChrono Emblem" src="{% static 'img/novachrono-logo.jpg' %}"
+             class="h-9 w-9 rounded-lg object-cover ring-1 ring-outline-variant group-hover:ring-primary group-hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] transition-all duration-300"/>
+        <span class="flex flex-col">
+          <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase group-hover:text-primary transition-colors leading-none">NOVACHRONO</span>
+          <span class="hidden sm:inline text-[10px] font-mono text-outline uppercase tracking-widest">VAULT</span>
+        </span>
+      </a>
 
-        <!-- Desktop Navigation Links -->
-        <ul class="nav-links">
-          <li><a href="{% url 'catalog:home' %}" class="nav-link">Discover</a></li>
-          <li><a href="{% url 'catalog:shop' %}" class="nav-link">Shop All</a></li>
-          <li><a href="{% url 'catalog:shop' %}?stock=preorder" class="nav-link">Pre-Orders</a></li>
-          <li><a href="{% url 'catalog:shop' %}?category=booster-boxes" class="nav-link">Booster Boxes</a></li>
-          <li><a href="{% url 'catalog:shop' %}?category=singles" class="nav-link">Graded Singles</a></li>
-          <li><a href="{% url 'catalog:shop' %}?category=accessories" class="nav-link">Accessories</a></li>
-          {% if user.is_authenticated and user.is_staff_member %}
-          <li><a href="{% url 'dashboard:overview' %}" class="nav-link text-cosmic" style="font-weight:700;">Admin Portal</a></li>
-          {% endif %}
-        </ul>
+      <!-- Nav links -->
+      <nav class="hidden md:flex items-center gap-space-lg">
+        <a href="{% url 'catalogue' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Catalogue</a>
+        <a href="{% url 'wishlist' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Wishlist</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'order_list' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Orders</a>
+        {% endif %}
+      </nav>
 
-        <!-- Action Buttons -->
-        <div class="nav-actions">
-          <!-- Search Button -->
-          <button type="button" id="navSearchBtn" class="nav-icon-btn" title="Search cards">
-            🔍
-          </button>
-
-          <!-- Wishlist Button -->
-          <a href="{% url 'wishlist:wishlist' %}" class="nav-icon-btn" title="Wishlist">
-            ♡
-            <span class="badge-counter nav-wishlist-badge {% if wishlist_count == 0 %}chrono-hidden{% endif %}">
-              {{ wishlist_count }}
-            </span>
+      <div class="flex items-center gap-space-md">
+        {% if user.is_authenticated %}
+          <a href="{% url 'cart' %}"
+             class="relative flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-mono text-[12px] hover:bg-surface-container-high transition-colors">
+            <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
+            <span>Cart</span>
+            {% if CART_COUNT > 0 %}
+              <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary-container text-on-primary text-[10px] font-bold flex items-center justify-center">{{ CART_COUNT }}</span>
+            {% endif %}
           </a>
-
-          <!-- Cart Button -->
-          <a href="{% url 'cart:cart_detail' %}" class="nav-icon-btn" title="Vault Cart">
-            🛍
-            <span class="badge-counter nav-cart-badge {% if cart_count == 0 %}chrono-hidden{% endif %}">
-              {{ cart_count }}
-            </span>
+          <a href="{% url 'profile' %}"
+             class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors overflow-hidden">
+            <span class="text-[14px] truncate w-5">{{ user.get_full_name|default:user.email|truncatechars:10 }}</span>
           </a>
-
-          <!-- Account Pill / Dropdown -->
-          {% if user.is_authenticated %}
-          <div class="user-menu-wrapper">
-            <button type="button" id="userPillBtn" class="user-pill">
-              <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--accent-mint);"></span>
-              <span>{{ user.first_name|default:user.username }}</span>
-              <span style="font-size:0.75rem;">▾</span>
-            </button>
-            <div id="userDropdownMenu" class="user-dropdown">
-              <div style="padding:8px 14px 4px; font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; font-weight:700;">
-                {{ user.get_role_display }}
-              </div>
-              <a href="{% url 'orders:history' %}" class="dropdown-link">📦 My Orders</a>
-              <a href="{% url 'wishlist:wishlist' %}" class="dropdown-link">♡ My Wishlist</a>
-              <a href="{% url 'accounts:profile' %}" class="dropdown-link">👤 Account Profile</a>
-              <a href="{% url 'accounts:addresses' %}" class="dropdown-link">📍 Saved Addresses</a>
-              {% if user.is_staff_member %}
-              <div class="dropdown-divider"></div>
-              <a href="{% url 'dashboard:overview' %}" class="dropdown-link text-cosmic" style="font-weight:600;">⚡ Store Dashboard</a>
-              {% endif %}
-              <div class="dropdown-divider"></div>
-              <a href="{% url 'accounts:logout' %}" class="dropdown-link" style="color:#E53935;">Sign Out</a>
-            </div>
-          </div>
-          {% else %}
-          <div style="display:flex; align-items:center; gap:8px;">
-            <a href="{% url 'accounts:login' %}" class="btn-chrono btn-chrono-subtle btn-sm">Sign In</a>
-            <a href="{% url 'accounts:register' %}" class="btn-chrono btn-chrono-dark btn-sm">Join</a>
-          </div>
+          {% if user.role in "admin,super_admin" %}
+            <a href="{% url 'admin_dashboard' %}"
+               class="px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary-container font-mono text-[12px] font-semibold hover:bg-inverse-primary transition-colors flex items-center gap-space-2xs">
+              <span class="material-symbols-outlined text-[16px]">dashboard</span>
+              <span class="hidden sm:inline">Admin</span>
+            </a>
           {% endif %}
-        </div>
+        {% else %}
+          <a href="{% url 'login' %}"
+             class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Sign In</a>
+          <a href="{% url 'register' %}"
+             class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[12px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+            Register
+          </a>
+        {% endif %}
+        <!-- Mobile menu toggle -->
+        <button class="md:hidden p-space-xs text-on-surface-variant" id="mobile-menu-btn">
+          <span class="material-symbols-outlined text-[24px]">menu</span>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- Flash Messages -->
+  <!-- Messages -->
   {% if messages %}
-  <div class="chrono-container" style="margin-top: 16px;">
-    {% for message in messages %}
-    <div class="chrono-alert chrono-alert-{{ message.tags|default:'info' }}">
-      <span>{{ message }}</span>
-      <button type="button" onclick="this.parentElement.remove()" style="font-size:1.1rem; color:inherit;">✕</button>
+    <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop mt-2 space-y-space-xs">
+      {% for message in messages %}
+        <div class="flex items-center gap-space-sm px-space-md py-space-sm rounded-lg bg-surface-container border border-surface-container-high text-on-surface font-mono text-[13px]">
+          {% if message.tags == 'error' %}
+            <span class="material-symbols-outlined text-error text-[18px]">error</span>
+          {% elif message.tags == 'success' %}
+            <span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">check_circle</span>
+          {% elif message.tags == 'warning' %}
+            <span class="material-symbols-outlined text-tertiary text-[18px]">warning</span>
+          {% else %}
+            <span class="material-symbols-outlined text-outline text-[18px]">info</span>
+          {% endif %}
+          {{ message }}
+        </div>
+      {% endfor %}
     </div>
-    {% endfor %}
-  </div>
   {% endif %}
 
-  <!-- Main Content Block -->
-  <main>
+  <!-- Main Content -->
+  <main class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop py-space-md">
     {% block content %}{% endblock %}
   </main>
 
-  <!-- Luxury Editorial Footer -->
-  <footer class="chrono-footer">
-    <div class="chrono-container">
-      <div class="footer-grid">
-        <!-- Col 1: Brand -->
-        <div>
-          <div style="display:flex; align-items:center; gap:8px; margin-bottom:14px;">
-            <span class="brand-star">✦</span>
-            <span class="brand-logo-text" style="font-size:1.35rem;">NOVACHRONO</span>
+  <!-- Footer -->
+  <footer class="w-full bg-surface-container-lowest text-on-surface-variant pt-space-3xl pb-space-2xl shadow-[0_-1px_12px_rgba(0,0,0,0.5)] mt-12">
+    <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-xl pb-space-2xl">
+        <div class="lg:col-span-2 space-y-space-md">
+          <div class="flex items-center gap-space-sm group">
+            <img alt="NovaChrono Emblem" src="{% static 'img/novachrono-logo.jpg' %}"
+                 class="h-8 w-8 rounded-lg object-cover ring-1 ring-outline-variant group-hover:ring-primary group-hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] transition-all duration-300"/>
+            <span class="font-display text-lg font-extrabold tracking-wider text-on-surface uppercase group-hover:text-primary transition-colors">NOVACHRONO</span>
           </div>
-          <p style="font-size:0.92rem; color:var(--text-secondary); line-height:1.6; max-width:320px; margin-bottom:20px;">
-            A centrally curated trading-card store and archival collection destination. Every sealed box, single card, and collector drop is authenticated by certified specialists.
+          <p class="max-w-md text-on-surface-variant text-[14px] leading-relaxed">
+            The institutional-grade trading card vault and marketplace. Dedicated to absolute authenticity, verified chain of custody, and archival security for collectors and competitive players.
           </p>
-          <div style="font-size:0.85rem; color:var(--text-muted);">
-            <b>Store ID:</b> {{ store_settings.tax_id }}<br>
-            {{ store_settings.address_line1 }}, {{ store_settings.city }}, {{ store_settings.state }}
-          </div>
         </div>
-
-        <!-- Col 2: Shop Categories -->
-        <div>
-          <h4 class="footer-col-title">Shop by Category</h4>
-          <ul class="footer-links">
-            <li><a href="{% url 'catalog:shop' %}?category=booster-boxes">Booster Boxes</a></li>
-            <li><a href="{% url 'catalog:shop' %}?category=booster-packs">Booster Packs</a></li>
-            <li><a href="{% url 'catalog:shop' %}?category=elite-trainer-boxes">Elite Trainer Boxes</a></li>
-            <li><a href="{% url 'catalog:shop' %}?category=singles">Graded Singles</a></li>
-            <li><a href="{% url 'catalog:shop' %}?category=pre-orders">Pre-Orders</a></li>
-            <li><a href="{% url 'catalog:shop' %}?category=mystery-products">Mystery Vault Drops</a></li>
+        <div class="space-y-space-md">
+          <h4 class="font-mono text-[12px] uppercase tracking-widest text-on-surface font-semibold">TCG Ecosystem</h4>
+          <ul class="space-y-space-xs text-[14px]">
+            <li><a href="{% url 'catalogue' %}?game=1" class="hover:text-primary transition-colors">Pokémon TCG</a></li>
+            <li><a href="{% url 'catalogue' %}?game=2" class="hover:text-primary transition-colors">One Piece Card Game</a></li>
+            <li><a href="{% url 'catalogue' %}?game=3" class="hover:text-primary transition-colors">Magic: The Gathering</a></li>
+            <li><a href="{% url 'catalogue' %}?game=4" class="hover:text-primary transition-colors">Yu-Gi-Oh!</a></li>
           </ul>
         </div>
-
-        <!-- Col 3: TCG Universes -->
-        <div>
-          <h4 class="footer-col-title">TCG Universes</h4>
-          <ul class="footer-links">
-            {% for tcg in header_tcgs %}
-            <li><a href="{% url 'catalog:shop_tcg' tcg.slug %}">{{ tcg.icon_symbol }} {{ tcg.name }}</a></li>
-            {% endfor %}
+        <div class="space-y-space-md">
+          <h4 class="font-mono text-[12px] uppercase tracking-widest text-on-surface font-semibold">Vault Operations</h4>
+          <ul class="space-y-space-xs text-[14px]">
+            <li><a href="{% url 'verify_certificate' %}" class="hover:text-primary transition-colors">Authenticity Verify</a></li>
+            <li><a href="{% url 'wishlist' %}" class="hover:text-primary transition-colors">Wishlist</a></li>
+            <li><a href="{% url 'cart' %}" class="hover:text-primary transition-colors">Shopping Cart</a></li>
           </ul>
-        </div>
-
-        <!-- Col 4: Service & Orders -->
-        <div>
-          <h4 class="footer-col-title">Customer Care</h4>
-          <ul class="footer-links">
-            <li><a href="{% url 'orders:history' %}">Track My Order</a></li>
-            <li><a href="{% url 'wishlist:wishlist' %}">Saved Wishlist</a></li>
-            <li><a href="{% url 'accounts:profile' %}">Account Settings</a></li>
-            <li><a href="mailto:{{ store_settings.email }}">Authenticity Guarantee</a></li>
-            <li><a href="mailto:{{ store_settings.email }}">Vault Shipping Policy</a></li>
-            <li><a href="mailto:{{ store_settings.email }}">7-Day Sealed Return Policy</a></li>
-          </ul>
-        </div>
-
-        <!-- Col 5: Newsletter Drop Alert -->
-        <div>
-          <h4 class="footer-col-title">Stay Ahead of Drops</h4>
-          <p style="font-size:0.88rem; color:var(--text-secondary); margin-bottom:14px;">
-            Receive instantaneous notifications for Japanese imports, pre-orders, and limited sealed allocations.
-          </p>
-          <form onsubmit="event.preventDefault(); alert('You are subscribed to NovaChrono Drop Alerts!'); this.reset();" style="display:flex; flex-direction:column; gap:8px;">
-            <input type="email" placeholder="Enter your email" required class="form-input" style="background:#fff;">
-            <button type="submit" class="btn-chrono btn-chrono-dark btn-sm" style="width:100%;">
-              Join Collector List →
-            </button>
-          </form>
         </div>
       </div>
-
-      <div class="footer-bottom">
-        <div>© 2026 NOVACHRONO LLC. All Rights Reserved. "Collect. Discover. Trade."</div>
-        <div style="display:flex; gap:20px;">
-          <span>Privacy Policy</span>
-          <span>Terms of Service</span>
-          <span>Security Architecture</span>
-        </div>
+      <div class="border-t border-surface-container-high pt-space-xl flex flex-col sm:flex-row items-center justify-between gap-space-sm text-[11px] font-mono text-outline">
+        <span>© 2026 NovaChrono Vault Systems. All rights reserved.</span>
+        <span>AUTHENTICITY — PROVENANCE — SECURE VAULT</span>
       </div>
     </div>
   </footer>
 
-  <!-- Search Modal Overlay -->
-  <div id="searchModalBackdrop" class="chrono-modal-backdrop">
-    <div class="chrono-modal search-modal-content">
-      <button type="button" id="searchModalClose" class="modal-close-btn">✕</button>
-      <div style="font-family:var(--font-heading); font-size:1.25rem; font-weight:700; margin-bottom:12px;">
-        Discover Trading Cards &amp; Collectibles
-      </div>
-      <form action="{% url 'catalog:search' %}" method="GET">
-        <input type="text" name="q" id="searchLiveInput" class="search-input-lg" placeholder="Search by card name, set, TCG, or SKU..." autocomplete="off">
-      </form>
-      <div id="searchSuggestionsContainer" class="search-suggestions-list">
-        <p style="color:var(--text-muted); padding:12px;">Type at least 2 characters to search...</p>
-      </div>
-    </div>
-  </div>
+  <script>
+    // Mobile menu toggle
+    document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
+      const nav = document.querySelector('nav');
+      if (nav) nav.classList.toggle('hidden');
+    });
 
-  <!-- Quick View Modal Overlay -->
-  <div id="quickViewBackdrop" class="chrono-modal-backdrop">
-    <div class="chrono-modal" style="max-width:720px;">
-      <button type="button" id="quickViewClose" class="modal-close-btn">✕</button>
-      <div id="quickViewBody"></div>
-    </div>
-  </div>
+    // Vault micro-interactions (ported from Stitch UI system):
+    // wishlist hearts fill + pop on click for instant feedback.
+    document.querySelectorAll('[aria-label="Add to Wishlist"]').forEach(button => {
+      button.addEventListener('click', function(e) {
+        const icon = this.querySelector('.material-symbols-outlined');
+        if (icon) {
+          icon.style.fontVariationSettings = "'FILL' 1";
+          this.classList.remove('text-on-surface-variant');
+          this.classList.add('text-primary');
+          this.style.transform = 'scale(1.25)';
+          setTimeout(() => { this.style.transform = 'scale(1)'; }, 180);
+        }
+      });
+    });
 
-  <!-- JavaScript -->
-  <script src="{% static 'js/main.js' %}"></script>
+    // Project-wide scroll reveal: sections glide up as they enter view.
+    const revealObs = new IntersectionObserver((entries) => {
+      entries.forEach(en => {
+        if (en.isIntersecting) { en.target.classList.add('nc-in'); revealObs.unobserve(en.target); }
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('main section').forEach(s => {
+      s.classList.add('nc-reveal');
+      revealObs.observe(s);
+    });
+  </script>
   {% block extra_js %}{% endblock %}
 </body>
 </html>

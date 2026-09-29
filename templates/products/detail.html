@@ -1,0 +1,736 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }} — NovaChrono{% endblock %}
+
+{% block content %}
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-space-2xs text-sm text-outline mb-space-xl flex-wrap">
+  <a href="{% url 'home' %}" class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-space-2xs">
+    <span class="material-symbols-outlined text-[16px]">home</span>
+    <span>Home</span>
+  </a>
+  <span class="text-outline">/</span>
+  <a href="{% url 'catalogue' %}?game={{ product.set.game.pk|default:'' }}"
+     class="text-on-surface-variant hover:text-primary transition-colors">{{ product.set.game.name|default:"TCG" }}</a>
+  {% if product.set %}
+    <span class="text-outline">/</span>
+    <a href="{% url 'catalogue' %}" class="text-on-surface-variant hover:text-primary transition-colors">{{ product.set.name }}</a>
+  {% endif %}
+  <span class="text-outline">/</span>
+  <span class="text-on-surface font-medium">{{ product.name }}</span>
+</nav>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl items-start">
+  <!-- Left: Image Gallery -->
+  <div class="lg:col-span-7 flex flex-col gap-space-lg">
+    <!-- Main image -->
+    <div class="relative w-full rounded-xl bg-surface-container-low p-space-lg shadow-2xl overflow-hidden group">
+      <!-- Atmospheric specular light reflection (tracks the tilt) -->
+      <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-fixed-dim/10 to-primary/10 opacity-40 pointer-events-none transition-opacity duration-300" id="glare-layer"></div>
+      <div class="w-full flex items-center justify-between pb-space-md z-10 relative">
+        <div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-space-3xs rounded-full">
+          <span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+          <span class="font-mono text-[11px] text-secondary uppercase tracking-wider">ULTRA HIGH DENSITY SLAB</span>
+        </div>
+        {% if product.single_card %}
+          <div class="flex items-center gap-space-xs font-mono text-[11px] text-tertiary-fixed bg-surface-container px-space-sm py-space-3xs rounded-full">
+            <span class="material-symbols-outlined text-[15px] text-tertiary">verified</span>
+            <span>AUTHENTICATED</span>
+          </div>
+        {% endif %}
+      </div>
+      <div class="relative w-full max-w-[420px] aspect-[5/7] rounded-xl bg-surface-container-lowest p-space-sm shadow-[0_20px_50px_rgba(0,0,0,0.8)] transition-transform duration-200 ease-out flex flex-col items-center justify-center cursor-crosshair overflow-hidden" id="card-viewport">
+        <!-- Tamper-evident holographic seal header -->
+        <div class="w-full bg-surface-container-high py-space-2xs px-space-sm rounded-lg mb-space-2xs flex items-center justify-between">
+          <div class="flex items-center gap-space-xs">
+            <div class="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-tertiary via-secondary-fixed to-primary animate-spin" style="animation-duration: 6s;"></div>
+            <span class="font-mono text-[11px] text-on-surface font-bold tracking-widest uppercase">NOVA-TAMPER SEAL #{{ product.pk|stringformat:"04d" }}</span>
+          </div>
+          <span class="font-mono text-[10px] text-outline font-semibold">100% HERMETIC</span>
+        </div>
+        <!-- Main card visual with dynamic zoom / angle state -->
+        <div class="relative w-full flex-1 rounded overflow-hidden flex items-center justify-center bg-surface-container-highest/20">
+          {% if images.first %}
+            <img class="w-full h-full object-contain rounded transition-transform duration-300 hover:scale-105 select-none" id="main-product-img" src="{{ images.first.image.url }}" alt="{{ product.name }}"/>
+          {% else %}
+            <div class="w-full h-full bg-surface-container-highest flex items-center justify-center">
+              <span class="material-symbols-outlined text-5xl text-outline">style</span>
+            </div>
+          {% endif %}
+          <!-- Optical inspection overlays -->
+          <div class="absolute bottom-space-sm left-space-sm bg-surface-container-lowest/80 backdrop-blur-md px-space-sm py-space-2xs rounded text-on-surface font-mono text-[11px] flex items-center gap-space-xs pointer-events-none">
+            <span class="material-symbols-outlined text-[14px] text-secondary-fixed-dim">zoom_in</span>
+            <span>4K Optical Zoom Ready</span>
+          </div>
+          <div class="absolute bottom-space-sm right-space-sm bg-surface-container-lowest/80 backdrop-blur-md px-space-sm py-space-2xs rounded text-tertiary-fixed font-mono text-[11px] flex items-center gap-space-xs pointer-events-none">
+            <span class="material-symbols-outlined text-[14px]">flare</span>
+            <span>Shimmer Pass Active</span>
+          </div>
+        </div>
+        <!-- Slab bottom ultrasonic barcode -->
+        <div class="w-full pt-space-xs flex items-center justify-between px-space-2xs">
+          <div class="flex flex-col">
+            <span class="font-mono text-[9px] text-outline tracking-widest leading-none">REGISTRATION SERIAL</span>
+            <span class="font-mono text-[11px] text-on-surface font-bold leading-tight">NC-{{ product.set.game.name|default:"TCG"|slugify|upper|slice:":3" }}-{{ product.pk|stringformat:"06d" }}-{% if product.single_card %}EX{% else %}SV{% endif %}</span>
+          </div>
+          <div class="h-4 flex items-center gap-[2px]" aria-hidden="true">
+            <div class="w-0.5 h-full bg-outline-variant"></div>
+            <div class="w-1 h-full bg-on-surface"></div>
+            <div class="w-0.5 h-full bg-outline-variant"></div>
+            <div class="w-1.5 h-full bg-secondary-fixed-dim"></div>
+            <div class="w-0.5 h-full bg-on-surface"></div>
+            <div class="w-1 h-full bg-outline-variant"></div>
+            <div class="w-2 h-full bg-on-surface"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Alternate image sources for perspective views -->
+      <div id="alt-images" class="hidden" aria-hidden="true">{% for img in images %}<span data-src="{{ img.image.url }}"></span>{% endfor %}</div>
+
+      <!-- View modes: Front 4K / Reverse / Foil Angle / Hologram -->
+      <div class="flex items-center gap-space-xs mt-space-lg bg-surface-container-lowest/90 backdrop-blur-md p-space-3xs rounded-xl overflow-x-auto">
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-secondary-fixed-dim bg-surface-container flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(0)" type="button">
+          <span class="material-symbols-outlined text-[16px]">visibility</span>
+          <span>Front 4K Face</span>
+        </button>
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(1)" type="button">
+          <span class="material-symbols-outlined text-[16px]">flip</span>
+          <span>Reverse Centering</span>
+        </button>
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(2)" type="button">
+          <span class="material-symbols-outlined text-[16px]">wb_twilight</span>
+          <span>Foil Angle Dynamic</span>
+        </button>
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(3)" type="button">
+          <span class="material-symbols-outlined text-[16px]">verified_user</span>
+          <span>Hologram Seal</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Thumbnail micro carousel (bound to perspective views) -->
+    <div class="grid grid-cols-4 gap-space-sm">
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(0)" type="button">
+        <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
+          {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} front"/>{% endif %}
+        </div>
+        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Front Face (4K)</span>
+        <span class="block font-mono text-[10px] text-secondary-fixed-dim">Surface Inspection</span>
+      </button>
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(1)" type="button">
+        <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
+          {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} reverse" style="transform: scaleX(-1);"/>{% endif %}
+        </div>
+        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Card Back</span>
+        <span class="block font-mono text-[10px] text-outline">Centering Check</span>
+      </button>
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(2)" type="button">
+        <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest relative">
+          {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} foil angle"/>{% endif %}
+          <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-fixed-dim/20 to-primary/20 pointer-events-none"></div>
+        </div>
+        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Foil Shimmer</span>
+        <span class="block font-mono text-[10px] text-outline">35° Light Glare</span>
+      </button>
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(3)" type="button">
+        <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest flex items-center justify-center">
+          <span class="material-symbols-outlined text-4xl text-tertiary-fixed group-hover:scale-110 transition-transform">verified_user</span>
+        </div>
+        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Vault Hologram</span>
+        <span class="block font-mono text-[10px] text-tertiary-fixed-dim">Encrypted Tag</span>
+      </button>
+    </div>
+    <!-- Collector security quick strip -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm pt-space-xs">
+      <div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-[24px]">verified</span>
+        <div>
+          <span class="font-mono text-[11px] text-on-surface font-bold uppercase block">100% Genuine</span>
+          <span class="text-[11px] text-outline block">Chain-of-custody verified</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+        <span class="material-symbols-outlined text-tertiary-fixed text-[24px]">shield</span>
+        <div>
+          <span class="font-mono text-[11px] text-on-surface font-bold uppercase block">Archival Toploader</span>
+          <span class="text-[11px] text-outline block">UV-resistant slab included</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
+        <span class="material-symbols-outlined text-primary text-[24px]">local_shipping</span>
+        <div>
+          <span class="font-mono text-[11px] text-on-surface font-bold uppercase block">Insured Vault Mail</span>
+          <span class="text-[11px] text-outline block">Tamper-evident pack</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Product Info -->
+  <div class="lg:col-span-5 flex flex-col gap-space-lg">
+    <!-- Product Header -->
+    <div>
+      <div class="flex items-center gap-space-xs font-mono text-[11px] text-outline uppercase tracking-wider mb-space-2xs">
+        <span>{{ product.set.game.name|default:"TCG" }}</span>
+        <span class="text-surface-bright">•</span>
+        {% if product.set %}<span>{{ product.set.name }}</span>{% endif %}
+        <span class="text-surface-bright">•</span>
+        <span>{{ product.get_product_type_display }}</span>
+      </div>
+      <h1 class="font-display text-2xl md:text-3xl text-on-surface font-extrabold tracking-tight leading-tight">
+        {{ product.name }}
+      </h1>
+    </div>
+
+    <!-- Price -->
+    <div class="flex items-end justify-between">
+      <div>
+        {% if product.stock == 0 %}
+          <span class="text-error text-sm font-mono">Out of Stock</span>
+        {% else %}
+          <span class="text-on-surface-variant text-xs font-mono">PRICE</span>
+          <div class="text-3xl font-display font-extrabold text-secondary-fixed">₹{{ product.price }}</div>
+        {% endif %}
+      </div>
+      {% if product.avg_rating %}
+        <div class="text-right">
+          <span class="font-mono text-[11px] text-outline block">AVG RATING</span>
+          <div class="text-secondary-fixed-dim font-display text-xl font-bold">★ {{ product.avg_rating|floatformat:1 }}</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- Stock status -->
+    <div class="flex items-center gap-space-xs text-sm">
+      {% if product.stock > 0 %}
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+        <span class="text-on-surface-variant font-mono">In Stock · {{ product.stock }} unit{{ product.stock|pluralize }}</span>
+      {% else %}
+        <span class="w-2 h-2 rounded-full bg-error"></span>
+        <span class="text-error font-mono">Out of Stock</span>
+      {% endif %}
+    </div>
+
+    <!-- Single Card Details -->
+    {% if product.single_card %}
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high space-y-space-md">
+        <div class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-tertiary-fixed text-lg">star</span>
+          <span class="font-mono text-[11px] text-tertiary uppercase tracking-widest">Single Card Specification</span>
+        </div>
+        <div class="grid grid-cols-2 gap-space-md">
+          <div>
+            <span class="font-mono text-[10px] text-outline uppercase block mb-space-2xs">Rarity</span>
+            <span class="text-on-surface font-semibold">{{ product.single_card.rarity|default:"—" }}</span>
+          </div>
+          <div>
+            <span class="font-mono text-[10px] text-outline uppercase block mb-space-2xs">Language</span>
+            <span class="text-on-surface font-semibold">{{ product.single_card.language|default:"—" }}</span>
+          </div>
+          <div>
+            <span class="font-mono text-[10px] text-outline uppercase block mb-space-2xs">Condition</span>
+            <span class="text-on-surface font-semibold">{{ product.single_card.get_condition_display|default:"—" }}</span>
+          </div>
+        </div>
+        {% if product.single_card.get_condition_display == 'near_mint' or product.single_card.get_condition_display == 'lightly_played' %}
+          <div class="flex items-center gap-space-xs text-tertiary-fixed font-mono text-[11px]">
+            <span class="material-symbols-outlined text-[14px]">castle</span>
+            <span>Archive-quality specimen</span>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <!-- Description -->
+    {% if product.description %}
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Description</h3>
+        <p class="text-on-surface-variant text-sm leading-relaxed white-space-pre-line">{{ product.description }}</p>
+      </div>
+    {% endif %}
+
+    <!-- Add to cart -->
+    {% if product.is_available %}
+      <div class="flex flex-col gap-space-sm">
+        <div class="flex items-center gap-space-sm">
+          <!-- Quantity stepper -->
+          <div class="flex items-center bg-surface-container rounded-lg p-space-3xs shrink-0">
+            <button class="w-9 h-9 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" onclick="adjustQty(-1)" type="button" aria-label="Decrease quantity">
+              <span class="material-symbols-outlined text-[18px]">remove</span>
+            </button>
+            <span class="w-10 text-center font-mono text-sm font-bold text-on-surface" id="quantity-val">1</span>
+            <button class="w-9 h-9 flex items-center justify-center rounded text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high transition-colors" onclick="adjustQty(1)" type="button" aria-label="Increase quantity">
+              <span class="material-symbols-outlined text-[18px]">add</span>
+            </button>
+          </div>
+          <!-- Add to cart (glowing, animated) -->
+          <button id="vault-add-btn" data-cart-url="{% url 'cart_add' product.pk %}"
+             class="flex-1 h-11 px-space-md rounded-lg bg-primary-container text-on-primary font-mono text-sm font-bold flex items-center justify-center gap-space-xs shadow-[0_0_24px_rgba(121,40,202,0.45)] hover:shadow-[0_0_32px_rgba(121,40,202,0.7)] hover:bg-primary transition-all active:scale-[0.98]" onclick="triggerCartAdd()" type="button">
+            <span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
+            <span>ADD TO CART</span>
+          </button>
+          <a href="{% url 'wishlist_add' product.pk %}" aria-label="Add to Wishlist"
+             class="w-11 h-11 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center hover:bg-surface-container hover:text-primary transition-all shrink-0" title="Add to wishlist">
+            <span class="material-symbols-outlined text-xl">favorite_border</span>
+          </a>
+        </div>
+        <!-- Auxiliary: price alert + watchlist -->
+        <div class="grid grid-cols-2 gap-space-sm">
+          <button class="flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high p-space-xs rounded-lg text-on-surface-variant hover:text-on-surface font-mono text-[12px] transition-colors" onclick="openAlertModal()" type="button">
+            <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">notifications_active</span>
+            <span>{% if user_alert %}Alert: ₹{{ user_alert.target_price }}{% else %}Set Price Alert{% endif %}</span>
+          </button>
+          <a href="{% url 'wishlist_add' product.pk %}"
+             class="flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high p-space-xs rounded-lg text-on-surface-variant hover:text-primary font-mono text-[12px] transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-error">favorite</span>
+            <span>Watchlist</span>
+          </a>
+        </div>
+      </div>
+      <p class="text-on-surface-variant text-xs font-mono text-center">
+        Free shipping on orders above ₹5,000 · Secure checkout
+      </p>
+    {% else %}
+      <button class="w-full py-space-sm rounded-lg bg-surface-container-high text-outline font-mono text-sm cursor-not-allowed" disabled>
+        ADD TO CART — OUT OF STOCK
+      </button>
+    {% endif %}
+
+    <!-- Trust badges -->
+    <div class="flex flex-wrap gap-space-md pt-space-md border-t border-surface-container-high">
+      <div class="flex items-center gap-space-xs text-on-surface-variant text-xs font-mono">
+        <span class="material-symbols-outlined text-tertiary-fixed text-sm">verified_user</span>
+        <span>Authenticity Verified</span>
+      </div>
+      <div class="flex items-center gap-space-xs text-on-surface-variant text-xs font-mono">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-sm">lock</span>
+        <span>Secure Checkout</span>
+      </div>
+      <div class="flex items-center gap-space-xs text-on-surface-variant text-xs font-mono">
+        <span class="material-symbols-outlined text-primary text-sm">local_shipping</span>
+        <span>Collector-Grade Shipping</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROVENANCE CERTIFICATE (SRS 3.9) -->
+<section class="w-full mt-space-3xl rounded-xl bg-gradient-to-b from-surface-container-low via-surface-container-low to-surface-container-lowest p-space-xl relative overflow-hidden shadow-[0_12px_40px_rgba(0,0,0,0.6)]">
+  <div class="absolute -top-24 -left-24 w-72 h-72 rounded-full bg-secondary-fixed-dim/15 blur-3xl pointer-events-none"></div>
+  <div class="absolute -bottom-24 -right-24 w-80 h-80 rounded-full bg-primary-container/20 blur-3xl pointer-events-none"></div>
+  <div class="relative z-10 flex flex-col gap-space-lg">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-space-md">
+      <div class="flex items-center gap-space-md">
+        <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-tertiary-fixed shadow-[0_0_24px_rgba(212,175,55,0.3)]">
+          <span class="material-symbols-outlined text-[32px]">workspace_premium</span>
+        </div>
+        <div>
+          <div class="flex items-center gap-space-xs">
+            <span class="font-mono text-[11px] text-tertiary-fixed font-bold tracking-widest uppercase">AUTHENTICITY VERIFIED</span>
+            <span class="text-outline">•</span>
+            <span class="font-mono text-[11px] text-secondary-fixed-dim">REG #NC-{{ product.set.game.name|default:"TCG"|slugify|upper|slice:":3" }}-{{ product.pk|stringformat:"06d" }}</span>
+          </div>
+          <h2 class="font-display text-xl font-bold text-on-surface">NovaChrono Cryptographic Provenance Certificate</h2>
+        </div>
+      </div>
+      <div class="flex items-center gap-space-xs flex-wrap">
+        {% if product.active_certificate %}
+          <a href="{% url 'verify_certificate' %}?code={{ product.active_certificate.verification_code }}"
+             class="px-space-md py-space-xs rounded-lg bg-secondary-fixed-dim/15 hover:bg-secondary-fixed-dim/25 text-secondary font-mono text-[12px] font-semibold flex items-center gap-space-xs transition-colors">
+            <span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+            <span>Inspect QR Ledger</span>
+          </a>
+        {% else %}
+          <a href="{% url 'verify_certificate' %}"
+             class="px-space-md py-space-xs rounded-lg bg-secondary-fixed-dim/15 hover:bg-secondary-fixed-dim/25 text-secondary font-mono text-[12px] font-semibold flex items-center gap-space-xs transition-colors">
+            <span class="material-symbols-outlined text-[16px]">qr_code_2</span>
+            <span>Verify Authenticity</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md">
+      <div class="bg-surface-container p-space-md rounded-xl flex flex-col gap-space-2xs">
+        <div class="flex items-center justify-between text-outline">
+          <span class="font-mono text-[11px] uppercase tracking-wider font-semibold">Certificate ID</span>
+          <span class="material-symbols-outlined text-[18px] text-tertiary-fixed">fingerprint</span>
+        </div>
+        <span class="font-mono text-sm font-bold text-on-surface">{% if product.active_certificate %}{{ product.active_certificate.verification_code }}{% else %}NC-{{ product.pk|stringformat:"06d" }}-PENDING{% endif %}</span>
+        <span class="text-[11px] text-on-surface-variant">Immutable Vault Registration Index</span>
+      </div>
+      <div class="bg-surface-container p-space-md rounded-xl flex flex-col gap-space-2xs">
+        <div class="flex items-center justify-between text-outline">
+          <span class="font-mono text-[11px] uppercase tracking-wider font-semibold">Condition Grade</span>
+          <span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim">diamond</span>
+        </div>
+        <span class="font-mono text-sm font-bold text-on-surface">{{ product.single_card.get_condition_display|default:product.get_product_type_display }}</span>
+        <span class="text-[11px] text-on-surface-variant">Optical inspection passed</span>
+      </div>
+      <div class="bg-surface-container p-space-md rounded-xl flex flex-col gap-space-2xs">
+        <div class="flex items-center justify-between text-outline">
+          <span class="font-mono text-[11px] uppercase tracking-wider font-semibold">Custody</span>
+          <span class="material-symbols-outlined text-[18px] text-primary">lock_reset</span>
+        </div>
+        <span class="font-mono text-sm font-bold text-on-surface">Vault #3 · Climate Sealed</span>
+        <span class="text-[11px] text-on-surface-variant">100% refund + ₹5,000 on discrepancy</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DETAIL TABS: Specs / Grading / Reviews link / Shipping -->
+<section class="w-full mt-space-3xl">
+  <div class="flex items-center gap-space-xs overflow-x-auto pb-space-md">
+    <button class="tab-btn px-space-lg py-space-sm rounded-lg font-mono text-[12px] uppercase tracking-wider font-bold transition-all bg-primary-container text-on-primary shadow-[0_0_16px_rgba(121,40,202,0.3)]" id="tab-btn-specs" onclick="switchTab('specs')" type="button">Detailed Specs</button>
+    <button class="tab-btn px-space-lg py-space-sm rounded-lg font-mono text-[12px] uppercase tracking-wider font-semibold transition-all bg-surface-container text-on-surface-variant hover:text-on-surface" id="tab-btn-grading" onclick="switchTab('grading')" type="button">Grading Standards</button>
+    <a class="px-space-lg py-space-sm rounded-lg font-mono text-[12px] uppercase tracking-wider font-semibold transition-all bg-surface-container text-on-surface-variant hover:text-on-surface" href="#buyer-reviews">Buyer Reviews ({{ reviews.count }})</a>
+    <button class="tab-btn px-space-lg py-space-sm rounded-lg font-mono text-[12px] uppercase tracking-wider font-semibold transition-all bg-surface-container text-on-surface-variant hover:text-on-surface" id="tab-btn-shipping" onclick="switchTab('shipping')" type="button">Packaging &amp; Courier</button>
+  </div>
+  <div class="w-full bg-surface-container-low rounded-xl p-space-xl shadow-xl">
+    <div class="tab-pane flex flex-col gap-space-xl" id="pane-specs">
+      <div>
+        <h3 class="font-display text-lg font-bold text-on-surface mb-space-2xs">Card Attributes &amp; Gameplay Specification</h3>
+        <p class="text-sm text-on-surface-variant">Complete print documentation for {{ product.name }}.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
+        <div class="p-space-md bg-surface-container rounded-lg">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Game</span>
+          <span class="font-display text-base font-bold text-on-surface">{{ product.set.game.name|default:"TCG" }}</span>
+          <span class="text-[12px] text-secondary-fixed-dim block mt-space-3xs">{{ product.get_product_type_display }}</span>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-lg">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Set &amp; Expansion</span>
+          <span class="font-display text-base font-bold text-on-surface">{{ product.set.name|default:"Vault Collection" }}</span>
+          <span class="text-[12px] text-outline block mt-space-3xs">NovaChrono archive</span>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-lg">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Rarity</span>
+          <span class="font-display text-base font-bold text-tertiary-fixed">{{ product.single_card.rarity|default:"Sealed" }}</span>
+          <span class="text-[12px] text-outline block mt-space-3xs">{{ product.single_card.language|default:"Factory sealed" }}</span>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-lg">
+          <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Condition</span>
+          <span class="font-display text-base font-bold text-on-surface">{{ product.single_card.get_condition_display|default:"Mint Sealed" }}</span>
+          <span class="text-[12px] text-primary block mt-space-3xs">Vault certified</span>
+        </div>
+      </div>
+      {% if product.description %}
+        <div class="bg-surface-container p-space-lg rounded-xl">
+          <h4 class="font-mono text-[12px] uppercase tracking-wider text-on-surface font-semibold mb-space-md">Archivist Notes</h4>
+          <p class="text-sm text-on-surface-variant leading-relaxed">{{ product.description }}</p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="tab-pane hidden flex-col gap-space-lg" id="pane-grading">
+      <div>
+        <h3 class="font-display text-lg font-bold text-on-surface mb-space-2xs">NovaChrono 5-Tier Condition Rubric</h3>
+        <p class="text-sm text-on-surface-variant">Institutional standards calibrated to PSA/BGS baseline tolerances.</p>
+      </div>
+      <div class="space-y-space-sm">
+        <div class="p-space-md rounded-xl bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+          <div class="flex items-center gap-space-md">
+            <div class="px-space-md py-space-xs rounded bg-tertiary-container/30 text-tertiary-fixed font-mono text-sm font-bold">GEM MINT</div>
+            <div>
+              <h4 class="font-mono text-sm text-on-surface font-bold">Flawless Specimen</h4>
+              <p class="text-sm text-on-surface-variant">Centering 55/45 or better. Zero edge whitening, pristine foil.</p>
+            </div>
+          </div>
+          <span class="font-mono text-[12px] text-tertiary-fixed">PSA 10 / BGS 9.5</span>
+        </div>
+        <div class="p-space-md rounded-xl bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+          <div class="flex items-center gap-space-md">
+            <div class="px-space-md py-space-xs rounded bg-primary-container text-on-primary font-mono text-sm font-bold">NEAR MINT</div>
+            <div>
+              <h4 class="font-mono text-sm text-on-surface font-bold">Currently Selected Tier</h4>
+              <p class="text-sm text-on-surface-variant">Centering 60/40. Microscopic speckle permitted; unscratched foil.</p>
+            </div>
+          </div>
+          <span class="font-mono text-[12px] text-primary">PSA 8.5 – 9</span>
+        </div>
+        <div class="p-space-md rounded-xl bg-surface-container flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+          <div class="flex items-center gap-space-md">
+            <div class="px-space-md py-space-xs rounded bg-surface-container-high text-on-surface-variant font-mono text-sm font-bold">LP / MP / HP</div>
+            <div>
+              <h4 class="font-mono text-sm text-on-surface font-bold">Played Tiers</h4>
+              <p class="text-sm text-on-surface-variant">Graduated visible wear; always disclosed with macro photography.</p>
+            </div>
+          </div>
+          <button class="font-mono text-[12px] text-secondary-fixed-dim hover:underline" onclick="openConditionModal()" type="button">Full rubric</button>
+        </div>
+      </div>
+    </div>
+    <div class="tab-pane hidden flex-col gap-space-lg" id="pane-shipping">
+      <div>
+        <h3 class="font-display text-lg font-bold text-on-surface mb-space-2xs">Museum-Grade Shipping Architecture</h3>
+        <p class="text-sm text-on-surface-variant">Four protective layers between the vault shelf and your display case.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
+        <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
+          <span class="font-mono text-sm text-secondary-fixed-dim font-bold">Layer 1: Inner Fit</span>
+          <p class="text-sm text-on-surface-variant">Perfect-fit archival sleeve, zero acid contact.</p>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
+          <span class="font-mono text-sm text-secondary-fixed-dim font-bold">Layer 2: Armor Slab</span>
+          <p class="text-sm text-on-surface-variant">Magnetic acrylic slab with UV barrier coating.</p>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
+          <span class="font-mono text-sm text-secondary-fixed-dim font-bold">Layer 3: Hermetic Seal</span>
+          <p class="text-sm text-on-surface-variant">Tamper-evident envelope with serial strip.</p>
+        </div>
+        <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
+          <span class="font-mono text-sm text-secondary-fixed-dim font-bold">Layer 4: Armored Outer</span>
+          <p class="text-sm text-on-surface-variant">Crush-proof vault box, fully insured.</p>
+        </div>
+      </div>
+      <div class="bg-surface-container p-space-md rounded-xl flex items-center justify-between flex-wrap gap-space-md">
+        <div class="flex items-center gap-space-sm">
+          <span class="material-symbols-outlined text-tertiary-fixed text-[24px]">schedule</span>
+          <span class="text-sm text-on-surface font-semibold">Dispatch under 24 hours via Priority Air Courier</span>
+        </div>
+        <span class="font-mono text-[12px] text-secondary-fixed-dim">All-India tracked: 24–48 hrs</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Price alert modal (functional: POSTs to price_alert_add) -->
+<div class="fixed inset-0 z-50 bg-surface-container-lowest/80 backdrop-blur-md hidden items-center justify-center p-4" id="price-alert-modal">
+  <div class="w-full max-w-md bg-surface-container-low rounded-xl p-space-xl shadow-2xl flex flex-col gap-space-md">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-tertiary-fixed text-[24px]">notifications_active</span>
+        <h3 class="font-display text-lg font-bold text-on-surface">Set Target Price Alert</h3>
+      </div>
+      <button class="text-outline hover:text-on-surface transition-colors" onclick="closeAlertModal()" type="button" aria-label="Close">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+    <p class="text-sm text-on-surface-variant">Get notified when a certified copy drops to or below your target.</p>
+    <form method="post" action="{% url 'price_alert_add' product.pk %}" class="flex flex-col gap-space-md">
+      {% csrf_token %}
+      <div class="flex flex-col gap-space-2xs">
+        <label class="font-mono text-[11px] text-outline uppercase tracking-wider font-semibold">Target Price (INR)</label>
+        <div class="relative flex items-center">
+          <span class="absolute left-3 text-outline font-mono">₹</span>
+          <input name="target_price" type="number" min="1" step="0.01" value="{{ user_alert.target_price|default:product.price }}" required
+                 class="w-full pl-8 pr-4 py-space-xs bg-surface-container rounded-lg text-on-surface font-mono font-bold focus:outline-none focus:ring-1 focus:ring-secondary-fixed-dim"/>
+        </div>
+        <span class="text-[11px] text-outline mt-1">Current vault price: ₹{{ product.price }}</span>
+      </div>
+      <div class="flex items-center gap-space-sm pt-space-xs">
+        <button class="flex-1 py-space-xs rounded-lg bg-surface-container text-on-surface-variant font-mono text-sm font-semibold hover:bg-surface-container-high transition-colors" onclick="closeAlertModal()" type="button">Cancel</button>
+        <button class="flex-1 py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-sm font-bold shadow-[0_0_16px_rgba(121,40,202,0.4)] hover:bg-primary transition-all" type="submit">Activate Alert</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Condition rubric modal -->
+<div class="fixed inset-0 z-50 bg-surface-container-lowest/80 backdrop-blur-md hidden items-center justify-center p-4" id="condition-modal">
+  <div class="w-full max-w-lg bg-surface-container-low rounded-xl p-space-xl shadow-2xl flex flex-col gap-space-md">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-[24px]">verified</span>
+        <h3 class="font-display text-lg font-bold text-on-surface">{{ product.single_card.get_condition_display|default:"Condition" }} Specification</h3>
+      </div>
+      <button class="text-outline hover:text-on-surface transition-colors" onclick="closeConditionModal()" type="button" aria-label="Close">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+    <p class="text-sm text-on-surface-variant">Every tier is verified under 4K optical inspection before vault listing. Centering, corners, edges and surface are scored against PSA/BGS baselines.</p>
+    <div class="p-space-md rounded-lg bg-surface-container flex items-center justify-between">
+      <span class="font-mono text-[12px] text-on-surface font-semibold uppercase">Inspection Passing Score:</span>
+      <span class="font-mono text-sm font-bold text-secondary-fixed-dim">98.4 / 100 PTS</span>
+    </div>
+    <button class="w-full py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-sm font-bold hover:bg-primary transition-colors" onclick="closeConditionModal()" type="button">Understood</button>
+  </div>
+</div>
+
+<!-- Reviews Section -->
+<section id="buyer-reviews" class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
+{% if reviews %}
+  <section class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
+    <div class="flex items-center justify-between mb-space-xl">
+      <h2 class="font-display text-xl font-bold text-on-surface">BUYER REVIEWS</h2>
+      <span class="font-mono text-[11px] text-outline">{{ reviews.count }} review{{ reviews.count|pluralize }}</span>
+    </div>
+    <div class="space-y-space-md">
+      {% for review in reviews %}
+        <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+          <div class="flex items-center justify-between mb-space-sm">
+            <div class="flex items-center gap-space-sm">
+              <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-mono text-[11px] font-bold">
+                {{ review.buyer.get_full_name|default:review.buyer.email|truncatechars:1|upper }}
+              </div>
+              <div>
+                <span class="text-on-surface font-semibold text-sm">{{ review.buyer.get_full_name|default:review.buyer.email }}</span>
+                {% if review.is_verified_purchase %}
+                  <span class="inline-flex items-center gap-space-2xs ml-space-md text-tertiary text-[10px] font-mono">
+                    <span class="material-symbols-outlined text-[12px]">verified</span>
+                    Verified Purchase
+                  </span>
+                {% endif %}
+              </div>
+            </div>
+            <div class="flex items-center gap-space-1">
+              {% for i in "12345" %}
+                <span class="text-{% if forloop.counter0 < review.rating %}tertiary-fixed{% else %}outline{% endif %} text-sm">★</span>
+              {% endfor %}
+            </div>
+          </div>
+          {% if review.comment %}
+            <p class="text-on-surface-variant text-sm leading-relaxed">{{ review.comment }}</p>
+          {% endif %}
+          <p class="text-on-surface-variant text-[11px] font-mono text-outline mt-space-md">
+            Reviewed {{ review.created_at|date:"M d, Y" }}
+          </p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+{% else %}
+  {% if user.is_authenticated %}
+    <section class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
+      <div class="text-center py-space-3xl">
+        <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">rate_review</span>
+        <p class="text-on-surface-variant font-mono text-sm mb-space-md">Be the first to review this product.</p>
+        <a href="{% url 'add_review' product.pk %}"
+           class="inline-flex px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+          Write a Review
+        </a>
+      </div>
+    </section>
+  {% endif %}
+{% endif %}
+</section>
+
+<!-- Related Products -->
+{% if related %}
+  <section class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
+    <h2 class="font-display text-xl font-bold text-on-surface mb-space-lg">RELATED COLLECTIBLES</h2>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-lg">
+      {% for p in related %}
+        {% include "products/_product_card.html" with product=p %}
+      {% endfor %}
+    </div>
+  </section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ---- Dynamic tab switching (Stitch detail system) ----
+  function switchTab(tabId) {
+    const tabs = ['specs', 'grading', 'shipping'];
+    tabs.forEach(t => {
+      const pane = document.getElementById('pane-' + t);
+      const btn = document.getElementById('tab-btn-' + t);
+      if (!pane || !btn) return;
+      if (t === tabId) {
+        pane.classList.remove('hidden');
+        pane.classList.add('flex');
+        btn.classList.remove('bg-surface-container', 'text-on-surface-variant');
+        btn.classList.add('bg-primary-container', 'text-on-primary', 'shadow-[0_0_16px_rgba(121,40,202,0.3)]');
+      } else {
+        pane.classList.add('hidden');
+        pane.classList.remove('flex');
+        btn.classList.remove('bg-primary-container', 'text-on-primary', 'shadow-[0_0_16px_rgba(121,40,202,0.3)]');
+        btn.classList.add('bg-surface-container', 'text-on-surface-variant');
+      }
+    });
+  }
+
+  // ---- Perspective switcher for the slab (Stitch detail system) ----
+  function switchPerspective(index) {
+    const btns = document.querySelectorAll('.view-mode-btn');
+    btns.forEach((b, idx) => {
+      if (idx === index) {
+        b.classList.remove('text-on-surface-variant');
+        b.classList.add('text-secondary-fixed-dim', 'bg-surface-container');
+      } else {
+        b.classList.remove('text-secondary-fixed-dim', 'bg-surface-container');
+        b.classList.add('text-on-surface-variant');
+      }
+    });
+    const viewport = document.getElementById('card-viewport');
+    if (!viewport) return;
+    if (index === 0) {
+      viewport.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+    } else if (index === 1) {
+      viewport.style.transform = 'perspective(800px) rotateY(180deg) scale(0.96)';
+    } else if (index === 2) {
+      viewport.style.transform = 'perspective(800px) rotateX(12deg) rotateY(-18deg) scale(1.02)';
+    } else if (index === 3) {
+      viewport.style.transform = 'perspective(800px) rotateX(-8deg) rotateY(10deg) scale(1.04)';
+    }
+    // Cycle alternate product photography when available.
+    const alts = document.querySelectorAll('#alt-images [data-src]');
+    const main = document.getElementById('main-product-img');
+    if (alts.length > 1 && main) {
+      main.src = alts[index % alts.length].getAttribute('data-src');
+    }
+  }
+
+  // ---- Slab tilt tracker (Stitch detail system) ----
+  (function() {
+    const viewport = document.getElementById('card-viewport');
+    const glare = document.getElementById('glare-layer');
+    if (!viewport) return;
+    viewport.addEventListener('mousemove', (e) => {
+      const rect = viewport.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      const rotateX = (-y / rect.height) * 16;
+      const rotateY = (x / rect.width) * 16;
+      viewport.style.transform = `perspective(800px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+      if (glare) glare.style.opacity = '0.75';
+    });
+    viewport.addEventListener('mouseleave', () => {
+      viewport.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+      if (glare) glare.style.opacity = '0.4';
+    });
+  })();
+
+  // ---- Quantity stepper (capped at vault stock) ----
+  const VAULT_STOCK = {{ product.stock }};
+  let currentQty = 1;
+  function adjustQty(diff) {
+    currentQty = Math.max(1, Math.min(VAULT_STOCK, currentQty + diff));
+    document.getElementById('quantity-val').textContent = currentQty;
+  }
+
+  // ---- Cart add: securing animation, then real add with qty ----
+  function triggerCartAdd() {
+    const btn = document.getElementById('vault-add-btn');
+    if (!btn) return;
+    const base = btn.dataset.cartUrl;
+    const original = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>SECURING COPY...</span>';
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">done</span><span>ADDED TO VAULT CART</span>';
+      setTimeout(() => { window.location.href = base + '?qty=' + currentQty; }, 450);
+    }, 600);
+  }
+
+  // ---- Modal handlers ----
+  function openAlertModal() {
+    const m = document.getElementById('price-alert-modal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+  }
+  function closeAlertModal() {
+    const m = document.getElementById('price-alert-modal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+  }
+  function openConditionModal() {
+    const m = document.getElementById('condition-modal');
+    m.classList.remove('hidden');
+    m.classList.add('flex');
+  }
+  function closeConditionModal() {
+    const m = document.getElementById('condition-modal');
+    m.classList.add('hidden');
+    m.classList.remove('flex');
+  }
+</script>
+{% endblock %}

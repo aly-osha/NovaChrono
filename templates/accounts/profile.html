@@ -1,112 +1,80 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Account Profile — NovaChrono{% endblock %}
+{% extends "base.html" %}
+{% block title %}Profile — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="chrono-container">
-  <div style="padding: 30px 0 20px;">
-    <h1 style="font-size: clamp(2rem, 3.5vw, 2.8rem); margin-bottom: 6px;">ACCOUNT PROFILE</h1>
-    <p style="color: var(--text-secondary);">Manage personal credentials, preferences, and view recent activity.</p>
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">COLLECTOR PROFILE</h1>
+      <p class="text-on-surface-variant text-sm font-mono">Manage your account settings</p>
+    </div>
+    <a href="{% url 'home' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">← Back</a>
   </div>
 
-  <div style="display:grid; grid-template-columns: 1fr 2fr; gap:36px; margin-bottom: 80px;">
-    <!-- Left: Stats Card -->
-    <div style="display:flex; flex-direction:column; gap:20px;">
-      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:28px; text-align:center; box-shadow:var(--shadow-sm);">
-        <div style="width:72px; height:72px; border-radius:50%; background:var(--accent-cosmic); color:#fff; font-size:2rem; font-weight:700; display:flex; align-items:center; justify-content:center; margin:0 auto 16px;">
-          {{ user.username|first|upper }}
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+    <!-- Profile card -->
+    <div class="md:col-span-2 bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+      <div class="flex items-center gap-space-md mb-space-lg">
+        <div class="w-14 h-14 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-display font-bold text-xl">
+          {{ user.get_full_name|default:user.email|truncatechars:1|upper }}
         </div>
-        <h2 style="font-size:1.3rem; margin-bottom:4px;">{{ user.get_full_name|default:user.username }}</h2>
-        <span class="status-pill status-confirmed" style="margin-bottom:14px;">{{ user.get_role_display }}</span>
-        <div style="font-size:0.85rem; color:var(--text-muted);">
-          Collector since {{ user.date_joined|date:"F Y" }}
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:24px; padding-top:20px; border-top:1px solid var(--border-light);">
-          <div>
-            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Orders</div>
-            <div style="font-family:var(--font-heading); font-size:1.4rem; font-weight:700;">{{ orders_count }}</div>
-          </div>
-          <div>
-            <div style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Wishlist</div>
-            <div style="font-family:var(--font-heading); font-size:1.4rem; font-weight:700;">{{ wishlist_count }}</div>
-          </div>
+        <div>
+          <span class="font-display text-lg font-bold text-on-surface">{{ user.get_full_name|default:user.email }}</span>
+          <span class="block font-mono text-[11px] text-outline uppercase tracking-wider">{{ user.role|title }} · Since {{ user.date_joined|date:"M Y" }}</span>
         </div>
       </div>
 
-      <!-- Quick Nav Links -->
-      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:20px; box-shadow:var(--shadow-sm); display:flex; flex-direction:column; gap:8px;">
-        <a href="{% url 'orders:history' %}" class="filter-item-link" style="font-weight:600;">📦 View My Orders →</a>
-        <a href="{% url 'accounts:addresses' %}" class="filter-item-link" style="font-weight:600;">📍 Manage Saved Addresses →</a>
-        <a href="{% url 'wishlist:wishlist' %}" class="filter-item-link" style="font-weight:600;">♡ My Wishlist →</a>
-        {% if user.is_staff_member %}
-        <a href="{% url 'dashboard:overview' %}" class="filter-item-link text-cosmic" style="font-weight:700;">⚡ Open Admin Dashboard →</a>
-        {% endif %}
-      </div>
+      <form method="post" class="space-y-space-md">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+          <div>
+            <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Full Name</label>
+            <input type="text" name="name" value="{{ user.get_full_name }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
+          </div>
+          <div>
+            <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Email</label>
+            <input type="email" name="email" value="{{ user.email }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" readonly/>
+          </div>
+          <div>
+            <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Phone</label>
+            <input type="tel" name="phone" value="{{ user.phone }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
+          </div>
+        </div>
+        <button type="submit" class="px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+          SAVE CHANGES
+        </button>
+      </form>
     </div>
 
-    <!-- Right: Edit Profile Form & Recent Orders -->
-    <div>
-      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:32px; box-shadow:var(--shadow-sm); margin-bottom:30px;">
-        <h3 style="font-size:1.25rem; margin-bottom:20px;">Personal Details</h3>
-        <form method="POST">
-          {% csrf_token %}
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label class="form-label">First Name</label>
-              {{ form.first_name }}
-            </div>
-            <div class="form-group">
-              <label class="form-label">Last Name</label>
-              {{ form.last_name }}
-            </div>
-          </div>
-          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-            <div class="form-group">
-              <label class="form-label">Email Address</label>
-              {{ form.email }}
-            </div>
-            <div class="form-group">
-              <label class="form-label">Phone Number</label>
-              {{ form.phone }}
-            </div>
-          </div>
-          <button type="submit" class="btn-chrono btn-chrono-dark btn-sm">
-            Save Changes
-          </button>
-        </form>
-      </div>
-
-      <!-- Recent Orders List -->
-      <div style="background:var(--bg-surface); border-radius:var(--radius-lg); border:1px solid var(--border-light); padding:32px; box-shadow:var(--shadow-sm);">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-          <h3 style="font-size:1.25rem;">Recent Orders</h3>
-          <a href="{% url 'orders:history' %}" style="font-size:0.85rem; color:var(--accent-cosmic); font-weight:600;">View All →</a>
-        </div>
-
-        {% if recent_orders %}
-        <div style="display:flex; flex-direction:column; gap:12px;">
-          {% for ord in recent_orders %}
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#FAF8F5; border-radius:var(--radius-md);">
-            <div>
-              <a href="{% url 'orders:detail' ord.order_number %}" style="font-weight:700; color:var(--accent-cosmic);">
-                #{{ ord.order_number }}
-              </a>
-              <span style="font-size:0.8rem; color:var(--text-muted); margin-left:8px;">{{ ord.created_at|date:"M d, Y" }}</span>
-            </div>
-            <div style="display:flex; align-items:center; gap:16px;">
-              <span class="status-pill status-{{ ord.status|lower }}">{{ ord.get_status_display }}</span>
-              <span style="font-family:var(--font-heading); font-weight:700;">${{ ord.total_amount }}</span>
-              <a href="{% url 'orders:detail' ord.order_number %}" class="btn-chrono btn-chrono-subtle btn-sm">View</a>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-        {% else %}
-        <p style="color:var(--text-muted); font-size:0.9rem;">No orders placed yet.</p>
-        {% endif %}
-      </div>
+    <!-- Sidebar -->
+    <div class="space-y-space-md">
+      <a href="{% url 'address_list' %}"
+         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
+        <span class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-secondary-fixed-dim">location_on</span>
+          <span class="font-mono text-sm text-on-surface">Delivery Addresses</span>
+        </span>
+      </a>
+      <a href="{% url 'wishlist' %}"
+         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
+        <span class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-secondary-fixed-dim">favorite</span>
+          <span class="font-mono text-sm text-on-surface">Wishlist</span>
+        </span>
+      </a>
+      <a href="{% url 'order_list' %}"
+         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
+        <span class="flex items-center gap-space-xs">
+          <span class="material-symbols-outlined text-secondary-fixed-dim">receipt_long</span>
+          <span class="font-mono text-sm text-on-surface">Order History</span>
+        </span>
+      </a>
+      <form method="post" action="{% url 'logout' %}" class="pt-space-md">
+        {% csrf_token %}
+        <button type="submit" class="w-full py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-error transition-colors">
+          LOG OUT
+        </button>
+      </form>
     </div>
   </div>
 </div>

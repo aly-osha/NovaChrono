@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Admin — Inventory — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">INVENTORY</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Monitor stock levels and manage product availability</p>
+    </div>
+    <a href="{% url 'admin_product_list' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
+      Products
+    </a>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md mb-space-xl">
+    <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high">
+      <div class="flex items-center gap-space-2xs mb-space-2xs">
+        <span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-widest">Out of Stock</span>
+      </div>
+      <span class="font-display text-3xl font-bold text-error">{{ out_of_stock|length }}</span>
+    </div>
+    <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high">
+      <div class="flex items-center gap-space-2xs mb-space-2xs">
+        <span class="w-2 h-2 rounded-full bg-secondary-fixed-dim animate-pulse"></span>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-widest">Low Stock</span>
+      </div>
+      <span class="font-display text-3xl font-bold text-secondary-fixed-dim">{{ low_stock|length }}</span>
+    </div>
+    <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high">
+      <div class="flex items-center gap-space-2xs mb-space-2xs">
+        <span class="w-2 h-2 rounded-full bg-tertiary-fixed"></span>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-widest">Total Products</span>
+      </div>
+      <span class="font-display text-3xl font-bold text-on-surface">{{ products|length }}</span>
+    </div>
+  </div>
+
+  <!-- Low Stock Alerts -->
+  {% if low_stock %}
+    <div class="bg-surface-container rounded-xl p-space-lg border border-secondary-container/20 mb-space-xl">
+      <div class="flex items-center gap-space-3 mb-space-lg">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-xl">warning</span>
+        <h2 class="font-mono text-[11px] text-secondary-fixed-dim uppercase tracking-widest">Low Stock Alerts</h2>
+      </div>
+      <div class="space-y-space-sm">
+        {% for p in low_stock %}
+          <div class="flex items-center justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+            <div class="flex items-center gap-space-3">
+              <div class="w-14 h-14 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+                {% if p.images.first %}
+                  <img src="{{ p.images.first.image.url }}" class="w-full h-full object-cover" alt="{{ p.name }}"/>
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-on-surface-variant font-mono text-xs">
+                    <span class="material-symbols-outlined">image</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div>
+                <a href="{% url 'admin_inventory_update' p.pk %}" class="font-display text-sm font-bold text-primary hover:text-on-primary-fixed transition-colors block">
+                  {{ p.name|truncatechars:50 }}
+                </a>
+                <span class="font-mono text-[11px] text-outline">{{ p.set.game.name|default:"—" }}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center gap-space-2xs px-space-sm py-space-2xs rounded-full bg-error/10 text-error font-mono text-xs font-semibold">
+                <span class="material-symbols-outlined text-[10px]">arrow_downward</span>
+                {{ p.stock }} left
+              </span>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Out of Stock -->
+  {% if out_of_stock %}
+    <div class="bg-surface-container rounded-xl p-space-lg border border-error/20 mb-space-xl">
+      <div class="flex items-center gap-space-3 mb-space-lg">
+        <span class="material-symbols-outlined text-error text-xl">inventory_2</span>
+        <h2 class="font-mono text-[11px] text-error uppercase tracking-widest">Out of Stock</h2>
+      </div>
+      <div class="space-y-space-sm">
+        {% for p in out_of_stock|slice:":10" %}
+          <div class="flex items-center justify-between p-space-md rounded-lg bg-surface-container-low hover:bg-surface-container transition-colors">
+            <div class="flex items-center gap-space-3">
+              <div class="w-14 h-14 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+                {% if p.images.first %}
+                  <img src="{{ p.images.first.image.url }}" class="w-full h-full object-cover" alt="{{ p.name }}"/>
+                {% else %}
+                  <div class="w-full h-full flex items-center justify-center text-on-surface-variant font-mono text-xs">
+                    <span class="material-symbols-outlined">image</span>
+                  </div>
+                {% endif %}
+              </div>
+              <div>
+                <a href="{% url 'admin_inventory_update' p.pk %}" class="font-display text-sm font-bold text-primary hover:text-on-primary-fixed transition-colors block">
+                  {{ p.name|truncatechars:50 }}
+                </a>
+                <span class="font-mono text-[11px] text-outline">{{ p.set.game.name|default:"—" }}</span>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="inline-flex items-center gap-space-2xs px-space-sm py-space-2xs rounded-full bg-error/20 text-error font-mono text-xs font-semibold">
+                OUT OF STOCK
+              </span>
+            </div>
+          </div>
+        {% endfor %}
+        {% if out_of_stock|length > 10 %}
+          <p class="text-on-surface-variant text-xs font-mono text-center">+ {{ out_of_stock|length|add:-10 }} more out of stock items</p>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- All Inventory -->
+  <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+    <div class="p-space-md border-b border-surface-container-high flex items-center justify-between">
+      <h2 class="font-mono text-[11px] text-outline uppercase tracking-widest">All Products — Inventory Status</h2>
+      <a href="{% url 'admin_product_list' %}" class="text-primary font-mono text-[11px] hover:underline">Manage Products</a>
+    </div>
+    <table class="w-full">
+      <thead class="bg-surface-container-high">
+        <tr>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Product</th>
+          <th class="px-space-md py-space-sm text-right font-mono text-[11px] text-outline uppercase tracking-widest">Price</th>
+          <th class="px-space-md py-space-sm text-right font-mono text-[11px] text-outline uppercase tracking-widest">Stock</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Status</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-high">
+        {% for p in products %}
+          <tr class="hover:bg-surface-container-low transition-colors">
+            <td class="px-space-md py-space-md">
+              <div class="flex items-center gap-space-3">
+                {% if p.images.first %}
+                  <div class="w-10 h-10 rounded-lg bg-surface-container-high overflow-hidden shrink-0">
+                    <img src="{{ p.images.first.image.url }}" class="w-full h-full object-cover" alt="{{ p.name }}"/>
+                  </div>
+                {% endif %}
+                <span class="font-display text-sm font-bold text-on-surface block">{{ p.name|truncatechars:40 }}</span>
+              </div>
+            </td>
+            <td class="px-space-md py-space-md text-right">
+              <span class="font-display font-bold text-on-surface">₹{{ p.price }}</span>
+            </td>
+            <td class="px-space-md py-space-md text-right">
+              <span class="font-mono text-sm {% if p.stock == 0 %}text-error{% elif p.stock < 5 %}text-secondary-fixed-dim{% else %}text-on-surface{% endif %}">
+                {{ p.stock }}
+              </span>
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              {% if p.is_active %}
+                <span class="inline-flex items-center gap-space-2xs text-tertiary font-mono text-[11px] font-semibold">
+                  <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                  Active
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-space-2xs text-outline font-mono text-[11px]">
+                  <span class="material-symbols-outlined text-[12px]">cancel</span>
+                  Inactive
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              <a href="{% url 'admin_inventory_update' p.pk %}" class="inline-flex px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+                <span class="material-symbols-outlined text-[14px] mr-space-2xs">edit</span>
+                Update Stock
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="5" class="px-space-md py-space-3xl text-center text-on-surface-variant font-mono text-sm">
+              No products in inventory.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

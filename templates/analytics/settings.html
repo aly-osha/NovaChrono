@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Admin — System Settings — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">SYSTEM SETTINGS</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage platform-wide configuration</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
+      Dashboard
+    </a>
+  </div>
+
+  <div class="space-y-space-xl">
+    {% for setting in settings %}
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <div class="flex items-center justify-between mb-space-sm">
+          <span class="font-mono text-[11px] text-outline uppercase tracking-widest">{{ setting.setting_key }}</span>
+          <span class="font-mono text-[11px] text-on-surface-variant">Updated {{ setting.updated_at|timesince }} ago</span>
+        </div>
+        <div class="font-mono text-sm text-on-surface bg-surface-container-low px-space-md py-space-sm rounded mb-space-md word-break-all">
+          {{ setting.setting_value }}
+        </div>
+        <a href="{% url 'system_settings' %}" class="text-primary font-mono text-xs hover:underline">Edit</a>
+      </div>
+    {% empty %}
+      <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+        <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">settings</span>
+        <p class="text-on-surface-variant font-mono text-sm">No system settings configured.</p>
+      </div>
+    {% endfor %}
+
+    <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+      <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Add or Update Setting</h3>
+      <form method="post" class="space-y-space-md">
+        {% csrf_token %}
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Setting Key</label>
+          <input type="text" name="setting_key" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="e.g. site_name"/>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Setting Value</label>
+          <textarea name="setting_value" rows="2" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 resize-none" placeholder="Value..."></textarea>
+        </div>
+        <button type="submit" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+          Save Setting
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

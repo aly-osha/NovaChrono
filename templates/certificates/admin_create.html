@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Admin — Issue Certificate — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'admin_certificate_list' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Issue Authenticity Certificate</h1>
+      <p class="text-on-surface-variant text-sm font-mono">{{ product.name }}</p>
+    </div>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high mb-space-xl">
+    <div class="flex items-center gap-space-xs mb-space-md">
+      <span class="material-symbols-outlined text-tertiary-fixed text-lg">info</span>
+      <span class="text-on-surface-variant text-sm font-mono">This certificate will be generated with a unique verification code.</span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-space-md text-sm">
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Product</span>
+        <span class="text-on-surface font-semibold">{{ product.name }}</span>
+      </div>
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Game</span>
+        <span class="text-on-surface">{{ product.set.game.name|default:"—" }}</span>
+      </div>
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Price</span>
+        <span class="text-on-surface font-mono">₹{{ product.price }}</span>
+      </div>
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Stock</span>
+        <span class="text-on-surface font-mono">{{ product.stock }}</span>
+      </div>
+    </div>
+
+    {% if existing %}
+      <div class="mt-space-lg p-space-md rounded-lg bg-tertiary-container/10 border border-tertiary-container/20">
+        <p class="text-on-surface font-mono text-sm font-semibold mb-space-2xs">Existing Active Certificate</p>
+        <span class="text-tertiary-fixed font-mono text-lg font-bold">{{ existing.verification_code }}</span>
+        <p class="text-on-surface-variant text-xs mt-space-sm">Issued on {{ existing.issued_at|date:"M d, Y" }}</p>
+      </div>
+    {% endif %}
+  </div>
+
+  <form method="post" class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+    {% csrf_token %}
+    <div class="flex items-center gap-space-xs mb-space-md">
+      <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">warning</span>
+      <span class="text-on-surface-variant text-sm font-mono">Are you sure you want to issue a certificate for this product?</span>
+    </div>
+    <div class="flex gap-space-md">
+      <button type="submit"
+              class="flex-1 py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        <span class="material-symbols-outlined text-[18px] inline mr-space-2xs">verified</span>
+        Issue Certificate
+      </button>
+      <a href="{% url 'admin_certificate_list' %}"
+         class="px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

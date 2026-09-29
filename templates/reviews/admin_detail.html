@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% block title %}Admin — Review #{{ review.pk }} — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Review #{{ review.pk }}</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">By {{ review.buyer.email }} for {{ review.product.name }}</p>
+    </div>
+    <a href="{% url 'admin_review_list' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
+      All Reviews
+    </a>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-space-xl">
+    <div class="lg:col-span-2 space-y-space-lg">
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <div class="flex items-center gap-space-3 mb-space-lg">
+          <div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-mono text-sm font-bold">
+            {{ review.buyer.get_full_name|default:review.buyer.email|truncatechars:1|upper }}
+          </div>
+          <div>
+            <span class="font-display text-lg font-bold text-on-surface">{{ review.buyer.get_full_name|default:review.buyer.email }}</span>
+            {% if review.is_verified_purchase %}
+              <span class="inline-flex items-center gap-space-2xs ml-space-md text-tertiary font-mono text-[11px]">
+                <span class="material-symbols-outlined text-[14px]">verified</span>
+                Verified Purchase
+              </span>
+            {% endif %}
+          </div>
+          <div class="ml-auto">
+            <span class="text-tertiary-fixed font-display text-2xl font-bold">★ {{ review.rating }}</span>
+          </div>
+        </div>
+
+        {% if review.comment %}
+          <p class="text-on-surface-variant text-sm leading-relaxed">{{ review.comment }}</p>
+        {% else %}
+          <p class="text-on-surface-variant text-sm italic">No comment provided.</p>
+        {% endif %}
+
+        <div class="mt-space-lg pt-space-lg border-t border-surface-container-high text-on-surface-variant text-xs font-mono text-outline">
+          Reviewed {{ review.created_at|date:"F d, Y · H:i" }}
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-space-lg">
+      <!-- Moderation Actions -->
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high sticky top-24">
+        <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-lg">Moderation</h3>
+
+        <div class="space-y-space-md">
+          <form method="post" class="space-y-space-xs">
+            {% csrf_token %}
+            <button type="submit" name="action" value="approve"
+                    class="w-full py-space-sm rounded-lg bg-secondary-container/10 text-secondary-fixed-dim font-mono text-sm hover:bg-secondary-container/20 transition-colors {% if review.is_approved %}opacity-50 cursor-not-allowed{% endif %}"
+                    {% if not review.is_approved %}>Approve Review
+                    {% else %}disabled title="Already approved"{% endif %}</button>
+            <button type="submit" name="action" value="hide"
+                    class="w-full py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-error hover:text-white transition-colors {% if not review.is_approved %}opacity-50 cursor-not-allowed{% endif %}"
+                    {% if review.is_approved %}>Hide Review
+                    {% else %}disabled title="Already hidden"{% endif %}</button>
+          </form>
+        </div>
+
+        <!-- Admin Response -->
+        <div class="mt-space-lg pt-space-lg border-t border-surface-container-high">
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Admin Response</label>
+          <form method="post" class="space-y-space-sm">
+            {% csrf_token %}
+            <textarea name="admin_response" rows="3"
+                      class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 resize-none"
+                      placeholder="Respond to this review...">{{ review.admin_response }}</textarea>
+            <button type="submit" name="action" value="response"
+                    class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+              Save Response
+            </button>
+          </form>
+          {% if review.admin_response %}
+            <div class="mt-space-md p-space-md rounded-lg bg-primary-container/10 border border-primary-container/20">
+              <p class="text-on-surface text-sm">"{{ review.admin_response }}"</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Remove -->
+        <div class="mt-space-lg pt-space-lg border-t border-surface-container-high">
+          <form method="post" class="space-y-space-xs">
+            {% csrf_token %}
+            <button type="submit" name="action" value="remove"
+                    class="w-full py-space-sm rounded-lg bg-error/10 text-error font-mono text-sm hover:bg-error hover:text-white transition-colors">
+              <span class="material-symbols-outlined text-[18px] inline mr-space-xs">delete_forever</span>
+              Remove Permanently
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

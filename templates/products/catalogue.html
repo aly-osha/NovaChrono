@@ -1,0 +1,180 @@
+{% extends "base.html" %}
+{% block title %}TCG Vault Catalogue — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-space-sm mb-space-xl">
+  <div class="flex items-center gap-space-2xs font-mono text-outline">
+    <a href="{% url 'home' %}" class="hover:text-on-surface transition-colors">HOME</a>
+    <span class="text-surface-bright">/</span>
+    <a href="{% url 'catalogue' %}" class="hover:text-on-surface transition-colors">SHOP</a>
+    <span class="text-surface-bright">/</span>
+    <span class="text-secondary-fixed-dim font-medium">TCG VAULT &amp; SEALED CATALOG</span>
+  </div>
+  <div class="flex items-center gap-space-2xs font-mono text-secondary-fixed-dim tracking-wider uppercase">
+    <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span>
+    Live Real-Time Inventory
+  </div>
+  <h1 class="font-display text-2xl md:text-3xl text-on-surface tracking-tight font-extrabold uppercase">
+    TCG VAULT &amp; SEALED CATALOG
+  </h1>
+  <div class="flex items-center gap-space-xs font-mono text-on-surface bg-surface-container px-space-sm py-space-xs rounded-lg text-outline">
+    <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">verified_user</span>
+    <span>100% Cryptographically Sealed &amp; Graded</span>
+  </div>
+</div>
+
+<!-- Active Filters -->
+{% if request.GET %}
+<div class="flex flex-wrap items-center gap-space-xs pt-space-xs">
+  <span class="font-mono text-[11px] text-outline uppercase tracking-wider mr-space-2xs">Active Filters:</span>
+  {% for game in games %}
+    {% if game.pk|slugify in request.GET|default:'' %}
+    {% endif %}
+  {% endfor %}
+  <a href="{% url 'catalogue' %}" class="font-mono text-[11px] text-primary hover:underline uppercase tracking-wider ml-space-xs">Clear All Filters</a>
+</div>
+{% endif %}
+
+<!-- Main Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+  <!-- Left Sidebar: Filters -->
+  <aside class="lg:col-span-3 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xl shadow-md sticky top-20">
+    <div class="flex items-center justify-between pb-space-xs">
+      <div class="flex items-center gap-space-2xs">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">tune</span>
+        <span class="font-mono text-sm uppercase tracking-wider text-on-surface font-semibold">Vault Filters</span>
+      </div>
+      <a href="{% url 'catalogue' %}" class="font-mono text-[11px] text-outline hover:text-on-surface transition-colors">Reset</a>
+    </div>
+
+    <!-- Game Filter -->
+    <div class="space-y-space-xs">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Trading Card Game</span>
+      <div class="space-y-space-2xs">
+        {% for game in games %}
+          <label class="flex items-center justify-between p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
+            <div class="flex items-center gap-space-xs">
+              <input type="checkbox" name="game"
+                     value="{{ game.pk }}"
+                     {% if game.pk|slugify in request.GET %}
+                       checked
+                     {% endif %}
+                     class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+              <span class="text-on-surface text-sm group-hover:text-primary transition-colors">{{ game.name }}</span>
+            </div>
+            <span class="font-mono text-[11px] text-outline">{{ game.active_product_count }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Product Type -->
+    <div class="space-y-space-xs">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Product Type</span>
+      <div class="space-y-space-2xs">
+        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
+          <input type="radio" name="type" value="sealed"
+                 {% if request.GET.type == 'sealed' %}checked{% endif %}
+                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Sealed Products</span>
+        </label>
+        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
+          <input type="radio" name="type" value="single_card"
+                 {% if request.GET.type == 'single_card' %}checked{% endif %}
+                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Single Cards</span>
+        </label>
+        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
+          <input type="radio" name="type" value="related"
+                 {% if request.GET.type == 'related' %}checked{% endif %}
+                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Related Products</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Price Range -->
+    <div class="space-y-space-xs">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Price Range (₹)</span>
+      <div class="flex gap-space-2xs">
+        <input type="number" name="min_price" placeholder="Min"
+               value="{{ request.GET.min_price|default:'' }}"
+               class="flex-1 px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed"/>
+        <input type="number" name="max_price" placeholder="Max"
+               value="{{ request.GET.max_price|default:'' }}"
+               class="flex-1 px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed"/>
+      </div>
+    </div>
+
+    <!-- Availability -->
+    <div class="space-y-space-xs">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Availability</span>
+      <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
+        <input type="checkbox" name="available" value="1"
+               {% if request.GET.available == '1' %}checked{% endif %}
+               class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
+        <span class="text-on-surface text-sm group-hover:text-primary transition-colors">In Stock Only</span>
+      </label>
+    </div>
+
+    <!-- Sorting -->
+    <div class="space-y-space-xs pt-space-sm border-t border-surface-container-high">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Sort By</span>
+      <select name="sort" onchange="this.form.submit()"
+              class="w-full px-space-sm py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed">
+        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
+        <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low → High</option>
+        <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
+        <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Top Rated</option>
+      </select>
+    </div>
+  </aside>
+
+  <!-- Product Grid -->
+  <div class="lg:col-span-9">
+    <!-- Results header -->
+    <div class="flex items-center justify-between mb-space-lg">
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider">{{ page_obj.paginator.count }} products found</span>
+      <form class="flex items-center gap-space-xs" method="get">
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+               placeholder="Search by name or description..."
+               class="flex-1 max-w-[300px] px-space-md py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed"/>
+        <button type="submit" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+          <span class="material-symbols-outlined text-[16px]">search</span>
+        </button>
+      </form>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+      {% for product in products %}
+        {% include "products/_product_card.html" with product=product %}
+      {% empty %}
+        <div class="col-span-full text-center py-space-3xl text-on-surface-variant font-mono text-sm">
+          <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">search_off</span>
+          No products match your filters. Try adjusting your search.
+        </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+      <div class="flex items-center justify-center gap-space-xs mt-space-2xl">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
+             class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-surface-container hover:text-primary transition-colors">
+            ← Prev
+          </a>
+        {% endif %}
+        <span class="font-mono text-[11px] text-outline px-space-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
+             class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-surface-container hover:text-primary transition-colors">
+            Next →
+          </a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,40 +1,35 @@
-{% extends 'base.html' %}
-{% load static %}
-
+{% extends "base.html" %}
 {% block title %}Sign In — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="chrono-container">
-  <div style="max-width: 480px; margin: 60px auto 100px;">
-    <div style="background:var(--bg-surface); border-radius:var(--radius-xl); border:1px solid var(--border-light); padding:40px; box-shadow:var(--shadow-md);">
-      <div style="text-align:center; margin-bottom:28px;">
-        <span class="brand-star" style="margin-bottom:12px;">✦</span>
-        <h1 style="font-size:1.8rem; margin-bottom:6px;">WELCOME BACK</h1>
-        <p style="color:var(--text-secondary); font-size:0.92rem;">Access your NovaChrono vault and order history.</p>
+<div class="max-w-md mx-auto mt-space-3xl">
+  <div class="text-center mb-space-2xl">
+    <a href="{% url 'home' %}" class="flex items-center gap-space-sm mb-space-lg">
+      <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase">NOVACHRONO</span>
+    </a>
+    <h1 class="font-display text-3xl font-bold text-on-surface">VAULT ACCESS</h1>
+    <p class="text-on-surface-variant text-sm mt-space-sm">Sign in to your collector account</p>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-xl shadow-xl border border-surface-container-high">
+    <form method="post" class="space-y-space-md">
+      {% csrf_token %}
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Email</label>
+        <input type="email" name="email" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="collector@example.com" required/>
       </div>
-
-      <form method="POST" action="{% url 'accounts:login' %}?next={{ next }}">
-        {% csrf_token %}
-
-        <div class="form-group">
-          <label class="form-label">Username or Email</label>
-          <input type="text" name="username" id="loginUsername" required autofocus class="form-input">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" name="password" id="loginPassword" required class="form-input">
-        </div>
-
-        <button type="submit" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%; margin-top:8px;">
-          Sign In to Vault →
-        </button>
-      </form>
-
-      <div style="margin-top:24px; text-align:center; font-size:0.9rem; color:var(--text-secondary);">
-        New to NovaChrono? <a href="{% url 'accounts:register' %}" style="color:var(--accent-cosmic); font-weight:600;">Create a Buyer Account</a>
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Password</label>
+        <input type="password" name="password" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="••••••••" required/>
       </div>
-    </div>
+      <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-space-xs">
+        <span class="material-symbols-outlined">login</span>
+        SIGN IN
+      </button>
+      <p class="text-center text-on-surface-variant text-xs">
+        No account? <a href="{% url 'register' %}" class="text-primary hover:underline">Create one</a>
+      </p>
+    </form>
   </div>
 </div>
 {% endblock %}

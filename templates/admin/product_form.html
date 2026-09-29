@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+{% block title %}Admin — Add Product — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'admin_product_list' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Add New Product</h1>
+      <p class="text-on-surface-variant text-sm font-mono">Create a new product listing</p>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high space-y-space-lg">
+    {% csrf_token %}
+
+    <!-- Basic Info -->
+    <div>
+      <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Basic Information</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Product Name *</label>
+          <input type="text" name="name" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="Pokemon SV8 Mythical Rare Pack"/>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Product Type *</label>
+          <select name="product_type" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="sealed">Sealed Product</option>
+            <option value="single_card">Single Card</option>
+            <option value="related">Related Product</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Description -->
+    <div>
+      <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Description</label>
+      <textarea name="description" rows="3" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 resize-none" placeholder="Describe the product — condition, contents, rarity, grading..."></textarea>
+    </div>
+
+    <!-- Price & Stock -->
+    <div>
+      <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Pricing &amp; Inventory</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Price (₹) *</label>
+          <input type="number" name="price" step="0.01" min="0" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="5000.00"/>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Stock Quantity *</label>
+          <input type="number" name="stock" min="0" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="100"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game & Set -->
+    <div>
+      <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Game &amp; Set</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Game *</label>
+          <select name="game" id="game-select" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="">Select a game...</option>
+            {% for g in games %}
+              <option value="{{ g.pk }}">{{ g.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Set / Expansion</label>
+          <select name="set" id="set-select" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="">Select a set...</option>
+            {% for s in sets %}
+              <option value="{{ s.pk }}">{{ s.game.name }} — {{ s.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div>
+      <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Category</label>
+      <select name="category" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+        <option value="">No category</option>
+        {% for c in categories %}
+          <option value="{{ c.pk }}">{{ c.full_path|default:c.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Single Card Details (hidden by default, shown when single_card selected) -->
+    <div id="single-card-section" class="hidden space-y-space-md p-space-md rounded-lg bg-surface-container-low border border-surface-container-high">
+      <div class="flex items-center gap-space-xs mb-space-sm">
+        <span class="material-symbols-outlined text-tertiary-fixed text-lg">star</span>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-widest">Single Card Specification</span>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Rarity</label>
+          <select name="rarity" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="">—</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="mythic_rare">Mythic Rare</option>
+            <option value="special_illustration_rare">Special Illustration Rare</option>
+            <option value="hyper_rare">Hyper Rare</option>
+            <option value="secret_rare">Secret Rare</option>
+            <option value="ultra_rare">Ultra Rare</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Language</label>
+          <select name="language" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="">—</option>
+            <option value="English">English</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="Chinese">Chinese</option>
+          </select>
+        </div>
+        <div>
+          <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Condition *</label>
+          <select name="condition" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+            <option value="">Select condition...</option>
+            <option value="near_mint">Near Mint</option>
+            <option value="lightly_played">Lightly Played</option>
+            <option value="moderately_played">Moderately Played</option>
+            <option value="heavily_played">Heavily Played</option>
+            <option value="damaged">Damaged</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Product images -->
+    <div>
+      <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Images</label>
+      <input type="file" name="images" multiple accept="image/*"
+             class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-dashed border-surface-container-high text-on-surface font-body text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-container file:text-on-primary hover:file:bg-primary hover:file:text-on-primary-fixed transition-colors"/>
+      <p class="text-on-surface-variant text-xs font-mono mt-space-2xs">Upload product images (multiple allowed). First image will be the primary.</p>
+    </div>
+
+    <!-- Form actions -->
+    <div class="flex gap-space-md pt-space-md border-t border-surface-container-high">
+      <button type="submit" class="flex-1 py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        <span class="material-symbols-outlined text-[18px] inline mr-space-2xs">add_circle</span>
+        Create Product
+      </button>
+      <a href="{% url 'admin_product_list' %}" class="px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+
+<script>
+document.getElementById('game-select').addEventListener('change', function() {
+  const gameId = this.value;
+  const setSelect = document.getElementById('set-select');
+  if (gameId) {
+    setSelect.innerHTML = '<option value="">Loading...</option>';
+    fetch(`/api/sets/?game=${gameId}`)
+      .then(r => r.json())
+      .then(data => {
+        setSelect.innerHTML = '<option value="">Select a set...</option>';
+        data.forEach(s => {
+          setSelect.innerHTML += `<option value="${s.pk}">${s.game_name} — ${s.name}</option>`;
+        });
+      });
+  } else {
+    setSelect.innerHTML = '<option value="">Select a set...</option>';
+  }
+});
+
+document.querySelector('select[name="product_type"]').addEventListener('change', function() {
+  document.getElementById('single-card-section').classList.toggle('hidden', this.value !== 'single_card');
+});
+</script>
+{% endblock %}

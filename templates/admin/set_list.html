@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Admin — Sets — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">SETS &amp; EXPANSIONS</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage TCG set and expansion listings</p>
+    </div>
+    <a href="{% url 'admin_set_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs">
+      <span class="material-symbols-outlined text-[16px]">add</span>
+      Add Set
+    </a>
+  </div>
+
+  {% if sets %}
+    <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+      <table class="w-full">
+        <thead class="bg-surface-container-high">
+          <tr>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Set / Expansion</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Game</th>
+            <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Products</th>
+            <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container-high">
+          {% for s in sets %}
+            <tr>
+              <td class="px-space-md py-space-md">
+                <span class="font-display text-base font-bold text-on-surface">{{ s.name }}</span>
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ s.game.name }}
+              </td>
+              <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+                {{ s.products.count }}
+              </td>
+              <td class="px-space-md py-space-md text-center">
+                <div class="flex items-center justify-center gap-space-2xs">
+                  <a href="{% url 'admin_set_edit' s.pk %}" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-container hover:text-primary transition-colors">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                  </a>
+                  <form method="post" action="{% url 'admin_set_delete' s.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="p-space-2xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-error hover:text-white transition-colors">
+                      <span class="material-symbols-outlined text-[16px]">delete</span>
+                    </button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+      <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">folder_special</span>
+      <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">No Sets Yet</h2>
+      <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Add a set to organize products by collection.</p>
+      <a href="{% url 'admin_set_create' %}" class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        + Add Set
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

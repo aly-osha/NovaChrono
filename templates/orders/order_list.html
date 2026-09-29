@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Order History — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">ORDER HISTORY</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Your collector order records</p>
+    </div>
+    <a href="{% url 'catalogue' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[16px] mr-space-2xs">shopping_bag</span>
+      Continue Shopping
+    </a>
+  </div>
+
+  {% if orders %}
+    <div class="space-y-space-md">
+      {% for order in orders %}
+        <div class="bg-surface-container rounded-xl overflow-hidden border border-surface-container-high hover:border-surface-container-high transition-colors">
+          <div class="flex">
+            <!-- Order info -->
+            <div class="flex-1 p-space-lg">
+              <div class="flex items-center justify-between mb-space-sm">
+                <div>
+                  <span class="font-display font-bold text-on-surface">Order #{{ order.pk }}</span>
+                  <span class="ml-space-md text-on-surface-variant text-xs font-mono">
+                    {{ order.created_at|date:"M d, Y · H:i" }}
+                  </span>
+                </div>
+                <span class="px-space-sm py-space-2xs rounded-full bg-{% if order.status == 'delivered' %}secondary-container/10 text-secondary-fixed-dim{% elif order.status == 'shipped' %}primary-container/10 text-primary{% elif order.status == 'packed' %}tertiary-container/10 text-tertiary{% else %}surface-container-high text-outline{% endif %} font-mono text-[11px] font-semibold">
+                  {{ order.get_status_display }}
+                </span>
+              </div>
+
+              <div class="flex flex-wrap gap-space-2xs mt-space-md">
+                {% for item in order.items.all %}
+                  <span class="bg-surface-container-high px-space-sm py-space-2xs rounded-full font-mono text-[11px] text-on-surface-variant">
+                    {{ item.quantity }}× {{ item.product.name|truncatechars:20 }}
+                  </span>
+                {% endfor %}
+              </div>
+
+              <div class="mt-space-md flex items-center gap-space-2xs text-sm">
+                <span class="text-on-surface-variant font-mono">Shipping to:</span>
+                <span class="text-on-surface font-mono text-xs truncate max-w-[300px]">
+                  {{ order.shipping_address.line1 }}, {{ order.shipping_address.city }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Amount -->
+            <div class="p-space-lg text-right border-l border-surface-container-high">
+              <div class="font-display text-2xl font-bold text-secondary-fixed">₹{{ order.total_amount }}</div>
+              <a href="{% url 'order_detail' order.pk %}"
+                 class="mt-space-sm inline-flex items-center gap-space-2xs px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container hover:text-primary transition-colors">
+                <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+                View Details
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+      <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">receipt_long</span>
+      <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">No Orders Yet</h2>
+      <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Your purchase history will appear here.</p>
+      <a href="{% url 'catalogue' %}"
+         class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Shop Now
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

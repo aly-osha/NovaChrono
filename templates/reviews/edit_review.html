@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Edit Review — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'product_detail' review.product.pk %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Edit Review</h1>
+      <p class="text-on-surface-variant text-sm font-mono">{{ review.product.name }}</p>
+    </div>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+    <form method="post" class="space-y-space-lg">
+      {% csrf_token %}
+
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-sm">Your Rating</label>
+        <div class="flex items-center gap-space-2xs" id="star-rating">
+          {% for i in "12345" %}
+            <button type="button" data-rating="{{ forloop.counter }}"
+                    class="w-12 h-12 rounded-lg bg-surface-container-high text-outline hover:bg-primary-container hover:text-on-primary transition-colors flex items-center justify-center text-2xl"
+                    onclick="setRating({{ forloop.counter }})">
+              ★
+            </button>
+          {% endfor %}
+          <input type="hidden" name="rating" id="rating-input" value="{{ review.rating }}" required/>
+        </div>
+      </div>
+
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Review</label>
+        <textarea name="comment" rows="4"
+                  class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all resize-none">{{ review.comment }}</textarea>
+      </div>
+
+      <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+let currentRating = {{ review.rating }};
+function setRating(val) {
+  currentRating = val;
+  document.getElementById('rating-input').value = val;
+  document.querySelectorAll('#star-rating button').forEach((btn, i) => {
+    const star = i + 1;
+    if (star <= val) {
+      btn.style.color = '#D4AF37';
+    } else {
+      btn.style.color = '#4B5563';
+    }
+  });
+}
+setRating({{ review.rating }});
+</script>
+{% endblock %}

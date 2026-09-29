@@ -1,76 +1,47 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Create Buyer Account — NovaChrono{% endblock %}
+{% extends "base.html" %}
+{% block title %}Register — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="chrono-container">
-  <div style="max-width: 520px; margin: 60px auto 100px;">
-    <div style="background:var(--bg-surface); border-radius:var(--radius-xl); border:1px solid var(--border-light); padding:40px; box-shadow:var(--shadow-md);">
-      <div style="text-align:center; margin-bottom:24px;">
-        <span class="brand-star" style="margin-bottom:12px;">✦</span>
-        <h1 style="font-size:1.8rem; margin-bottom:6px;">JOIN NOVACHRONO</h1>
-        <p style="color:var(--text-secondary); font-size:0.92rem;">
-          Create your personal collector buyer account to order sealed drops, save wishlists, and track shipments.
-        </p>
+<div class="max-w-md mx-auto mt-space-3xl">
+  <div class="text-center mb-space-2xl">
+    <a href="{% url 'home' %}" class="flex items-center gap-space-sm mb-space-lg">
+      <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase">NOVACHRONO</span>
+    </a>
+    <h1 class="font-display text-3xl font-bold text-on-surface">JOIN THE VAULT</h1>
+    <p class="text-on-surface-variant text-sm mt-space-sm">Create your collector account</p>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-xl shadow-xl border border-surface-container-high">
+    <form method="post" class="space-y-space-md">
+      {% csrf_token %}
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Full Name</label>
+        <input type="text" name="name" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="Alex Rivera" required/>
       </div>
-
-      <div style="background:#FAF8F5; border-radius:var(--radius-md); border:1px solid var(--border-light); padding:12px 16px; margin-bottom:20px; font-size:0.8rem; color:#555;">
-        ℹ️ <b>Store Policy:</b> NovaChrono is a centrally managed store. All public registrations are for <b>Buyers</b>. Products and inventory are managed strictly by official store staff.
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Email</label>
+        <input type="email" name="email" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="collector@example.com" required/>
       </div>
-
-      <form method="POST" action="{% url 'accounts:register' %}">
-        {% csrf_token %}
-
-        <div class="form-group">
-          <label class="form-label">Username</label>
-          {{ form.username }}
-          {% if form.username.errors %}<div style="color:#DC2626; font-size:0.8rem; margin-top:4px;">{{ form.username.errors }}</div>{% endif %}
-        </div>
-
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:14px;">
-          <div class="form-group">
-            <label class="form-label">First Name</label>
-            {{ form.first_name }}
-          </div>
-          <div class="form-group">
-            <label class="form-label">Last Name</label>
-            {{ form.last_name }}
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          {{ form.email }}
-          {% if form.email.errors %}<div style="color:#DC2626; font-size:0.8rem; margin-top:4px;">{{ form.email.errors }}</div>{% endif %}
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Phone Number</label>
-          {{ form.phone }}
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          {{ form.password1 }}
-          {% if form.password1.errors %}<div style="color:#DC2626; font-size:0.8rem; margin-top:4px;">{{ form.password1.errors }}</div>{% endif %}
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Confirm Password</label>
-          {{ form.password2 }}
-          {% if form.password2.errors %}<div style="color:#DC2626; font-size:0.8rem; margin-top:4px;">{{ form.password2.errors }}</div>{% endif %}
-        </div>
-
-        <button type="submit" class="btn-chrono btn-chrono-cosmic btn-lg" style="width:100%; margin-top:8px;">
-          Create Collector Account →
-        </button>
-      </form>
-
-      <div style="margin-top:24px; text-align:center; font-size:0.9rem; color:var(--text-secondary);">
-        Already have an account? <a href="{% url 'accounts:login' %}" style="color:var(--accent-cosmic); font-weight:600;">Sign In</a>
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Phone (optional)</label>
+        <input type="tel" name="phone" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="+91 98765 43210" />
       </div>
-    </div>
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Password</label>
+        <input type="password" name="password1" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="Min 8 characters" required/>
+      </div>
+      <div>
+        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Confirm Password</label>
+        <input type="password" name="password2" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="Repeat password" required/>
+      </div>
+      <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-space-xs">
+        <span class="material-symbols-outlined">person_add</span>
+        CREATE ACCOUNT
+      </button>
+      <p class="text-center text-on-surface-variant text-xs">
+        Already have an account? <a href="{% url 'login' %}" class="text-primary hover:underline">Sign in</a>
+      </p>
+    </form>
   </div>
 </div>
 {% endblock %}

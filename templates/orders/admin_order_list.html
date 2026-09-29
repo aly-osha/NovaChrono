@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Admin — Orders — NovaChrono{% endblock %}
+
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">ORDER MANAGEMENT</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Process and manage all customer orders</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
+      Dashboard
+    </a>
+  </div>
+
+  <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-surface-container-high">
+        <tr>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Order</th>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Buyer</th>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Items</th>
+          <th class="px-space-md py-space-sm text-right font-mono text-[11px] text-outline uppercase tracking-widest">Total</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Status</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Date</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-high">
+        {% for order in orders %}
+          <tr class="hover:bg-surface-container-low transition-colors">
+            <td class="px-space-md py-space-md">
+              <a href="{% url 'admin_order_detail' order.pk %}"
+                 class="font-display text-sm font-bold text-primary hover:text-on-primary-fixed transition-colors">
+                #{{ order.pk }}
+              </a>
+            </td>
+            <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">
+              {{ order.buyer.email }}
+            </td>
+            <td class="px-space-md py-space-md">
+              <span class="font-mono text-[11px] text-on-surface-variant">{{ order.items.count }} items</span>
+            </td>
+            <td class="px-space-md py-space-md text-right font-display font-bold text-on-surface">
+              ₹{{ order.total_amount }}
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              <span class="inline-block px-space-sm py-space-2xs rounded-full bg-{% if order.status == 'delivered' %}secondary-container/10 text-secondary-fixed-dim{% elif order.status == 'shipped' %}primary-container/10 text-primary{% elif order.status == 'packed' %}tertiary-container/10 text-tertiary{% else %}surface-container-high text-outline{% endif %} font-mono text-xs font-semibold">
+                {{ order.get_status_display }}
+              </span>
+            </td>
+            <td class="px-space-md py-space-md text-center text-on-surface-variant font-mono text-xs">
+              {{ order.created_at|date:"M d, Y" }}
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              <a href="{% url 'admin_order_detail' order.pk %}"
+                 class="inline-flex px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+                <span class="material-symbols-outlined text-[14px] mr-space-2xs">open_in_new</span>
+                Manage
+              </a>
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="7" class="px-space-md py-space-3xl text-center text-on-surface-variant font-mono text-sm">
+              No orders yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Wishlist — NovaChrono{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">WISHLIST</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Your saved treasures — save for later</p>
+    </div>
+  </div>
+
+  {% if items %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-lg">
+      {% for item in items %}
+        <div class="rounded-xl bg-surface-container overflow-hidden group flex flex-col justify-between shadow-md hover:shadow-xl hover:shadow-primary-container/20 hover:-translate-y-1 transition-all duration-300 border border-surface-container-high">
+          <div>
+            <div class="relative h-60 bg-surface-container-high overflow-hidden">
+              {% if item.product.images.first %}
+                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                     src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}"/>
+              {% else %}
+                <div class="w-full h-full flex items-center justify-center text-on-surface-variant font-mono text-xs">
+                  <span class="material-symbols-outlined">image</span>
+                </div>
+              {% endif %}
+              <div class="absolute top-2.5 left-2.5 px-space-xs py-0.5 rounded bg-secondary-container/10 text-secondary-fixed-dim font-mono text-[10px] font-bold tracking-wider uppercase">
+                SAVED
+              </div>
+              <a href="{% url 'product_detail' item.product.pk %}"
+                 class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-surface-container-lowest/80 text-on-surface-variant hover:text-primary flex items-center justify-center transition-colors"
+                 title="View details">
+                <span class="material-symbols-outlined text-lg">open_in_new</span>
+              </a>
+            </div>
+            <div class="p-space-md space-y-space-xs">
+              {% if item.product.set %}
+                <div class="flex items-center justify-between font-mono text-[11px] text-outline">
+                  <span>{{ item.product.set.game.name }}</span>
+                  <span>{{ item.product.set.name }}</span>
+                </div>
+              {% endif %}
+              <h3 class="font-display text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
+                {{ item.product.name }}
+              </h3>
+              <div class="font-display text-lg font-bold text-secondary-fixed">₹{{ item.product.price }}</div>
+              {% if not item.product.is_available %}
+                <span class="text-error text-xs font-mono">Out of Stock</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="p-space-md pt-0 flex gap-space-xs">
+            <a href="{% url 'wishlist_to_cart' item.product.pk %}"
+               class="flex-1 py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center justify-center gap-space-xs hover:bg-primary hover:text-on-primary-fixed transition-colors">
+              <span class="material-symbols-outlined text-base">add_shopping_cart</span>
+              MOVE TO CART
+            </a>
+            <a href="{% url 'wishlist_remove' item.product.pk %}"
+               class="w-10 h-10 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center hover:bg-error hover:text-white transition-colors"
+               title="Remove from wishlist">
+              <span class="material-symbols-outlined text-lg">close</span>
+            </a>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="mt-space-xl text-center">
+      <a href="{% url 'catalogue' %}"
+         class="inline-flex px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-[16px] mr-space-2xs">search</span>
+        Continue Shopping
+      </a>
+    </div>
+  {% else %}
+    <div class="bg-surface-container rounded-xl p-space-3xl text-center border border-surface-container-high">
+      <span class="material-symbols-outlined text-5xl text-outline block mb-space-xl">favorite_border</span>
+      <h2 class="font-display text-xl font-bold text-on-surface mb-space-sm">Your Wishlist is Empty</h2>
+      <p class="text-on-surface-variant text-sm font-mono mb-space-xl">Save the cards and sealed products you love for later.</p>
+      <a href="{% url 'catalogue' %}"
+         class="inline-flex px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Explore Catalogue
+      </a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

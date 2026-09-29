@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Admin — Certificates — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto">
+  <div class="flex items-center justify-between mb-space-xl">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">AUTHENTICITY CERTIFICATES</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage product authenticity verification records</p>
+    </div>
+    <a href="{% url 'admin_dashboard' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+      Dashboard
+    </a>
+  </div>
+
+  <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+    <table class="w-full">
+      <thead class="bg-surface-container-high">
+        <tr>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Code</th>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Product</th>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Issued By</th>
+          <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Issued At</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Status</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-surface-container-high">
+        {% for cert in certs %}
+          <tr class="hover:bg-surface-container-low transition-colors">
+            <td class="px-space-md py-space-md">
+              <span class="font-mono text-sm text-primary font-bold">{{ cert.verification_code }}</span>
+            </td>
+            <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">{{ cert.product.name|truncatechars:30 }}</td>
+            <td class="px-space-md py-space-md text-on-surface-variant font-mono text-sm">{{ cert.issued_by.get_full_name|default:cert.issued_by.email|default:"—" }}</td>
+            <td class="px-space-md py-space-md text-on-surface-variant font-mono text-xs">{{ cert.issued_at|date:"M d, Y" }}</td>
+            <td class="px-space-md py-space-md text-center">
+              {% if cert.is_active %}
+                <span class="inline-flex items-center gap-space-2xs text-tertiary font-mono text-[11px] font-semibold">
+                  <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                  Active
+                </span>
+              {% else %}
+                <span class="inline-flex items-center gap-space-2xs text-error font-mono text-[11px]">
+                  <span class="material-symbols-outlined text-[12px]">cancel</span>
+                  Revoked
+                </span>
+              {% endif %}
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              {% if cert.is_active %}
+                <a href="{% url 'admin_certificate_revoke' cert.pk %}"
+                   class="inline-flex px-space-sm py-space-xs rounded-lg bg-error/10 text-error font-mono text-xs hover:bg-error hover:text-white transition-colors">
+                  <span class="material-symbols-outlined text-[14px] mr-space-2xs">cancel</span>
+                  Revoke
+                </a>
+              {% else %}
+                <span class="text-outline font-mono text-xs">—</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="px-space-md py-space-3xl text-center text-on-surface-variant font-mono text-sm">
+              No certificates issued yet.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mt-space-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-md">
+    {% for product in products %}
+      <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:border-surface-container-high transition-colors">
+        <div class="flex items-center justify-between mb-space-sm">
+          <span class="font-display text-sm font-bold text-on-surface">{{ product.name|truncatechars:40 }}</span>
+          <span class="font-mono text-[11px] text-outline">₹{{ product.price }}</span>
+        </div>
+        {% if product.active_certificate %}
+          <div class="flex items-center gap-space-xs text-tertiary font-mono text-[11px]">
+            <span class="material-symbols-outlined text-[14px]">verified</span>
+            Active cert: {{ product.active_certificate.verification_code }}
+          </div>
+        {% else %}
+          <div class="text-on-surface-variant text-xs font-mono">No active certificate</div>
+        {% endif %}
+        <a href="{% url 'admin_certificate_create' product.pk %}"
+           class="mt-space-sm inline-flex px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors w-full text-center">
+          <span class="material-symbols-outlined text-[12px] mr-space-2xs">add_circle</span>
+          Issue Certificate
+        </a>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
