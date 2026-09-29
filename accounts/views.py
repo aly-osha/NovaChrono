@@ -1,155 +1,173 @@
-from django.shortcuts import render, redirect, get_object_or_404
+"""
+accounts/views.py
+"""
 from django.contrib.auth import login, logout, authenticate
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from .forms import BuyerRegistrationForm, BuyerLoginForm, UserProfileForm, AddressForm
-from .models import CustomUser, Address
-from cart.models import Cart, CartItem
-from wishlist.models import Wishlist
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.http import require_http_methods
+from django import forms
+
+from .models import User, Address
 
 
-def register_view(request):
-    if request.user.is_authenticated:
-        return redirect('catalog:home')
+class RegisterForm(forms.ModelForm):
+    password1 = forms.CharField(widget=forms.PasswordInput, label="Password")
+    password2 = forms.CharField(
+        widget=forms.PasswordInput, label="Confirm password"
+    )
+    class Meta:
+        model = User
+        fields = ["name", "email", "password1", "password2", "phone"]
 
-    if request.method == 'POST':
-        form = BuyerRegistrationForm(request.POST)
+    def clean_email(self):
+        email = self.cleaned_data["email"].lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("password1") and cleaned.get("password2"):
+            if cleaned["password1"] != cleaned["password2"]:
+                raise forms.ValidationError("Passwords do not match.")
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        # AbstractUser requires a unique username but buyers sign up with
+        # email only — mirror the (unique, validated) email into username.
+        user.username = user.email
+        user.set_password(self.cleaned_data["password1"])
+        user.role = "buyer"
+        if commit:
+            user.save()
+        return user
+
+
+class LoginForm(forms.Form):
+    email = forms.EmailField(label="Email")
+    password = forms.CharField(widget=forms.PasswordInput, label="Password")
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["name", "email", "phone"]
+
+
+class AddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ["line1", "line2", "city", "state", "postal_code", "country", "is_default"]
+
+
+def register(request):
+    if request.method == "POST":
+        form = RegisterForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Initialize Wishlist for the buyer
-            Wishlist.objects.get_or_create(user=user)
-            login(request, user)
-            messages.success(request, f"Welcome to NovaChrono, {user.first_name or user.username}! Your collector account is active.")
-            return redirect('catalog:home')
-        else:
-            messages.error(request, "Please correct the errors in the form.")
+            form.save()
+            messages.success(request, "Account created. Please log in.")
+            return redirect("login")
     else:
-        form = BuyerRegistrationForm()
-
-    return render(request, 'accounts/register.html', {'form': form})
+        form = RegisterForm()
+    return render(request, "accounts/register.html", {"form": form})
 
 
 def login_view(request):
-    if request.user.is_authenticated:
-        return redirect('catalog:home')
-
-    redirect_to = request.GET.get('next', 'catalog:home')
-
-    if request.method == 'POST':
-        form = BuyerLoginForm(request, data=request.POST)
+    if request.method == "POST":
+        form = LoginForm(request.POST)
         if form.is_valid():
-            user = form.get_user()
-            if user.is_suspended:
-                messages.error(request, "Your account has been suspended. Please contact NovaChrono support.")
-                return redirect('accounts:login')
-
-            # Transfer guest cart if session exists
-            session_key = request.session.session_key
-            guest_cart = None
-            if session_key:
-                guest_cart = Cart.objects.filter(session_key=session_key).first()
-
-            login(request, user)
-
-            if guest_cart and guest_cart.items.exists():
-                user_cart, _ = Cart.objects.get_or_create(user=user)
-                for item in guest_cart.items.all():
-                    existing_item = CartItem.objects.filter(cart=user_cart, product=item.product).first()
-                    if existing_item:
-                        existing_item.quantity += item.quantity
-                        existing_item.save()
-                    else:
-                        item.cart = user_cart
-                        item.save()
-                guest_cart.delete()
-
-            # Ensure buyer has a wishlist
-            Wishlist.objects.get_or_create(user=user)
-
-            messages.success(request, f"Welcome back, {user.first_name or user.username}!")
-            if user.is_staff_member and 'dashboard' in redirect_to:
-                return redirect(redirect_to)
-            elif user.is_staff_member and redirect_to == 'catalog:home':
-                return redirect('dashboard:overview')
-            return redirect(redirect_to)
-        else:
-            messages.error(request, "Invalid username or password.")
+            email = form.cleaned_data["email"].lower()
+            # Resolve the account by email, then authenticate against its
+            # actual username (usernames mirror emails for buyer accounts,
+            # but legacy/seed accounts may differ).
+            try:
+                account = User.objects.get(email__iexact=email)
+                username = account.username
+            except User.DoesNotExist:
+                username = email
+            user = authenticate(
+                request,
+                username=username,
+                password=form.cleaned_data["password"],
+            )
+            if user is not None:
+                login(request, user)
+                messages.success(request, f"Welcome back, {user.get_full_name() or user.email}.")
+                return redirect("home")
+            messages.error(request, "Invalid email or password.")
     else:
-        form = BuyerLoginForm()
+        form = LoginForm()
+    return render(request, "accounts/login.html", {"form": form})
 
-    return render(request, 'accounts/login.html', {'form': form, 'next': redirect_to})
 
-
+@login_required
 def logout_view(request):
     logout(request)
-    messages.info(request, "You have been logged out of NovaChrono.")
-    return redirect('catalog:home')
+    messages.info(request, "You have been logged out.")
+    return redirect("home")
 
 
 @login_required
-def profile_view(request):
-    user = request.user
-    if request.method == 'POST':
-        form = UserProfileForm(request.POST, instance=user)
+def profile(request):
+    if request.method == "POST":
+        form = ProfileForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Your profile details have been updated.")
-            return redirect('accounts:profile')
+            user = form.save(commit=False)
+            # Keep username mirrored to email (see RegisterForm.save).
+            user.username = user.email
+            user.save()
+            messages.success(request, "Profile updated.")
+            return redirect("profile")
     else:
-        form = UserProfileForm(instance=user)
-
-    recent_orders = user.orders.all()[:5]
-    addresses = user.addresses.all()
-
-    return render(request, 'accounts/profile.html', {
-        'form': form,
-        'recent_orders': recent_orders,
-        'addresses': addresses,
-        'orders_count': user.orders.count(),
-        'wishlist_count': user.wishlist.item_count if hasattr(user, 'wishlist') else 0,
-    })
+        form = ProfileForm(instance=request.user)
+    return render(request, "accounts/profile.html", {"form": form})
 
 
 @login_required
-def addresses_view(request):
-    user = request.user
-    addresses = user.addresses.all()
+def address_list(request):
+    addresses = request.user.addresses.all()
+    return render(request, "accounts/addresses.html", {"addresses": addresses})
 
-    if request.method == 'POST':
+
+@login_required
+def address_create(request):
+    if request.method == "POST":
         form = AddressForm(request.POST)
         if form.is_valid():
-            address = form.save(commit=False)
-            address.user = user
-            if not addresses.exists():
-                address.is_default_shipping = True
-                address.is_default_billing = True
-            address.save()
-            messages.success(request, "Address saved successfully.")
-            return redirect('accounts:addresses')
-        else:
-            messages.error(request, "Please fix the errors below.")
+            addr = form.save(commit=False)
+            addr.buyer = request.user
+            if addr.is_default:
+                request.user.addresses.update(is_default=False)
+            addr.save()
+            messages.success(request, "Address saved.")
+            return redirect("address_list")
     else:
         form = AddressForm()
-
-    return render(request, 'accounts/addresses.html', {
-        'addresses': addresses,
-        'form': form,
-    })
+    return render(request, "accounts/address_form.html", {"form": form, "title": "Add Address"})
 
 
 @login_required
-def delete_address_view(request, address_id):
-    address = get_object_or_404(Address, id=address_id, user=request.user)
-    address.delete()
+def address_edit(request, pk):
+    addr = get_object_or_404(request.user.addresses, pk=pk)
+    if request.method == "POST":
+        form = AddressForm(request.POST, instance=addr)
+        if form.is_valid():
+            addr = form.save(commit=False)
+            if addr.is_default:
+                request.user.addresses.exclude(pk=pk).update(is_default=False)
+            addr.save()
+            messages.success(request, "Address updated.")
+            return redirect("address_list")
+    else:
+        form = AddressForm(instance=addr)
+    return render(request, "accounts/address_form.html", {"form": form, "title": "Edit Address"})
+
+
+@login_required
+def address_delete(request, pk):
+    addr = get_object_or_404(request.user.addresses, pk=pk)
+    addr.delete()
     messages.success(request, "Address removed.")
-    return redirect('accounts:addresses')
-
-
-@login_required
-def set_default_address_view(request, address_id):
-    address = get_object_or_404(Address, id=address_id, user=request.user)
-    Address.objects.filter(user=request.user).update(is_default_shipping=False)
-    address.is_default_shipping = True
-    address.save()
-    messages.success(request, f"Default shipping address set to {address.full_name}.")
-    return redirect('accounts:addresses')
+    return redirect("address_list")

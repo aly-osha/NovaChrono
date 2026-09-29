@@ -1,41 +1,35 @@
-from catalog.models import TCG, Category
-from orders.models import StoreSettings
+"""
+core/context_processors.py — inject brand + cart stats into every template.
+"""
+from django.db.models import Sum
+
+from products.models import Product
 from cart.models import Cart
-from wishlist.models import Wishlist
 
 
-def global_context(request):
-    """
-    Context processor that supplies global navigation data,
-    cart items count, wishlist counter, and store settings.
-    """
-    cart_count = 0
-    wishlist_count = 0
-
-    # Cart resolution (Authenticated User vs Guest Session)
-    if request.user.is_authenticated:
-        cart = Cart.objects.filter(user=request.user).first()
-        if cart:
-            cart_count = cart.item_count
-        # Wishlist count for authenticated buyer
-        wishlist = Wishlist.objects.filter(user=request.user).first()
-        if wishlist:
-            wishlist_count = wishlist.item_count
-    else:
-        if request.session.session_key:
-            cart = Cart.objects.filter(session_key=request.session.session_key).first()
-            if cart:
-                cart_count = cart.item_count
-
-    # Active TCG universes & Categories
-    header_tcgs = TCG.objects.filter(is_active=True).order_by('display_order', 'name')
-    header_categories = Category.objects.filter(is_active=True).order_by('display_order', 'name')
-    store_settings = StoreSettings.get_settings()
-
+def branding(request):
     return {
-        'cart_count': cart_count,
-        'wishlist_count': wishlist_count,
-        'header_tcgs': header_tcgs,
-        'header_categories': header_categories,
-        'store_settings': store_settings,
+        "BRAND": {
+            "name": "NovaChrono",
+            "tagline": "Collect · Verify · Discover",
+            "colors": {
+                "primary": "#7928CA",
+                "secondary": "#00E5FF",
+                "tertiary": "#D4AF37",
+                "surface": "#121317",
+                "on_surface": "#E3E2E8",
+            },
+        },
     }
+
+
+def cart_stats(request):
+    """Return cart item count for nav bar."""
+    cart_count = 0
+    if request.user.is_authenticated:
+        try:
+            cart = Cart.objects.get(buyer=request.user)
+            cart_count = cart.items.aggregate(total=Sum("quantity"))["total"] or 0
+        except Cart.DoesNotExist:
+            cart_count = 0
+    return {"CART_COUNT": cart_count}
