@@ -3,6 +3,7 @@ cart/models.py
 """
 from django.db import models
 from django.contrib.auth import get_user_model
+from django.utils import timezone
 
 User = get_user_model()
 
@@ -51,18 +52,7 @@ class CartItem(models.Model):
         return self.product.price * self.quantity
 
 
-class WishlistItem(models.Model):
-    buyer = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="wishlist",
-    )
-    product = models.ForeignKey(
-        "products.Product", on_delete=models.CASCADE, related_name="wishlist_items",
-    )
-    added_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "wishlist_items"
-        unique_together = ("buyer", "product")
-
-    def __str__(self):
-        return f"{self.buyer.email} → {self.product.name}"
+# NOTE: WishlistItem moved to the `wishlists` app.
+# The schema splits wishlisting into two tables — wishlists (one per user)
+# and wishlist_items (many per wishlist) — rather than pointing items
+# straight at the user. See wishlists/models.py.

@@ -11,6 +11,7 @@ import core.views as core
 import accounts.views as accounts
 import products.views as products
 import cart.views as cart
+import wishlists.views as wishlists
 import orders.views as orders
 import reviews.views as reviews
 import certificates.views as certs
@@ -39,15 +40,17 @@ urlpatterns = [
     path("shop/<int:pk>/", products.product_detail, name="product_detail"),
     path("verify/", products.verify_certificate, name="verify_certificate"),
 
-    # ---- Cart / Wishlist ----
+    # ---- Cart ----
     path("cart/", cart.cart, name="cart"),
     path("cart/add/<int:pk>/", cart.cart_add, name="cart_add"),
     path("cart/update/<int:pk>/", cart.cart_update, name="cart_update"),
     path("cart/remove/<int:pk>/", cart.cart_remove, name="cart_remove"),
-    path("wishlist/", cart.wishlist, name="wishlist"),
-    path("wishlist/add/<int:pk>/", products.add_to_wishlist, name="wishlist_add"),
-    path("wishlist/remove/<int:pk>/", cart.remove_from_wishlist, name="wishlist_remove"),
-    path("wishlist/to-cart/<int:pk>/", cart.wishlist_to_cart, name="wishlist_to_cart"),
+
+    # ---- Wishlist (own app: wishlists + wishlist_items) ----
+    path("wishlist/", wishlists.wishlist, name="wishlist"),
+    path("wishlist/add/<int:pk>/", wishlists.add_to_wishlist, name="wishlist_add"),
+    path("wishlist/remove/<int:pk>/", wishlists.remove_from_wishlist, name="wishlist_remove"),
+    path("wishlist/to-cart/<int:pk>/", wishlists.wishlist_to_cart, name="wishlist_to_cart"),
 
     # ---- Checkout / Orders ----
     path("checkout/", orders.checkout, name="checkout"),
@@ -58,8 +61,8 @@ urlpatterns = [
     path("reviews/add/<int:pk>/", reviews.add_review, name="add_review"),
     path("reviews/edit/<int:pk>/", reviews.edit_review, name="edit_review"),
 
-    # ---- Price alerts ----
-    path("alerts/add/<int:pk>/", products.price_alert_create, name="price_alert_add"),
+    # ---- Price alerts (schema rule 10: monitoring derives from wishlist) ----
+    path("alerts/add/<int:pk>/", wishlists.price_alert_create, name="price_alert_add"),
 
     # ---- Certificates (public + admin) ----
     path("certify/verify/", certs.public_verify, name="certify_verify"),

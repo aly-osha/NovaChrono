@@ -1,11 +1,12 @@
 """
-cart/views.py
+cart/views.py — cart only. Wishlist views moved to wishlists/views.py
+to match the schema's separate wishlists / wishlist_items tables.
 """
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
-from .models import Cart, CartItem, WishlistItem
+from .models import Cart, CartItem
 from products.models import Product
 
 
@@ -65,27 +66,5 @@ def cart_remove(request, pk):
     return redirect("cart")
 
 
-@login_required
-def wishlist(request):
-    items = request.user.wishlist.select_related("product").all()
-    return render(request, "cart/wishlist.html", {"items": items})
-
-
-@login_required
-def wishlist_to_cart(request, pk):
-    item = get_object_or_404(WishlistItem, buyer=request.user, product_id=pk)
-    product = item.product
-    cart, _ = Cart.objects.get_or_create(buyer=request.user)
-    CartItem.objects.get_or_create(cart=cart, product=product)
-    item.delete()
-    messages.success(request, f"Moved {product.name} to cart.")
-    return redirect("cart")
-
-
-@login_required
-def remove_from_wishlist(request, pk):
-    """Remove a product from the wishlist (also callable from products views)."""
-    product = get_object_or_404(Product, pk=pk)
-    request.user.wishlist.filter(product=product).delete()
-    messages.success(request, "Removed from wishlist.")
-    return redirect("wishlist")
+# NOTE: wishlist, wishlist_to_cart and remove_from_wishlist now live in
+# wishlists/views.py — the schema gives wishlisting its own two tables.

@@ -39,17 +39,9 @@ class Migration(migrations.Migration):
                 'unique_together': {('cart', 'product')},
             },
         ),
-        migrations.CreateModel(
-            name='WishlistItem',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('added_at', models.DateTimeField(auto_now_add=True)),
-                ('buyer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='wishlist', to=settings.AUTH_USER_MODEL)),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='wishlist_items', to='products.product')),
-            ],
-            options={
-                'db_table': 'wishlist_items',
-                'unique_together': {('buyer', 'product')},
-            },
-        ),
+        # NOTE: WishlistItem is intentionally NOT created here. The schema
+        # gives wishlisting its own pair of tables (wishlists +
+        # wishlist_items), owned by the `wishlists` app, so the new schema
+        # is created there. The legacy cart-owned wishlist_items table, if
+        # present in an existing database, is dropped in 0002.
     ]

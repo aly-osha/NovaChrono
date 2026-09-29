@@ -1,0 +1,123 @@
+"""
+wishlists/views.py — wishlist + price/restock monitoring (FR-17..FR-25).
+
+The schema has no price_alerts or restock_alerts table (rule 10): a buyer
+watching a product is simply a WishlistItem, and the events monitoring
+produces are Notifications. That is what this module implements.
+"""
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, redirect, render
+
+from cart.models import Cart, CartItem
+from products.models import Product
+
+from .models import Wishlist, WishlistItem
+
+
+def _wishlist_for(user):
+    """Get or create the buyer's single wishlist."""
+    wishlist, _ = Wishlist.objects.get_or_create(buyer=user)
+    return wishlist
+
+
+@login_required
+def wishlist(request):
+    wl = _wishlist_for(request.user)
+    items = wl.items.select_related("product", "product__game").all()
+    # Monitoring state is derived, not stored (schema rule 10).
+    price_drops = [i for i in items if i.is_price_drop]
+    return render(request, "cart/wishlist.html", {
+        "items": items,
+        "wishlist": wl,
+        "price_drops": price_drops,
+    })
+
+
+@login_required
+def add_to_wishlist(request, pk):
+    """Wishlisting a product activates price-drop + restock monitoring."""
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    wl = _wishlist_for(request.user)
+    item, created = WishlistItem.objects.get_or_create(
+        wishlist=wl,
+        product=product,
+        defaults={"added_price": product.price},
+    )
+    if not created and item.added_price != product.price:
+        # Re-watching resets the baseline the drop is measured against.
+        item.added_price = product.price
+        item.save()
+    messages.success(
+        request,
+        f"{product.name} added to wishlist — we'll notify you on a price "
+        f"drop or when it's back in stock.",
+    )
+    return redirect("product_detail", pk=pk)
+
+
+@login_required
+def remove_from_wishlist(request, pk):
+    """Removing from the wishlist also disables monitoring (FR-24)."""
+    product = get_object_or_404(Product, pk=pk)
+    WishlistItem.objects.filter(
+        wishlist__buyer=request.user, product=product
+    ).delete()
+    messages.success(request, "Removed from wishlist.")
+    return redirect("wishlist")
+
+
+@login_required
+def wishlist_to_cart(request, pk):
+    item = get_object_or_404(
+        WishlistItem, wishlist__buyer=request.user, product_id=pk
+    )
+    product = item.product
+    cart, _ = Cart.objects.get_or_create(buyer=request.user)
+    CartItem.objects.get_or_create(cart=cart, product=product)
+    item.delete()
+    messages.success(request, f"Moved {product.name} to cart.")
+    return redirect("cart")
+
+
+@login_required
+def price_alert_create(request, pk):
+    """Legacy route (detail page "Watch Price" button).
+
+    The schema removed the price_alerts table, so setting a price alert now
+    means joining the wishlist — which is what activates monitoring. The
+    posted target price is recorded as the watch baseline.
+    """
+    from decimal import Decimal, InvalidOperation
+
+    product = get_object_or_404(Product, pk=pk, is_active=True)
+    if request.method == "POST":
+        wl = _wishlist_for(request.user)
+        target = None
+        try:
+            raw = request.POST.get("target_price", "").strip()
+            if raw:
+                parsed = Decimal(raw)
+                if parsed > 0:
+                    target = parsed
+        except (InvalidOperation, ValueError, AttributeError):
+            target = None
+
+        WishlistItem.objects.update_or_create(
+            wishlist=wl,
+            product=product,
+            defaults={"added_price": target or product.price},
+        )
+        if target:
+            messages.success(
+                request,
+                f"Watching {product.name} — we'll notify you if it drops "
+                f"to ₹{target} or comes back in stock.",
+            )
+        else:
+            messages.success(
+                request,
+                f"{product.name} added to your wishlist — price-drop and "
+                f"restock alerts are now active.",
+            )
+    return redirect("product_detail", pk=pk)

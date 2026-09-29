@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     "reviews",
     "certificates",
     "analytics",
+    "wishlists",
+    "notifications",
     "accounts",
 ]
 
