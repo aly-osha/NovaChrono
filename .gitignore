@@ -1,80 +1,40 @@
-# ==========================================
-# NovaChrono - Django Project .gitignore
-# ==========================================
-
-# Python Bytecode & Cache
+# Python / Django
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-
-# Environments & Secret Keys
-.env
-.env.*
-!.env.example
-!.env.template
-
-# Virtual Environments
+.Python
 venv/
 .venv/
 env/
-ENV/
-env.bak/
-venv.bak/
-
-# Django Database & Local Configs
+.env
+*.sqlite3
 db.sqlite3
 db.sqlite3-journal
-*.sqlite3
-local_settings.py
 
-# Static & Media Files
+# Django uploads & collected static
+media/
 staticfiles/
-media/*
-!media/.gitkeep
-!media/products/
-media/products/*
-!media/products/.gitkeep
 
-# Logs
-*.log
-logs/
+# Reference bundles (Stitch source zips, notes) — not part of the app
+*.zip
+ecat_ui/
+full_ui.md
+ecat_note.txt
+logo_source.jpg
+stitch_novachrono_tcg_platform_ui/
+stitch_novachrono_tcg_platform_ui-2.zip
 
-# Testing & Code Quality
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-.mypy_cache/
-.ruff_cache/
-.tox/
-
-# IDE & Code Editors
+# OS / editors
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
-*.sublime-project
-*.sublime-workspace
 *.swp
 *.swo
-*~
 
-# Operating System Files
-# Windows
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# macOS
-.DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# Node / Frontend (if build tools are added)
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Logs & caches
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
