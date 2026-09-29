@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage, PriceAlert
+from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage, SealedPack
 
 
 @admin.register(Game)
@@ -22,7 +22,7 @@ class SetAdmin(admin.ModelAdmin):
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ("name", "parent", "is_active")
+    list_display = ("name", "description", "is_active")
     list_filter = ("is_active",)
     search_fields = ("name",)
 
@@ -47,8 +47,6 @@ class ProductImageAdmin(admin.ModelAdmin):
     list_filter = ("product",)
 
 
-@admin.register(PriceAlert)
-class PriceAlertAdmin(admin.ModelAdmin):
-    list_display = ("buyer", "product", "target_price", "is_active", "created_at")
-    list_filter = ("is_active",)
-    search_fields = ("buyer__email", "product__name")
+# NOTE: PriceAlert admin is removed. Schema rule 10 bans the price_alerts
+# table — monitoring derives from wishlist membership. See
+# wishlists/admin.py for the WishlistItem admin instead.

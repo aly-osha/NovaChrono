@@ -121,32 +121,30 @@ def admin_category_list(request):
 
 @admin_required
 def admin_category_create(request):
-    parents = Category.objects.all()
+    # Categories are flat in the schema (no self-FK parent column).
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
-        parent_id = request.POST.get("parent")
+        description = request.POST.get("description", "").strip()
         if name:
-            parent = Category.objects.filter(pk=parent_id).first() if parent_id else None
-            Category.objects.create(name=name, parent=parent)
+            Category.objects.create(name=name, description=description)
             messages.success(request, f"Category '{name}' created.")
             return redirect("admin_category_list")
-    return render(request, "admin/category_form.html", {"parents": parents, "title": "Add Category"})
+    return render(request, "admin/category_form.html", {"parents": [], "title": "Add Category"})
 
 
 @admin_required
 def admin_category_edit(request, pk):
     cat = get_object_or_404(Category, pk=pk)
-    parents = Category.objects.exclude(pk=pk)
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
-        parent_id = request.POST.get("parent")
+        description = request.POST.get("description", "").strip()
         if name:
             cat.name = name
-            cat.parent = Category.objects.filter(pk=parent_id).first() if parent_id else None
+            cat.description = description
             cat.save()
             messages.success(request, f"Category updated to '{name}'.")
             return redirect("admin_category_list")
-    return render(request, "admin/category_form.html", {"parents": parents, "title": "Edit Category", "category": cat})
+    return render(request, "admin/category_form.html", {"parents": [], "title": "Edit Category", "category": cat})
 
 
 @admin_required
@@ -162,13 +160,13 @@ def admin_category_toggle(request, pk):
 
 @admin_required
 def admin_product_list(request):
-    qs = Product.objects.select_related("set", "set__game", "category").all()
+    qs = Product.objects.select_related("set", "game", "category").all()
     ptype = request.GET.get("type", "")
     game = request.GET.get("game", "")
     if ptype:
         qs = qs.filter(product_type=ptype)
     if game:
-        qs = qs.filter(set__game_id=game)
+        qs = qs.filter(game_id=game)
     return render(request, "admin/product_list.html", {
         "products": qs,
         "games": Game.objects.all(),
@@ -294,7 +292,7 @@ def admin_product_toggle(request, pk):
 
 @admin_required
 def admin_inventory(request):
-    products = Product.objects.select_related("set", "set__game").all()
+    products = Product.objects.select_related("set", "game").all()
     low_stock = [p for p in products if 0 < p.stock < 5]
     out_of_stock = [p for p in products if p.stock == 0]
     return render(request, "admin/inventory.html", {
