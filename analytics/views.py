@@ -12,7 +12,6 @@ from products.models import Product
 from orders.models import Order, OrderItem
 from reviews.models import Review
 from certificates.models import AuthenticityCertificate
-from cart.models import WishlistItem
 from analytics.models import ActivityLog, SystemSetting
 
 
@@ -60,12 +59,12 @@ def dashboard(request):
     # low stock
     low_stock = Product.objects.filter(
         stock__gt=0, stock__lt=5, is_active=True,
-    ).select_related("set", "set__game")[:10]
+    ).select_related("set", "game")[:10]
 
     # out of stock
     out_of_stock = Product.objects.filter(
         stock=0, is_active=True,
-    ).select_related("set", "set__game")[:10]
+    ).select_related("set", "game")[:10]
 
     # inventory value
     inventory_value = Product.objects.filter(is_active=True).aggregate(
