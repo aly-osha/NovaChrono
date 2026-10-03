@@ -25,8 +25,15 @@ PAYMENT_STATUS_CHOICES = [
 PAYMENT_METHOD_CHOICES = [
     ("card", "Card"),
     ("upi", "UPI"),
+    ("cod", "Cash on Delivery"),
     ("sandbox", "Sandbox"),
 ]
+
+# Methods that are collected at the door rather than settled online. An order
+# paid by COD is confirmed on placement but its payment is not 'success' until
+# the buyer hands over cash — modelled as 'pending' (see orders/views.checkout).
+CASH_ON_DELIVERY = "cod"
+ONLINE_METHODS = {"card", "upi", "sandbox"}
 
 
 class Order(models.Model):
