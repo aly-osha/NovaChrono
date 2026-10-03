@@ -3,6 +3,8 @@ products/views.py — catalogue browsing, search, filtering, product detail.
 Wishlist/alert views moved to wishlists/views.py (schema: separate
 wishlists + wishlist_items tables; no price_alerts table).
 """
+from decimal import Decimal, InvalidOperation
+
 from django.db.models import Q, Avg
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
@@ -58,13 +60,37 @@ def catalogue(request):
     if condition:
         qs = qs.filter(single_card__condition=condition)
 
-    # price range
+    # price range — coerce defensively. Browsers submit type="number" as text, so
+    # an empty field, a stray space, or a partially-typed value like "12." can reach
+    # here. Decimal would raise InvalidOperation and 500 the whole catalogue page.
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
-    if min_price:
-        qs = qs.filter(price__gte=min_price)
-    if max_price:
-        qs = qs.filter(price__lte=max_price)
+    price_filter_error = None
+
+    def _to_decimal(raw):
+        """Return a Decimal, None for 'absent', or False for 'invalid'.
+
+        The comparison itself can raise InvalidOperation, not just the
+        construction: Decimal('NaN') constructs fine but NaN >= 0 raises
+        decimal.InvalidOperation. Both the parse and the compare need guarding.
+        """
+        if not raw:
+            return None
+        try:
+            value = Decimal(raw)
+            return value if value >= 0 else False
+        except (InvalidOperation, ValueError, TypeError):
+            return False
+
+    min_dec = _to_decimal(min_price)
+    max_dec = _to_decimal(max_price)
+    if min_dec is False or max_dec is False:
+        price_filter_error = "Enter a valid non-negative price."
+    else:
+        if min_dec is not None:
+            qs = qs.filter(price__gte=min_dec)
+        if max_dec is not None:
+            qs = qs.filter(price__lte=max_dec)
 
     # availability
     avail = request.GET.get("available", "").strip()
@@ -105,6 +131,7 @@ def catalogue(request):
         "categories": categories,
         "query_params": params,
         "page_obj": products,
+        "price_filter_error": price_filter_error,
     })
 
 

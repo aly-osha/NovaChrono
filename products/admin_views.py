@@ -57,9 +57,43 @@ def admin_game_edit(request, pk):
 
 @admin_required
 def admin_game_delete(request, pk):
+    """Delete a game (FR-73).
+
+    Two problems this fixes:
+      1. It deleted on a plain GET, so a prefetch/hover could destroy data.
+         Writes now require POST.
+      2. Products reference a game with on_delete=PROTECT (schema integrity),
+         so deleting a game in use raised ProtectedError -> HTTP 500. That is
+         now a friendly message instead of a crash.
+    """
     game = get_object_or_404(Game, pk=pk)
+
+    if request.method != "POST":
+        # Confirm page for a destructive action.
+        in_use = Product.objects.filter(game=game).count()
+        return render(request, "admin/delete_confirm.html", {
+            "title": "Delete Game",
+            "object_label": game.name,
+            "cancel_url": "admin_game_list",
+            "in_use_count": in_use,
+            "blocked_message": (
+                f"'{game.name}' is used by {in_use} product(s) and cannot be "
+                f"deleted. Deactivate those products first, or rename this "
+                f"game instead."
+            ) if in_use else "",
+        })
+
+    in_use = Product.objects.filter(game=game).count()
+    if in_use:
+        messages.error(
+            request,
+            f"'{game.name}' is used by {in_use} product(s) and cannot be deleted.",
+        )
+        return redirect("admin_game_list")
+
+    name = game.name
     game.delete()
-    messages.success(request, f"Game '{game.name}' deleted.")
+    messages.success(request, f"Game '{name}' deleted.")
     return redirect("admin_game_list")
 
 
@@ -281,9 +315,28 @@ def admin_product_edit(request, pk):
 
 @admin_required
 def admin_product_toggle(request, pk):
+    """Activate / deactivate a product (FR-63).
+
+    Requires POST. This used to flip the flag on a plain GET, which meant a
+    link prefetch, a browser resend, or a stray crawler could silently
+    deactivate a product in the live catalogue.
+    """
+    if request.method != "POST":
+        # Preserve the old click-to-toggle affordance without the GET hazard:
+        # bounce to a tiny form that POSTs back to this URL.
+        p = get_object_or_404(Product, pk=pk)
+        return render(request, "admin/toggle_confirm.html", {
+            "product": p,
+            "will_activate": not p.is_active,
+        })
+
     p = get_object_or_404(Product, pk=pk)
     p.is_active = not p.is_active
-    p.save()
+    p.save(update_fields=["is_active", "updated_at"])
+    messages.success(
+        request,
+        f"{p.name} {'activated' if p.is_active else 'deactivated'}.",
+    )
     return redirect("admin_product_list")
 
 
@@ -304,9 +357,30 @@ def admin_inventory(request):
 
 @admin_required
 def admin_inventory_update(request, pk):
+    """Edit one product's stock count (FR-64).
+
+    The inventory table's "Update Stock" control links here with a GET, so
+    GET renders the edit form and POST saves it. Previously this view only
+    read request.POST, so following that link did nothing at all: the
+    quantity typed in the URL was ignored and the page just redirected back.
+    """
     p = get_object_or_404(Product, pk=pk)
+
     if request.method == "POST":
-        p.stock = int(request.POST.get("stock", 0))
-        p.save()
+        raw = request.POST.get("stock", "").strip()
+        try:
+            new_stock = int(raw)
+            if new_stock < 0:
+                raise ValueError
+        except (TypeError, ValueError):
+            messages.error(request, "Enter a whole number of items (0 or more).")
+            return redirect("admin_inventory")
+        p.stock = new_stock
+        p.save(update_fields=["stock", "updated_at"])
         messages.success(request, f"{p.name} stock updated to {p.stock}.")
-    return redirect("admin_inventory")
+        return redirect("admin_inventory")
+
+    return render(request, "admin/inventory_edit.html", {
+        "product": p,
+        "current_stock": p.stock,
+    })
