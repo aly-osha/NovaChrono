@@ -38,3 +38,6 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Editor tooling (Kiro hooks) — not project code
+.kiro/
