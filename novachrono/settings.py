@@ -2,15 +2,72 @@
 core/settings.py — NovaChrono settings
 """
 
+import os
+
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-novachrono-dev-key-change-in-production-2026"
+# --- NFR-16: HTTPS / secure communication -----------------------------------
+# Every deployment-sensitive value is env-driven so the same code can run
+# locally (DEBUG on, http) and in production (DEBUG off, https behind the
+# OpenShift edge-TLS route).
+SECRET_KEY = os.environ.get(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-novachrono-dev-key-change-in-production-2026",
+)
 
-DEBUG = True
+DEBUG = os.environ.get("DJANGO_DEBUG", "true").lower() in ("1", "true", "yes")
 
-ALLOWED_HOSTS = ["*"]
+# Never "*" in production: it enables Host-header attacks. Falls back to the
+# dev convenience only while DEBUG is on.
+if DEBUG:
+    ALLOWED_HOSTS = ["*"]
+else:
+    ALLOWED_HOSTS = [
+        h.strip()
+        for h in os.environ.get(
+            "DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1"
+        ).split(",")
+        if h.strip()
+    ]
+
+# Behind the OpenShift route the edge terminates TLS and forwards plain HTTP
+# to the pod, so Django must trust X-Forwarded-Proto to see the real scheme
+# (otherwise request.is_secure() is False and CSRF origin checks fail).
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    # Secure cookies are set above; the admin's own session/login pages work
+    # fine over https behind the route.
+    CSRF_TRUSTED_ORIGINS = [
+        o.strip()
+        for o in os.environ.get(
+            "DJANGO_CSRF_TRUSTED_ORIGINS",
+            "https://novachrono-ajaymmathewxyz-dev.apps.rm3.7wse.p1.openshiftapps.com",
+        ).split(",")
+        if o.strip()
+    ]
+
+# --- Authentication redirects (FR-4, FR-5) --------------------------------
+# Django's @login_required defaults to "/accounts/login/", but this project
+# serves the login page at "/login/" (urls.py, name="login"). Without this,
+# an anonymous user clicking the wishlist heart got a hard 404 on a route
+# that does not exist instead of being sent to log in.
+LOGIN_URL = "login"
+# Where @login_required sends a user who is ALREADY authenticated but hits a
+# protected page.
+LOGIN_REDIRECT_URL = "home"
+# After signing out, land on the public home page rather than a protected one.
+LOGOUT_REDIRECT_URL = "home"
 
 INSTALLED_APPS = [
     "django.contrib.admin",

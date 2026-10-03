@@ -9,9 +9,12 @@ User = get_user_model()
 
 
 class Cart(models.Model):
+    """Schema table: carts (cart_id, user_id UNIQUE, created_at, updated_at)."""
     buyer = models.OneToOneField(
         User, on_delete=models.CASCADE, related_name="cart",
     )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "carts"

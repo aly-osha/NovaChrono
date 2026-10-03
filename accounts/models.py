@@ -32,6 +32,14 @@ class User(AbstractUser):
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="active",
     )
+    # Re-declared to enforce the schema's `email VARCHAR(255) UNIQUE NOT NULL`.
+    # AbstractUser inherits email as unique=False, so the constraint was only
+    # enforced in RegisterForm.clean_email (FR-3) and was bypassed by the
+    # profile-edit form. Overriding the field makes the database the
+    # authority, which is what FR-3 and NFR-5 require.
+    email = models.EmailField(
+        "email address", max_length=255, unique=True
+    )
     # Full name for display (separate from AbstractUser.first_name/last_name)
     name = models.CharField(max_length=150, blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)

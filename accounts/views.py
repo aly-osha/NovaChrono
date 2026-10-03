@@ -7,8 +7,30 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.views.decorators.http import require_http_methods
 from django import forms
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from .models import User, Address
+
+
+def _safe_next_url(next_url, request):
+    """Validate a ?next= redirect target before sending a user there.
+
+    Without this check, /login/?next=https://evil.example could bounce a
+    freshly-authenticated user off-site (open redirect). Only relative
+    paths and absolute URLs on this host are allowed; anything else falls
+    back to the home page.
+    """
+    if not next_url:
+        return reverse("home")
+    allowed = {request.get_host()}
+    if url_has_allowed_host_and_scheme(
+        url=next_url,
+        allowed_hosts=allowed,
+        require_https=request.is_secure(),
+    ):
+        return next_url
+    return reverse("home")
 
 
 class RegisterForm(forms.ModelForm):
@@ -55,6 +77,22 @@ class ProfileForm(forms.ModelForm):
         model = User
         fields = ["name", "email", "phone"]
 
+    def clean_email(self):
+        """FR-3: reject an email already used by a different account.
+
+        The DB now enforces UNIQUE, but SQLite compares text case-sensitively,
+        so 'A@b.com' and 'a@b.com' would both pass at the storage layer.
+        Registration already lowercases; do the same here so the two entry
+        points agree.
+        """
+        email = self.cleaned_data["email"].strip().lower()
+        qs = User.objects.filter(email__iexact=email)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
 
 class AddressForm(forms.ModelForm):
     class Meta:
@@ -75,6 +113,11 @@ def register(request):
 
 
 def login_view(request):
+    # Where to go after a successful sign-in. When @login_required bounced
+    # the user here it appended ?next=<the page they wanted>, so honour it
+    # instead of always dropping them on the home page.
+    next_url = request.GET.get("next") or request.POST.get("next") or ""
+
     if request.method == "POST":
         form = LoginForm(request.POST)
         if form.is_valid():
@@ -95,11 +138,14 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f"Welcome back, {user.get_full_name() or user.email}.")
-                return redirect("home")
+                return redirect(_safe_next_url(next_url, request))
             messages.error(request, "Invalid email or password.")
     else:
         form = LoginForm()
-    return render(request, "accounts/login.html", {"form": form})
+    return render(request, "accounts/login.html", {
+        "form": form,
+        "next": next_url,
+    })
 
 
 @login_required
