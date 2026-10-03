@@ -2,7 +2,11 @@
 {% block title %}TCG Vault Catalogue — NovaChrono{% endblock %}
 
 {% block content %}
+{% url 'home' as url_home %}
 <div class="flex flex-col gap-space-sm mb-space-xl">
+  <div>
+    {% include "partials/_back_link.html" with target=url_home label="Home" %}
+  </div>
   <div class="flex items-center gap-space-2xs font-mono text-outline">
     <a href="{% url 'home' %}" class="hover:text-on-surface transition-colors">HOME</a>
     <span class="text-surface-bright">/</span>
@@ -37,8 +41,23 @@
 
 <!-- Main Layout -->
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-  <!-- Left Sidebar: Filters -->
-  <aside class="lg:col-span-3 flex flex-col gap-space-md bg-surface-container-low p-space-md rounded-xl shadow-md sticky top-20">
+  {% comment %}
+    Sticky panel + independent scroll. The header is h-[64px] (4rem), so top-20
+    (5rem) clears it with a 1rem gap. Without a max-height, a sticky element
+    taller than the viewport gets pinned and its lower half can never be
+    reached — the page scrolls, the panel does not. max-h + overflow-y-auto
+    keeps every control reachable while the panel stays pinned.
+{% endcomment %}
+  <aside class="lg:col-span-3 bg-surface-container-low p-space-md rounded-xl shadow-md
+                lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+    {% comment %}
+    The form lives INSIDE the aside, not around it. Wrapping the aside instead
+    would need display:contents on the form, and that silently makes every
+    sibling of the aside its own grid item — the Apply button then steals a
+    column and the 3/9 split collapses.
+    {% endcomment %}
+    <form method="get" action="{% url 'catalogue' %}" class="flex flex-col gap-space-md">
+    <input type="hidden" name="q" value="{{ request.GET.q|default:'' }}">
     <div class="flex items-center justify-between pb-space-xs">
       <div class="flex items-center gap-space-2xs">
         <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">tune</span>
@@ -97,12 +116,21 @@
     <div class="space-y-space-xs">
       <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Price Range (₹)</span>
       <div class="flex gap-space-2xs">
-        <input type="number" name="min_price" placeholder="Min"
+        {% comment %}
+    min-w-0 is required: a flex child defaults to min-width:auto, which resolves
+    to the number input's intrinsic width (~20ch for the spinner plus digits).
+    That intrinsic floor wins over flex-1 and pushes the pair past the sidebar
+    edge. min-w-0 lets them actually shrink.
+{% endcomment %}
+        <input type="number" name="min_price" placeholder="Min" inputmode="decimal"
                value="{{ request.GET.min_price|default:'' }}"
-               class="flex-1 px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed"/>
-        <input type="number" name="max_price" placeholder="Max"
+               class="flex-1 min-w-0 w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"/>
+        <input type="number" name="max_price" placeholder="Max" inputmode="decimal"
                value="{{ request.GET.max_price|default:'' }}"
-               class="flex-1 px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed"/>
+               class="flex-1 min-w-0 w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"/>
+      {% if price_filter_error %}
+      <p class="font-mono text-[11px] text-error mt-space-2xs" role="alert">{{ price_filter_error }}</p>
+      {% endif %}
       </div>
     </div>
 
@@ -121,25 +149,37 @@
     <div class="space-y-space-xs pt-space-sm border-t border-surface-container-high">
       <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Sort By</span>
       <select name="sort" onchange="this.form.submit()"
-              class="w-full px-space-sm py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed">
+              class="w-full px-space-sm py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed appearance-none">
         <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
         <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low → High</option>
         <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
         <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Top Rated</option>
       </select>
     </div>
-  </aside>
+    {% comment %}
+    Apply button: the sort select self-submits on change, but price, checkbox and
+    radio filters fire no change handler, so the rail needs an explicit apply.
+    {% endcomment %}
+    <button type="submit"
+            class="w-full px-space-sm py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+      Apply Filters
+    </button>
+    </form>
+    </aside>
 
   <!-- Product Grid -->
   <div class="lg:col-span-9">
     <!-- Results header -->
     <div class="flex items-center justify-between mb-space-lg">
       <span class="font-mono text-[11px] text-outline uppercase tracking-wider">{{ page_obj.paginator.count }} products found</span>
-      <form class="flex items-center gap-space-xs" method="get">
+      <form class="flex items-center gap-space-xs" method="get" action="{% url 'catalogue' %}">
+        {% for k, v in request.GET.items %}{% if k not in 'sort' %}
+          <input type="hidden" name="{{ k }}" value="{{ v }}">
+        {% endif %}{% endfor %}
         <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
                placeholder="Search by name or description..."
-               class="flex-1 max-w-[300px] px-space-md py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed"/>
-        <button type="submit" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+               class="flex-1 min-w-0 max-w-[300px] px-space-md py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed"/>
+        <button type="submit" class="shrink-0 px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
           <span class="material-symbols-outlined text-[16px]">search</span>
         </button>
       </form>
