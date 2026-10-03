@@ -8,10 +8,17 @@ from django.contrib.auth.decorators import login_required
 from .models import AuthenticityCertificate
 from products.models import Product
 from analytics.models import ActivityLog
+from .qr import attach_qr_urls, verification_url
 
 
 def public_verify(request):
-    """Public certificate verification page."""
+    """Public certificate verification page (FR-54..FR-58).
+
+    Reachable three ways, all landing here:
+      - manual code entry:  /certify/verify/?code=NC-1234
+      - QR scan (FR-56):   the decoded QR URL IS this page with ?code=
+      - printed label:     whatever absolute URL the QR encodes
+    """
     code = request.GET.get("code", "").strip().upper()
     cert = None
     found = False
@@ -25,19 +32,28 @@ def public_verify(request):
         except AuthenticityCertificate.DoesNotExist:
             found = False
 
-    return render(request, "certificates/verify.html", {
+    context = {
         "code": code,
         "cert": cert,
         "found": found,
-    })
+    }
+    if cert:
+        # FR-53: show the certificate's own QR so a buyer can re-verify or
+        # save it. Computed, never stored.
+        attach_qr_urls(request, [cert])
+        context["qr_url"] = cert.qr_url
+    return render(request, "certificates/verify.html", context)
 
 
 @login_required
 def admin_certificate_list(request):
     from django.contrib.auth.decorators import user_passes_test
-    certs = AuthenticityCertificate.objects.select_related(
+    certs = list(AuthenticityCertificate.objects.select_related(
         "product", "issued_by",
-    ).all()
+    ).all())
+    # FR-53: attach a computed QR URL per certificate for the admin to
+    # print / download. No schema change, nothing persisted.
+    attach_qr_urls(request, certs)
     return render(request, "certificates/admin_list.html", {"certs": certs})
 
 

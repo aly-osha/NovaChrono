@@ -23,6 +23,7 @@
           <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Issued By</th>
           <th class="px-space-md py-space-sm text-left font-mono text-[11px] text-outline uppercase tracking-widest">Issued At</th>
           <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Status</th>
+          <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">QR</th>
           <th class="px-space-md py-space-sm text-center font-mono text-[11px] text-outline uppercase tracking-widest">Action</th>
         </tr>
       </thead>
@@ -50,6 +51,19 @@
             </td>
             <td class="px-space-md py-space-md text-center">
               {% if cert.is_active %}
+                {% comment %}
+                  FR-53/FR-56: download the QR to print on the product.
+                  URL is computed (certificates/qr.py), never stored.
+                {% endcomment %}
+                <div class="flex justify-center">
+                  {% include "certificates/_qr_display.html" with qr_url=cert.qr_url qr_id="qr-{{ cert.pk }}" hide_actions=False %}
+                </div>
+              {% else %}
+                <span class="text-outline font-mono text-xs">—</span>
+              {% endif %}
+            </td>
+            <td class="px-space-md py-space-md text-center">
+              {% if cert.is_active %}
                 <a href="{% url 'admin_certificate_revoke' cert.pk %}"
                    class="inline-flex px-space-sm py-space-xs rounded-lg bg-error/10 text-error font-mono text-xs hover:bg-error hover:text-white transition-colors">
                   <span class="material-symbols-outlined text-[14px] mr-space-2xs">cancel</span>
@@ -62,7 +76,7 @@
           </tr>
         {% empty %}
           <tr>
-            <td colspan="6" class="px-space-md py-space-3xl text-center text-on-surface-variant font-mono text-sm">
+            <td colspan="7" class="px-space-md py-space-3xl text-center text-on-surface-variant font-mono text-sm">
               No certificates issued yet.
             </td>
           </tr>

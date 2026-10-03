@@ -55,6 +55,12 @@ class AuthenticityCertificate(models.Model):
         if not self.issue_date:
             from django.utils import timezone
             self.issue_date = timezone.now().date()
+        # certificate_number is UNIQUE in the schema, so it must be populated
+        # on every insert. It is derived from verification_code, which the
+        # view sets before saving. The guard below keeps the column unique
+        # even when verification_code is assigned after construction.
+        if not self.certificate_number and self.verification_code:
+            self.certificate_number = f"NC-{self.verification_code}"
         # Keep the schema's status column and the legacy is_active flag in sync.
         if self.status == "valid":
             self.is_active = True

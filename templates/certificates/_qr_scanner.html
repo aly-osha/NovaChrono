@@ -1,0 +1,122 @@
+{% comment %}
+QR scanner — FR-56.
+
+Opens the device camera with html5-qrcode, decodes a NovaChrono
+certificate QR, extracts the `code` query parameter, and submits the
+existing manual-entry form. Nothing new is submitted; the form and its
+backend are unchanged.
+
+Fallbacks, in order:
+  1. no camera / permission denied  -> explain, keep manual entry usable
+  2. https required for getUserMedia on non-localhost hosts -> explain
+  3. decoded text is a bare code   -> used directly
+  4. decoded text is the verify URL -> `code=` pulled out of it
+{% endcomment %}
+
+<div id="nc-scanner" class="mt-space-md">
+  <button type="button" id="nc-scan-btn"
+          class="w-full inline-flex items-center justify-center gap-space-xs px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm font-semibold uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-colors">
+    <span class="material-symbols-outlined text-[18px]">qr_code_scanner</span>
+    Scan QR Code
+  </button>
+
+  <p id="nc-scan-hint" class="hidden mt-space-sm text-center text-on-surface-variant font-mono text-[11px]">
+    Point the camera at a NovaChrono certificate QR code.
+  </p>
+
+  <div id="nc-scan-reader" class="hidden mt-space-md mx-auto" style="max-width:320px"></div>
+
+  <p id="nc-scan-error" class="hidden mt-space-sm text-center text-error font-mono text-[11px]"></p>
+</div>
+
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
+        onerror="window.ncScannerLibFailed = true;"></script>
+<script>
+(function () {
+  var btn = document.getElementById('nc-scan-btn');
+  var hint = document.getElementById('nc-scan-hint');
+  var reader = document.getElementById('nc-scan-reader');
+  var error = document.getElementById('nc-scan-error');
+  var scanner = null;
+
+  function fail(msg) {
+    error.textContent = msg;
+    error.classList.remove('hidden');
+  }
+
+  function reset() {
+    error.classList.add('hidden');
+    if (scanner) {
+      try { scanner.stop(); } catch (e) { /* already stopped */ }
+      scanner = null;
+    }
+    reader.innerHTML = '';
+    reader.classList.add('hidden');
+    hint.classList.add('hidden');
+    btn.disabled = false;
+  }
+
+  // A scan may yield the full verify URL or a bare code. Accept both.
+  function codeFromDecoded(text) {
+    if (!text) { return null; }
+    var trimmed = text.trim();
+    var m = trimmed.match(/[?&]code=([^&]+)/i);
+    if (m) { return decodeURIComponent(m[1]); }
+    if (/^https?:\/\//i.test(trimmed)) { return null; }
+    return trimmed;
+  }
+
+  function submit(code) {
+    var input = document.getElementById('code');
+    if (!input) { return; }
+    input.value = code;
+    if (input.form) { input.form.submit(); }
+  }
+
+  if (!btn) { return; }
+
+  btn.addEventListener('click', function () {
+    error.classList.add('hidden');
+
+    if (window.ncScannerLibFailed || !window.Html5Qrcode) {
+      fail('Scanner library unavailable (offline?). Enter the code below.');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      fail('This browser cannot access a camera. Enter the code below.');
+      return;
+    }
+    // getUserMedia requires a secure context: https, or localhost.
+    if (window.location.protocol !== 'https:' &&
+        !['localhost', '127.0.0.1', '::1'].includes(window.location.hostname)) {
+      fail('Camera access needs HTTPS. Enter the code below.');
+      return;
+    }
+
+    btn.disabled = true;
+    reader.classList.remove('hidden');
+    hint.classList.remove('hidden');
+
+    scanner = new window.Html5Qrcode('nc-scan-reader');
+
+    scanner.start(
+      { facingMode: 'environment' },
+      { fps: 10, qrbox: { width: 220, height: 220 } },
+      function (decoded) {
+        var code = codeFromDecoded(decoded);
+        if (code) {
+          reset();
+          submit(code);
+        }
+      },
+      function () { /* per-frame misses are normal; stay quiet */ }
+    ).catch(function (e) {
+      reset();
+      var msg = (e && e.name === 'NotAllowedError')
+        ? 'Camera permission denied. Enter the code below.'
+        : 'Could not start the camera. Enter the code below.';
+      fail(msg);
+    });
+  });
+})();
+</script>

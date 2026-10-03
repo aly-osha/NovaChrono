@@ -22,9 +22,12 @@
       </button>
     </form>
 
-    <div class="mt-space-md flex items-center justify-center gap-space-xs text-on-surface-variant text-xs font-mono">
-      <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">info</span>
-      <span>Certificates can also be scanned via QR code.</span>
+    <div class="mt-space-md flex flex-col items-center gap-space-sm">
+      {% include "certificates/_qr_scanner.html" %}
+      <div class="flex items-center gap-space-xs text-on-surface-variant text-xs font-mono">
+        <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">info</span>
+        <span>Scan a certificate QR, or type the code above.</span>
+      </div>
     </div>
   </div>
 
@@ -56,14 +59,34 @@
             </div>
           </div>
 
-          {% if cert.qr_code_url %}
-            <div class="mt-space-xl">
-              <a href="{{ cert.qr_code_url }}" target="_blank" class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-secondary-container/10 text-secondary-fixed-dim font-mono text-sm hover:bg-secondary-container/20 transition-colors">
-                <span class="material-symbols-outlined text-[18px]">qr_code_2</span>
-                View QR Certificate
-              </a>
+          {% comment %}
+FR-53: show the certificate's own QR. The URL is computed server-side
+(certificates/qr.py) — nothing is stored, so this stays correct even if
+the deployment host changes.
+{% endcomment %}
+<div class="mt-space-xl pt-space-lg border-t border-surface-container-high">
+              <div class="flex flex-col md:flex-row gap-space-xl items-center">
+                <div class="shrink-0">
+                  {% include "certificates/_qr_display.html" with qr_url=qr_url qr_id="verify-qr" %}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-space-xs mb-space-sm">
+                    <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">qr_code_2</span>
+                    <span class="font-display text-base font-bold text-on-surface">Scan to re-verify</span>
+                  </div>
+                  <p class="text-on-surface-variant text-sm font-mono leading-relaxed">
+                    This code resolves to the public verification page for
+                    <strong class="text-on-surface">{{ cert.verification_code }}</strong>.
+                    Print it on the product label, or let the buyer scan it
+                    from their phone camera.
+                  </p>
+                  <p class="mt-space-md text-outline font-mono text-[11px]">
+                    Certificate {{ cert.certificate_number|default:"—" }}
+                    &middot; issued {{ cert.issue_date|date:"M d, Y"|default:cert.issued_at|date:"M d, Y" }}
+                  </p>
+                </div>
+              </div>
             </div>
-          {% endif %}
 
           <div class="mt-space-xl pt-space-lg border-t border-surface-container-high text-xs text-on-surface-variant font-mono">
             This certificate is registered in the NovaChrono immutable provenance ledger.

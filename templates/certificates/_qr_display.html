@@ -1,0 +1,87 @@
+{% comment %}
+Reusable QR block — FR-53 (generate) and FR-56 (scan).
+
+Usage:
+  {% include "certificates/_qr_display.html" with qr_url=cert.qr_url qr_id="cert-qr" %}
+  {% include "certificates/_qr_display.html" with qr_url=qr_url qr_id="verify-qr" %}
+
+The QR is rendered client-side by qrcode.js from the CDN. That is
+deliberate: it keeps Pillow / reportlab / any binary QR dependency out of
+requirements.txt, which this project has trimmed to Django alone. If the
+CDN is unreachable the block degrades to showing the raw URL, which is
+still scannable by hand and still verifies.
+{% endcomment %}
+
+<div class="qr-block" data-qr-id="{{ qr_id }}" data-qr-url="{{ qr_url }}">
+  <div id="{{ qr_id }}-img" class="qr-image hidden flex justify-center"></div>
+
+  {% if not hide_actions %}
+    <div class="qr-actions flex gap-space-xs mt-space-sm">
+      <button type="button"
+              onclick="ncQrDownload('{{ qr_id }}', '{{ qr_url|escapejs }}')"
+              class="inline-flex items-center gap-space-2xs px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] font-semibold uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-[14px]">download</span>
+        Download PNG
+      </button>
+      <a href="{{ qr_url }}" target="_blank" rel="noopener"
+         class="inline-flex items-center gap-space-2xs px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] font-semibold uppercase tracking-wider hover:bg-surface-container hover:text-primary transition-colors">
+        <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+        Open link
+      </a>
+    </div>
+  {% endif %}
+
+  {% comment %}Always rendered so the URL survives a CDN failure.{% endcomment %}
+  <p class="qr-fallback mt-space-sm text-on-surface-variant font-mono text-[11px] break-all">
+    {{ qr_url }}
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"
+        onerror="window.ncQrLibFailed = true;"></script>
+<script>
+(function () {
+  function render() {
+    if (!window.QRCode) { return; }
+    document.querySelectorAll('.qr-block').forEach(function (block) {
+      var id = block.getAttribute('data-qr-id');
+      var url = block.getAttribute('data-qr-url');
+      var target = document.getElementById(id + '-img');
+      if (!target || !url || target.dataset.done) { return; }
+      // 220px is a good print size; the module renders to canvas internally.
+      new window.QRCode(target, {
+        text: url,
+        width: 220,
+        height: 220,
+        colorDark: '#121317',
+        colorLight: '#ffffff',
+        correctLevel: window.QRCode.CorrectLevel.M
+      });
+      target.dataset.done = '1';
+      target.classList.remove('hidden');
+      // Hide the raw URL once a real QR is on screen.
+      var fb = block.querySelector('.qr-fallback');
+      if (fb) { fb.classList.add('hidden'); }
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', render);
+  } else {
+    render();
+  }
+  // The script tag above may still be loading.
+  window.addEventListener('load', render, { once: true });
+})();
+
+window.ncQrDownload = function (id, url) {
+  var target = document.getElementById(id + '-img');
+  var canvas = target && target.querySelector('canvas');
+  if (!canvas) { window.open(url, '_blank'); return; }
+  var link = document.createElement('a');
+  link.download = 'novachrono-certificate-' + (url.split('code=')[1] || 'qr') + '.png';
+  link.href = canvas.toDataURL('image/png');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
+</script>
