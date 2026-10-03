@@ -1,0 +1,21 @@
+{% comment %}
+    Reusable "return to previous page" control.
+
+    Use:  {% include "partials/_back_link.html" with target=url_catalogue label="Catalogue" %}
+
+    Back returns the user to wherever they came from. The href is a real,
+    crawlable URL so the control still works with JS disabled, on a middle
+    click, and for keyboard users — it is the referer when there is one,
+    otherwise the caller's `target`. onclick then upgrades that to a genuine
+    history.back() when there is history to go back to.
+
+    Note: `|default:` does not fire on an empty string, so the referer is
+    resolved with an {% if %} rather than a filter chain. Getting this wrong
+    renders href="" — a link to the current page.
+{% endcomment %}
+<a href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{{ target }}{% endif %}"
+   onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+   class="inline-flex items-center gap-space-2xs font-mono text-[11px] uppercase tracking-wider text-outline hover:text-on-surface transition-colors">
+  <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+  <span>{{ label|default:"Back" }}</span>
+</a>

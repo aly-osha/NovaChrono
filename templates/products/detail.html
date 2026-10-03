@@ -2,6 +2,10 @@
 {% block title %}{{ product.name }} — NovaChrono{% endblock %}
 
 {% block content %}
+{% url 'catalogue' as url_catalogue %}
+<div class="mb-space-md">
+  {% include "partials/_back_link.html" with target=url_catalogue label="Catalogue" %}
+</div>
 <!-- Breadcrumbs -->
 <nav class="flex items-center gap-space-2xs text-sm text-outline mb-space-xl flex-wrap">
   <a href="{% url 'home' %}" class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-space-2xs">

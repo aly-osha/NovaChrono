@@ -27,7 +27,17 @@
             {% endif %}
           </div>
           <div class="shrink-0 text-right min-w-[120px]">
-            <span class="text-on-surface-variant text-[11px] font-mono">{{ log.admin_user.get_full_name|default:log.admin_user.email|default:"System" }}</span>
+            {% comment %}
+    Guard admin_user explicitly. `{{ log.admin_user.email|default:"System" }}`
+    raises VariableDoesNotExist when admin_user is NULL, because the attribute
+    lookup on None happens BEFORE the default filter is applied — the filter
+    never gets a chance to catch it.
+{% endcomment %}
+            {% if log.admin_user %}
+              <span class="text-on-surface-variant text-[11px] font-mono">{{ log.admin_user.get_full_name|default:log.admin_user.email }}</span>
+            {% else %}
+              <span class="text-outline text-[11px] font-mono">System</span>
+            {% endif %}
             <div class="text-[10px] text-outline font-mono">{{ log.created_at|date:"M d, Y · H:i" }}</div>
           </div>
         </div>

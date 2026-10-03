@@ -2,8 +2,10 @@
 {% block title %}Addresses — NovaChrono{% endblock %}
 
 {% block content %}
+{% url 'profile' as url_profile %}
 <div class="max-w-2xl mx-auto mt-space-2xl">
   <div class="flex items-center justify-between mb-space-xl">
+    {% include "partials/_back_link.html" with target=url_profile label="Profile" %}
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">DELIVERY ADDRESSES</h1>
       <p class="text-on-surface-variant text-sm font-mono">Manage where your vault shipments arrive</p>

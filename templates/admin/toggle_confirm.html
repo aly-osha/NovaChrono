@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Toggle Product — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto mt-space-2xl">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'admin_product_list' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <h1 class="font-display text-2xl font-bold text-on-surface">
+      {% if will_activate %}Activate{% else %}Deactivate{% endif %} Product
+    </h1>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high mb-space-lg">
+    <p class="font-display text-base font-bold text-on-surface mb-space-xs">{{ product.name }}</p>
+    <p class="text-on-surface-variant text-sm font-mono leading-relaxed">
+      {% if will_activate %}
+        This will make the product visible in the public catalogue and searchable again.
+      {% else %}
+        This will hide the product from the public catalogue. Existing orders and
+        certificates are unaffected.
+      {% endif %}
+    </p>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="flex gap-space-md">
+      <button type="submit"
+              class="flex-1 py-space-sm rounded-lg {% if will_activate %}bg-primary-container text-on-primary hover:bg-primary hover:text-on-primary-fixed{% else %}bg-error text-white hover:brightness-110{% endif %} font-mono text-sm font-semibold transition-all">
+        <span class="material-symbols-outlined text-[18px] inline mr-space-2xs">
+          {% if will_activate %}visibility{% else %}visibility_off{% endif %}
+        </span>
+        {% if will_activate %}Activate{% else %}Deactivate{% endif %}
+      </button>
+      <a href="{% url 'admin_product_list' %}"
+         class="flex-1 py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm text-center hover:bg-surface-container hover:text-primary transition-colors">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

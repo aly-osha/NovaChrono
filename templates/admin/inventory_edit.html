@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Update Stock — NovaChrono{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  <div class="flex items-center gap-space-sm mb-space-xl">
+    <a href="{% url 'admin_inventory' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
+      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+    </a>
+    <div>
+      <h1 class="font-display text-2xl font-bold text-on-surface">Update Stock</h1>
+      <p class="text-on-surface-variant text-sm font-mono">{{ product.name }}</p>
+    </div>
+  </div>
+
+  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high mb-space-xl">
+    <div class="flex items-center gap-space-xs mb-space-md">
+      <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">info</span>
+      <span class="text-on-surface-variant text-sm font-mono">
+        Currently <strong class="text-on-surface">{{ current_stock }}</strong>
+        {% if current_stock == 0 %}
+          — this item is out of stock.
+        {% elif current_stock < 5 %}
+          — flagged as low stock.
+        {% else %}
+          — in stock.
+        {% endif %}
+      </span>
+    </div>
+
+    <div class="grid grid-cols-2 gap-space-md text-sm">
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Product</span>
+        <span class="text-on-surface font-semibold">{{ product.name|truncatechars:40 }}</span>
+      </div>
+      <div>
+        <span class="text-outline font-mono text-[11px] uppercase tracking-wider block mb-space-2xs">Price</span>
+        <span class="text-on-surface font-mono">₹{{ product.price }}</span>
+      </div>
+    </div>
+  </div>
+
+  <form method="post" class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+    {% csrf_token %}
+
+    <label for="stock" class="block text-outline font-mono text-[11px] uppercase tracking-wider mb-space-xs">
+      Stock quantity
+    </label>
+    <input type="number" name="stock" id="stock" value="{{ current_stock }}"
+           min="0" step="1" required inputmode="numeric"
+           class="w-full px-space-md py-space-md rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-lg focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
+    <p class="mt-space-xs text-outline font-mono text-[11px]">
+      Enter 0 to mark the item out of stock.
+    </p>
+
+    <div class="flex gap-space-md mt-space-xl">
+      <button type="submit"
+              class="flex-1 py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        <span class="material-symbols-outlined text-[18px] inline mr-space-2xs">inventory</span>
+        Save Stock
+      </button>
+      <a href="{% url 'admin_inventory' %}"
+         class="px-space-lg py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+        Cancel
+      </a>
+    </div>
+  </form>
+</div>
+{% endblock %}

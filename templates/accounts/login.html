@@ -14,6 +14,11 @@
   <div class="bg-surface-container rounded-xl p-space-xl shadow-xl border border-surface-container-high">
     <form method="post" class="space-y-space-md">
       {% csrf_token %}
+      {% comment %}
+        Carry the original destination through the POST so a user who was
+        bounced from /wishlist/add/<pk>/ lands there after signing in.
+      {% endcomment %}
+      {% if next %}<input type="hidden" name="next" value="{{ next }}"/>{% endif %}
       <div>
         <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Email</label>
         <input type="email" name="email" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="collector@example.com" required/>

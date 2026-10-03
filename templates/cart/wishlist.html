@@ -2,7 +2,11 @@
 {% block title %}Wishlist — NovaChrono{% endblock %}
 
 {% block content %}
+{% url 'catalogue' as url_catalogue %}
 <div class="max-w-4xl mx-auto">
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_catalogue label="Continue shopping" %}
+  </div>
   <div class="flex items-center justify-between mb-space-xl">
     <div>
       <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">WISHLIST</h1>

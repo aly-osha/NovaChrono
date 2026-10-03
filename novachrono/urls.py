@@ -12,6 +12,7 @@ import accounts.views as accounts
 import products.views as products
 import cart.views as cart
 import wishlists.views as wishlists
+import notifications.views as notifs
 import orders.views as orders
 import reviews.views as reviews
 import certificates.views as certs
@@ -51,6 +52,12 @@ urlpatterns = [
     path("wishlist/add/<int:pk>/", wishlists.add_to_wishlist, name="wishlist_add"),
     path("wishlist/remove/<int:pk>/", wishlists.remove_from_wishlist, name="wishlist_remove"),
     path("wishlist/to-cart/<int:pk>/", wishlists.wishlist_to_cart, name="wishlist_to_cart"),
+
+    # ---- Notifications (FR-25 in-app; events from FR-22 / FR-23) ----
+    path("notifications/", notifs.notification_list, name="notification_list"),
+    path("notifications/<int:pk>/read/", notifs.mark_read, name="notification_mark_read"),
+    path("notifications/read-all/", notifs.mark_all, name="notification_mark_all"),
+    path("admin/monitoring/run/", wishlists.check_monitoring_now, name="monitoring_run"),
 
     # ---- Checkout / Orders ----
     path("checkout/", orders.checkout, name="checkout"),

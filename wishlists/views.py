@@ -121,3 +121,27 @@ def price_alert_create(request, pk):
                 f"restock alerts are now active.",
             )
     return redirect("product_detail", pk=pk)
+
+
+@login_required
+def check_monitoring_now(request):
+    """Run the sweep on demand (FR-21..FR-23).
+
+    In production this belongs on a cron (`manage.py check_monitoring`); this
+    POST endpoint lets an admin (or a manual test) trigger it without shell
+    access. Cheap enough to run per request for a small catalogue, but it is
+    a full table walk — hence POST-only and admin-gated.
+    """
+    from notifications.monitoring import run_monitoring
+
+    if not request.user.is_admin_role:
+        messages.error(request, "Admin access required.")
+        return redirect("home")
+
+    checked, created = run_monitoring()
+    messages.success(
+        request,
+        f"Monitoring checked {checked} wishlist item(s) and created "
+        f"{len(created)} notification(s).",
+    )
+    return redirect("notification_list")

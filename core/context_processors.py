@@ -24,12 +24,20 @@ def branding(request):
 
 
 def cart_stats(request):
-    """Return cart item count for nav bar."""
+    """Return cart item count + unread notification count for the nav badges."""
     cart_count = 0
+    unread_notifications = 0
     if request.user.is_authenticated:
         try:
             cart = Cart.objects.get(buyer=request.user)
             cart_count = cart.items.aggregate(total=Sum("quantity"))["total"] or 0
         except Cart.DoesNotExist:
             cart_count = 0
-    return {"CART_COUNT": cart_count}
+        # FR-25: unread badge for the in-app notifications centre.
+        unread_notifications = request.user.notifications.filter(
+            is_read=False
+        ).count()
+    return {
+        "CART_COUNT": cart_count,
+        "NOTIFICATION_UNREAD": unread_notifications,
+    }
