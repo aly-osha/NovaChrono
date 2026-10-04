@@ -24,7 +24,12 @@ def _wishlist_for(user):
 @login_required
 def wishlist(request):
     wl = _wishlist_for(request.user)
-    items = wl.items.select_related("product", "product__game").all()
+    items = (
+        wl.items
+        .select_related("product", "product__game", "product__set", "product__set__game")
+        .prefetch_related("product__images")
+        .all()
+    )
     # Monitoring state is derived, not stored (schema rule 10).
     price_drops = [i for i in items if i.is_price_drop]
     return render(request, "cart/wishlist.html", {
@@ -42,7 +47,10 @@ def add_to_wishlist(request, pk):
     item, created = WishlistItem.objects.get_or_create(
         wishlist=wl,
         product=product,
-        defaults={"added_price": product.price},
+        defaults={
+            "added_price": product.price,
+            "was_out_of_stock": not product.is_available,
+        },
     )
     if not created and item.added_price != product.price:
         # Re-watching resets the baseline the drop is measured against.
@@ -70,11 +78,20 @@ def remove_from_wishlist(request, pk):
 @login_required
 def wishlist_to_cart(request, pk):
     item = get_object_or_404(
-        WishlistItem, wishlist__buyer=request.user, product_id=pk
+        WishlistItem.objects.select_related("product"),
+        wishlist__buyer=request.user,
+        product_id=pk,
     )
     product = item.product
+    if not product.is_available:
+        messages.error(request, f"{product.name} is currently out of stock.")
+        return redirect("wishlist")
+
     cart, _ = Cart.objects.get_or_create(buyer=request.user)
-    CartItem.objects.get_or_create(cart=cart, product=product)
+    cart_item, created = CartItem.objects.get_or_create(cart=cart, product=product)
+    if not created:
+        cart_item.quantity = min(cart_item.quantity + 1, product.stock)
+        cart_item.save(update_fields=["quantity"])
     item.delete()
     messages.success(request, f"Moved {product.name} to cart.")
     return redirect("cart")
@@ -106,7 +123,10 @@ def price_alert_create(request, pk):
         WishlistItem.objects.update_or_create(
             wishlist=wl,
             product=product,
-            defaults={"added_price": target or product.price},
+            defaults={
+                "added_price": target or product.price,
+                "was_out_of_stock": not product.is_available,
+            },
         )
         if target:
             messages.success(

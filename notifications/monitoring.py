@@ -81,17 +81,9 @@ def check_wishlist_item(item):
             created.append(n)
 
     # ---- FR-23: back in stock -------------------------------------------
-    # Only fires when the item is actually purchasable AND we have not
-    # already told this buyer it is. An item that was in stock the whole
-    # time the buyer watched it produces nothing, because a restock alert
-    # for something that never went away is noise.
+    # Only fires when the item is actually purchasable AND was previously out of stock.
     if product.is_available:
-        already_told = Notification.objects.filter(
-            buyer=item.wishlist.buyer,
-            product=product,
-            notification_type="restock",
-        ).exists()
-        if not already_told:
+        if item.was_out_of_stock:
             n = Notification.objects.create(
                 buyer=item.wishlist.buyer,
                 product=product,
@@ -104,6 +96,12 @@ def check_wishlist_item(item):
                 event_price=current,
             )
             created.append(n)
+            item.was_out_of_stock = False
+            item.save(update_fields=["was_out_of_stock"])
+    else:
+        if not item.was_out_of_stock:
+            item.was_out_of_stock = True
+            item.save(update_fields=["was_out_of_stock"])
 
     # Advance the reported-price baseline so the same drop cannot re-fire.
     if last_reported is None or current < last_reported:
