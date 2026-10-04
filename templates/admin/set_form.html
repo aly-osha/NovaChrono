@@ -16,9 +16,10 @@
   <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
     <form method="post" class="space-y-space-md">
       {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next|default:'' }}">
       <div>
         <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Game *</label>
-        <select name="game" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
+        <select name="game" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" required>
           <option value="">Select a game...</option>
           {% for g in games %}
             <option value="{{ g.pk }}" {% if set and set.game_id == g.pk %}selected{% endif %}>{{ g.name }}</option>
@@ -30,6 +31,12 @@
         <input type="text" name="name" value="{{ set.name|default:'' }}"
                class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30"
                placeholder="Scarlet & Violet - Stellar Crown" required/>
+      </div>
+      <div>
+        <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Set Code (Optional)</label>
+        <input type="text" name="code" value="{{ set.code|default:'' }}"
+               class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-xs focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30"
+               placeholder="e.g. SV07, OP-08"/>
       </div>
       <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
         {% if title == 'Add Set' %}Create Set{% else %}Update Set{% endif %}

@@ -4,6 +4,10 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
+  {% url 'admin_dashboard' as url_dashboard %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_dashboard label="Dashboard" %}
+  </div>
   <div class="flex items-center justify-between mb-space-xl">
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">CATEGORIES</h1>

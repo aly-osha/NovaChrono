@@ -30,8 +30,7 @@
             Delete "{{ object_label }}"?
           </p>
           <p class="text-on-surface-variant text-sm font-mono leading-relaxed">
-            This cannot be undone. Products and sets under this game will no
-            longer resolve correctly.
+            {{ warning_message|default:"This cannot be undone. Associated items may no longer resolve correctly." }}
           </p>
         </div>
       </div>

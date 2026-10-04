@@ -1,13 +1,11 @@
-"""
-products/admin_views.py — product/category/set management
-"""
+from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db import transaction
 from django.utils import timezone
 
-from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage
+from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage, SealedPack
 from analytics.models import ActivityLog
 
 
@@ -30,15 +28,34 @@ def admin_game_list(request):
 
 @admin_required
 def admin_game_create(request):
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest" or request.POST.get("is_ajax") == "1"
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
-        if name and not Game.objects.filter(name__iexact=name).exists():
-            Game.objects.create(name=name)
-            messages.success(request, f"Game '{name}' created.")
-            return redirect("admin_game_list")
-        elif name:
+        description = request.POST.get("description", "").strip()
+        if not name:
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": "Game name is required."}, status=400)
+            messages.error(request, "Game name is required.")
+        elif Game.objects.filter(name__iexact=name).exists():
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": "A game with this name already exists."}, status=400)
             messages.error(request, "A game with this name already exists.")
-    return render(request, "admin/game_form.html", {"title": "Add Game"})
+        else:
+            game = Game.objects.create(name=name, description=description, is_active=True)
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Game created: {name}",
+                target_table="games",
+                target_id=game.pk,
+            )
+            messages.success(request, f"Game '{name}' created successfully.")
+            if is_ajax:
+                return JsonResponse({"status": "success", "id": game.pk, "name": game.name})
+            next_url = request.POST.get("next") or request.GET.get("next")
+            if next_url:
+                return redirect(next_url)
+            return redirect("admin_game_list")
+    return render(request, "admin/game_form.html", {"title": "Add Game", "next": request.GET.get("next", "")})
 
 
 @admin_required
@@ -110,14 +127,44 @@ def admin_set_list(request):
 @admin_required
 def admin_set_create(request):
     games = Game.objects.all()
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest" or request.POST.get("is_ajax") == "1"
     if request.method == "POST":
         game_id = request.POST.get("game")
         name = request.POST.get("name", "").strip()
-        if game_id and name:
-            Set.objects.create(game_id=game_id, name=name)
-            messages.success(request, "Set created.")
+        code = request.POST.get("code", "").strip()
+        if not game_id or not name:
+            err = "Please select a game and provide a set name."
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": err}, status=400)
+            messages.error(request, err)
+        elif Set.objects.filter(game_id=game_id, name__iexact=name).exists():
+            err = f"A set with name '{name}' already exists for this game."
+            if is_ajax:
+                return JsonResponse({"status": "error", "message": err}, status=400)
+            messages.error(request, err)
+        else:
+            s = Set.objects.create(game_id=game_id, name=name, code=code, is_active=True)
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Set created: {name} ({s.game.name})",
+                target_table="sets",
+                target_id=s.pk,
+            )
+            messages.success(request, f"Set '{name}' created successfully.")
+            if is_ajax:
+                return JsonResponse({
+                    "status": "success",
+                    "id": s.pk,
+                    "name": s.name,
+                    "game_id": s.game_id,
+                    "game_name": s.game.name,
+                    "display_name": f"{s.game.name} — {s.name}"
+                })
+            next_url = request.POST.get("next") or request.GET.get("next")
+            if next_url:
+                return redirect(next_url)
             return redirect("admin_set_list")
-    return render(request, "admin/set_form.html", {"games": games, "title": "Add Set"})
+    return render(request, "admin/set_form.html", {"games": games, "title": "Add Set", "next": request.GET.get("next", "")})
 
 
 @admin_required
@@ -194,7 +241,7 @@ def admin_category_toggle(request, pk):
 
 @admin_required
 def admin_product_list(request):
-    qs = Product.objects.select_related("set", "game", "category").all()
+    qs = Product.objects.select_related("set", "game", "category", "set__game").prefetch_related("images").all()
     ptype = request.GET.get("type", "")
     game = request.GET.get("game", "")
     if ptype:
@@ -230,6 +277,20 @@ def admin_product_create(request):
                 "title": "Add Product",
             })
 
+        if not game_id:
+            messages.error(request, "Game is required.")
+            return render(request, "admin/product_form.html", {
+                "games": games, "sets": sets, "categories": categories,
+                "title": "Add Product",
+            })
+
+        if not category_id:
+            messages.error(request, "Category is required.")
+            return render(request, "admin/product_form.html", {
+                "games": games, "sets": sets, "categories": categories,
+                "title": "Add Product",
+            })
+
         with transaction.atomic():
             product = Product.objects.create(
                 name=name,
@@ -237,16 +298,19 @@ def admin_product_create(request):
                 price=price,
                 stock=stock,
                 product_type=product_type,
+                game_id=game_id,
                 set_id=set_id or None,
-                category_id=category_id or None,
+                category_id=category_id,
             )
 
-            if product_type == "single_card":
+            if product_type == "sealed":
+                SealedPack.objects.create(product=product)
+            elif product_type == "single_card":
                 SingleCardDetail.objects.create(
                     product=product,
                     rarity=request.POST.get("rarity", ""),
                     language=request.POST.get("language", ""),
-                    condition=request.POST.get("condition", ""),
+                    condition=request.POST.get("condition", "near_mint"),
                 )
 
             # images
@@ -281,18 +345,29 @@ def admin_product_edit(request, pk):
         product.price = request.POST.get("price", "0")
         product.stock = request.POST.get("stock", "0")
         product.product_type = request.POST.get("product_type", "sealed")
+        game_id = request.POST.get("game")
+        if game_id:
+            product.game_id = game_id
         set_id = request.POST.get("set")
         product.set_id = set_id or None
         cat_id = request.POST.get("category")
-        product.category_id = cat_id or None
+        if cat_id:
+            product.category_id = cat_id
         product.save()
 
-        if product.product_type == "single_card":
+        if product.product_type == "sealed":
+            SealedPack.objects.get_or_create(product=product)
+            SingleCardDetail.objects.filter(product=product).delete()
+        elif product.product_type == "single_card":
+            SealedPack.objects.filter(product=product).delete()
             detail, _ = SingleCardDetail.objects.get_or_create(product=product)
             detail.rarity = request.POST.get("rarity", "")
             detail.language = request.POST.get("language", "")
-            detail.condition = request.POST.get("condition", "")
+            detail.condition = request.POST.get("condition", "near_mint")
             detail.save()
+        else:
+            SealedPack.objects.filter(product=product).delete()
+            SingleCardDetail.objects.filter(product=product).delete()
 
         for img in request.FILES.getlist("images"):
             ProductImage.objects.create(product=product, image=img)
@@ -340,12 +415,66 @@ def admin_product_toggle(request, pk):
     return redirect("admin_product_list")
 
 
+@admin_required
+def admin_product_delete(request, pk):
+    """Delete a product.
+
+    - POST removes the product and associated assets.
+    - If the product is part of existing orders (on_delete=PROTECT on OrderItem),
+      deletion is blocked to preserve historical orders/receipts; admin is advised to deactivate it.
+    - On GET, displays a confirmation page (using admin/delete_confirm.html) with warnings.
+    - Records an ActivityLog entry when deleted.
+    """
+    product = get_object_or_404(Product, pk=pk)
+    orders_count = product.order_items.count()
+
+    if request.method != "POST":
+        return render(request, "admin/delete_confirm.html", {
+            "title": "Delete Product",
+            "object_label": product.name,
+            "cancel_url": "admin_product_list",
+            "in_use_count": orders_count,
+            "blocked_message": (
+                f"'{product.name}' has been purchased in {orders_count} customer order(s) "
+                f"and cannot be deleted to preserve order records. "
+                f"You can deactivate it instead to remove it from the store."
+            ) if orders_count else "",
+            "warning_message": (
+                "This cannot be undone. All product images, listings, and details "
+                "for this item will be permanently removed."
+            ),
+        })
+
+    if orders_count:
+        messages.error(
+            request,
+            f"'{product.name}' has been purchased in {orders_count} customer order(s) and cannot be deleted. Deactivate it instead.",
+        )
+        return redirect("admin_product_list")
+
+    name = product.name
+    product_pk = product.pk
+    try:
+        product.delete()
+        ActivityLog.objects.create(
+            admin_user=request.user,
+            action=f"Product deleted: {name}",
+            target_table="products",
+            target_id=product_pk,
+        )
+        messages.success(request, f"Product '{name}' was successfully deleted.")
+    except Exception as e:
+        messages.error(request, f"Could not delete product: {e}")
+
+    return redirect("admin_product_list")
+
+
 # ---- Inventory ----
 
 
 @admin_required
 def admin_inventory(request):
-    products = Product.objects.select_related("set", "game").all()
+    products = Product.objects.select_related("set", "game", "set__game").prefetch_related("images").all()
     low_stock = [p for p in products if 0 < p.stock < 5]
     out_of_stock = [p for p in products if p.stock == 0]
     return render(request, "admin/inventory.html", {
@@ -375,8 +504,23 @@ def admin_inventory_update(request, pk):
         except (TypeError, ValueError):
             messages.error(request, "Enter a whole number of items (0 or more).")
             return redirect("admin_inventory")
+        old_stock = p.stock
         p.stock = new_stock
         p.save(update_fields=["stock", "updated_at"])
+
+        if new_stock == 0:
+            from wishlists.models import WishlistItem
+            WishlistItem.objects.filter(product=p).update(was_out_of_stock=True)
+        elif old_stock == 0 and new_stock > 0:
+            from notifications.monitoring import run_monitoring
+            run_monitoring()
+
+        ActivityLog.objects.create(
+            admin_user=request.user,
+            action=f"Stock updated for {p.name}: {old_stock} → {new_stock}",
+            target_table="products",
+            target_id=p.pk,
+        )
         messages.success(request, f"{p.name} stock updated to {p.stock}.")
         return redirect("admin_inventory")
 

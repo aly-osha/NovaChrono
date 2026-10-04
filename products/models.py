@@ -142,9 +142,9 @@ class Product(models.Model):
 
     @property
     def avg_rating(self):
+        if hasattr(self, "annotated_rating") and self.annotated_rating is not None:
+            return self.annotated_rating
         reviews = self.reviews.filter(is_approved=True)
-        if not reviews.exists():
-            return None
         return reviews.aggregate(avg=models.Avg("rating"))["avg"]
 
     @property

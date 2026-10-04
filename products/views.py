@@ -9,6 +9,7 @@ from django.db.models import Q, Avg
 from django.shortcuts import render, redirect, get_object_or_404
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
 
 from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage
 
@@ -21,7 +22,9 @@ def home(request):
 
 
 def catalogue(request):
-    qs = Product.objects.filter(is_active=True).select_related("set", "game", "category")
+    qs = Product.objects.filter(is_active=True).select_related(
+        "set", "game", "category", "set__game", "single_card"
+    ).prefetch_related("images")
 
     # keyword search
     q = request.GET.get("q", "").strip()
@@ -97,8 +100,8 @@ def catalogue(request):
     if avail == "1":
         qs = qs.filter(stock__gt=0)
 
-    # annotate avg rating (named to avoid clashing with Product.avg_rating property)
-    qs = qs.annotate(annotated_rating=Avg("reviews__rating"))
+    # annotate avg rating for approved reviews only
+    qs = qs.annotate(annotated_rating=Avg("reviews__rating", filter=Q(reviews__is_approved=True)))
 
     # ordering
     sort = request.GET.get("sort", "name")
@@ -164,24 +167,22 @@ def product_detail(request, pk):
 
 
 def verify_certificate(request):
-    from certificates.models import AuthenticityCertificate
-    code = request.GET.get("code", "").strip().upper()
-    cert = None
-    found = False
-    if code:
-        try:
-            cert = AuthenticityCertificate.objects.get(
-                verification_code=code, is_active=True,
-            )
-            found = True
-        except AuthenticityCertificate.DoesNotExist:
-            found = False
-    # public page — render with or without cert
-    return render(request, "certificates/verify.html", {
-        "code": code,
-        "cert": cert,
-        "found": found,
-    })
+    from certificates.views import public_verify
+    return public_verify(request)
+
+
+def api_sets(request):
+    """Dynamic sets endpoint for game selector."""
+    game_id = request.GET.get("game")
+    sets = Set.objects.filter(is_active=True)
+    if game_id:
+        sets = sets.filter(game_id=game_id)
+    sets = sets.select_related("game")
+    data = [
+        {"pk": s.pk, "name": s.name, "game_name": s.game.name}
+        for s in sets
+    ]
+    return JsonResponse(data, safe=False)
 
 
 @login_required

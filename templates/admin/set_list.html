@@ -4,14 +4,48 @@
 
 {% block content %}
 <div class="max-w-5xl mx-auto">
-  <div class="flex items-center justify-between mb-space-xl">
+  {% url 'admin_dashboard' as url_dashboard %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_dashboard label="Dashboard" %}
+  </div>
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-lg">
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">SETS &amp; EXPANSIONS</h1>
       <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage TCG set and expansion listings</p>
     </div>
-    <a href="{% url 'admin_set_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs">
-      <span class="material-symbols-outlined text-[16px]">add</span>
-      Add Set
+    <div class="flex flex-wrap items-center gap-space-xs">
+      <a href="{% url 'admin_game_create' %}?next={% url 'admin_set_list' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-mono text-xs font-semibold hover:border-primary hover:text-primary transition-all flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">sports_esports</span>
+        + Add Game
+      </a>
+      <a href="{% url 'admin_set_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-1">
+        <span class="material-symbols-outlined text-[16px]">add_circle</span>
+        + Add Set / Expansion
+      </a>
+    </div>
+  </div>
+
+  <!-- Management Subnavigation Tabs -->
+  <div class="flex items-center gap-space-xs border-b border-surface-container-high pb-space-xs mb-space-lg overflow-x-auto">
+    <a href="{% url 'admin_product_list' %}" class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[12px] font-medium flex items-center gap-1.5 shrink-0 transition-colors">
+      <span class="material-symbols-outlined text-[16px]">inventory_2</span>
+      Products
+    </a>
+    <a href="{% url 'admin_game_list' %}" class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[12px] font-medium flex items-center gap-1.5 shrink-0 transition-colors">
+      <span class="material-symbols-outlined text-[16px]">sports_esports</span>
+      Games ({{ games.count }})
+    </a>
+    <a href="{% url 'admin_set_list' %}" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[12px] font-semibold flex items-center gap-1.5 shrink-0">
+      <span class="material-symbols-outlined text-[16px]">auto_awesome_motion</span>
+      Sets &amp; Expansions ({{ sets.count }})
+    </a>
+    <a href="{% url 'admin_category_list' %}" class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-tertiary-fixed font-mono text-[12px] font-medium flex items-center gap-1.5 shrink-0 transition-colors">
+      <span class="material-symbols-outlined text-[16px]">category</span>
+      Categories
+    </a>
+    <a href="{% url 'admin_inventory' %}" class="px-space-md py-space-xs rounded-lg text-on-surface-variant hover:text-on-surface hover:bg-surface-container font-mono text-[12px] font-medium flex items-center gap-1.5 shrink-0 transition-colors">
+      <span class="material-symbols-outlined text-[16px]">warehouse</span>
+      Inventory
     </a>
   </div>
 

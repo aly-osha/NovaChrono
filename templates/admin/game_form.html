@@ -16,11 +16,18 @@
   <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
     <form method="post" class="space-y-space-md">
       {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next|default:'' }}">
       <div>
         <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Game Name *</label>
         <input type="text" name="name" value="{{ game.name|default:'' }}"
                class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30"
                placeholder="Pokemon TCG" required/>
+      </div>
+      <div>
+        <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Description (Optional)</label>
+        <textarea name="description" rows="2"
+                  class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 resize-none"
+                  placeholder="Trading card game universe details...">{{ game.description|default:'' }}</textarea>
       </div>
       <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
         {% if title == 'Add Game' %}Create Game{% else %}Update Game{% endif %}

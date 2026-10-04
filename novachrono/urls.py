@@ -40,6 +40,7 @@ urlpatterns = [
     path("shop/", products.catalogue, name="catalogue"),
     path("shop/<int:pk>/", products.product_detail, name="product_detail"),
     path("verify/", products.verify_certificate, name="verify_certificate"),
+    path("api/sets/", products.api_sets, name="api_sets"),
 
     # ---- Cart ----
     path("cart/", cart.cart, name="cart"),
@@ -63,6 +64,7 @@ urlpatterns = [
     path("checkout/", orders.checkout, name="checkout"),
     path("orders/", orders.order_list, name="order_list"),
     path("orders/<int:pk>/", orders.order_detail, name="order_detail"),
+    path("orders/<int:pk>/invoice/", orders.order_invoice_pdf, name="order_invoice_pdf"),
 
     # ---- Reviews ----
     path("reviews/add/<int:pk>/", reviews.add_review, name="add_review"),
@@ -79,6 +81,7 @@ urlpatterns = [
     path("admin/products/add/", padmin.admin_product_create, name="admin_product_create"),
     path("admin/products/<int:pk>/edit/", padmin.admin_product_edit, name="admin_product_edit"),
     path("admin/products/<int:pk>/toggle/", padmin.admin_product_toggle, name="admin_product_toggle"),
+    path("admin/products/<int:pk>/delete/", padmin.admin_product_delete, name="admin_product_delete"),
     path("admin/games/", padmin.admin_game_list, name="admin_game_list"),
     path("admin/games/add/", padmin.admin_game_create, name="admin_game_create"),
     path("admin/games/<int:pk>/edit/", padmin.admin_game_edit, name="admin_game_edit"),
