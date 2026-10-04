@@ -13,8 +13,8 @@
     <span>Home</span>
   </a>
   <span class="text-outline">/</span>
-  <a href="{% url 'catalogue' %}?game={{ product.set.game.pk|default:'' }}"
-     class="text-on-surface-variant hover:text-primary transition-colors">{{ product.set.game.name|default:"TCG" }}</a>
+  <a href="{% url 'catalogue' %}?game={{ product.game.pk|default:product.set.game.pk|default:'' }}"
+     class="text-on-surface-variant hover:text-primary transition-colors">{{ product.game.name|default:product.set.game.name|default:"TCG" }}</a>
   {% if product.set %}
     <span class="text-outline">/</span>
     <a href="{% url 'catalogue' %}" class="text-on-surface-variant hover:text-primary transition-colors">{{ product.set.name }}</a>
@@ -74,7 +74,7 @@
         <div class="w-full pt-space-xs flex items-center justify-between px-space-2xs">
           <div class="flex flex-col">
             <span class="font-mono text-[9px] text-outline tracking-widest leading-none">REGISTRATION SERIAL</span>
-            <span class="font-mono text-[11px] text-on-surface font-bold leading-tight">NC-{{ product.set.game.name|default:"TCG"|slugify|upper|slice:":3" }}-{{ product.pk|stringformat:"06d" }}-{% if product.single_card %}EX{% else %}SV{% endif %}</span>
+            <span class="font-mono text-[11px] text-on-surface font-bold leading-tight">NC-{{ product.game.name|default:product.set.game.name|default:"TCG"|slugify|upper|slice:":3" }}-{{ product.pk|stringformat:"06d" }}-{% if product.single_card %}EX{% else %}SV{% endif %}</span>
           </div>
           <div class="h-4 flex items-center gap-[2px]" aria-hidden="true">
             <div class="w-0.5 h-full bg-outline-variant"></div>
@@ -139,7 +139,7 @@
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest flex items-center justify-center">
           <span class="material-symbols-outlined text-4xl text-tertiary-fixed group-hover:scale-110 transition-transform">verified_user</span>
         </div>
-        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Vault Hologram</span>
+        <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Authenticity Hologram</span>
         <span class="block font-mono text-[10px] text-tertiary-fixed-dim">Encrypted Tag</span>
       </button>
     </div>
@@ -162,7 +162,7 @@
       <div class="flex items-center gap-space-sm bg-surface-container-low p-space-sm rounded-lg">
         <span class="material-symbols-outlined text-primary text-[24px]">local_shipping</span>
         <div>
-          <span class="font-mono text-[11px] text-on-surface font-bold uppercase block">Insured Vault Mail</span>
+          <span class="font-mono text-[11px] text-on-surface font-bold uppercase block">Insured Express Mail</span>
           <span class="text-[11px] text-outline block">Tamper-evident pack</span>
         </div>
       </div>
@@ -267,7 +267,7 @@
             </button>
           </div>
           <!-- Add to cart (glowing, animated) -->
-          <button id="vault-add-btn" data-cart-url="{% url 'cart_add' product.pk %}"
+          <button id="add-to-cart-btn" data-cart-url="{% url 'cart_add' product.pk %}"
              class="flex-1 h-11 px-space-md rounded-lg bg-primary-container text-on-primary font-mono text-sm font-bold flex items-center justify-center gap-space-xs shadow-[0_0_24px_rgba(121,40,202,0.45)] hover:shadow-[0_0_32px_rgba(121,40,202,0.7)] hover:bg-primary transition-all active:scale-[0.98]" onclick="triggerCartAdd()" type="button">
             <span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
             <span>ADD TO CART</span>
@@ -359,7 +359,7 @@
           <span class="material-symbols-outlined text-[18px] text-tertiary-fixed">fingerprint</span>
         </div>
         <span class="font-mono text-sm font-bold text-on-surface">{% if product.active_certificate %}{{ product.active_certificate.verification_code }}{% else %}NC-{{ product.pk|stringformat:"06d" }}-PENDING{% endif %}</span>
-        <span class="text-[11px] text-on-surface-variant">Immutable Vault Registration Index</span>
+        <span class="text-[11px] text-on-surface-variant">Immutable Registration Index</span>
       </div>
       <div class="bg-surface-container p-space-md rounded-xl flex flex-col gap-space-2xs">
         <div class="flex items-center justify-between text-outline">
@@ -374,7 +374,7 @@
           <span class="font-mono text-[11px] uppercase tracking-wider font-semibold">Custody</span>
           <span class="material-symbols-outlined text-[18px] text-primary">lock_reset</span>
         </div>
-        <span class="font-mono text-sm font-bold text-on-surface">Vault #3 · Climate Sealed</span>
+        <span class="font-mono text-sm font-bold text-on-surface">Archive #3 · Climate Sealed</span>
         <span class="text-[11px] text-on-surface-variant">100% refund + ₹5,000 on discrepancy</span>
       </div>
     </div>
@@ -398,12 +398,12 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-space-md">
         <div class="p-space-md bg-surface-container rounded-lg">
           <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Game</span>
-          <span class="font-display text-base font-bold text-on-surface">{{ product.set.game.name|default:"TCG" }}</span>
+          <span class="font-display text-base font-bold text-on-surface">{{ product.game.name|default:product.set.game.name|default:"TCG" }}</span>
           <span class="text-[12px] text-secondary-fixed-dim block mt-space-3xs">{{ product.get_product_type_display }}</span>
         </div>
         <div class="p-space-md bg-surface-container rounded-lg">
           <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Set &amp; Expansion</span>
-          <span class="font-display text-base font-bold text-on-surface">{{ product.set.name|default:"Vault Collection" }}</span>
+          <span class="font-display text-base font-bold text-on-surface">{{ product.set.name|default:"Collector Series" }}</span>
           <span class="text-[12px] text-outline block mt-space-3xs">NovaChrono archive</span>
         </div>
         <div class="p-space-md bg-surface-container rounded-lg">
@@ -414,7 +414,7 @@
         <div class="p-space-md bg-surface-container rounded-lg">
           <span class="font-mono text-[11px] uppercase tracking-wider text-outline block mb-space-3xs">Condition</span>
           <span class="font-display text-base font-bold text-on-surface">{{ product.single_card.get_condition_display|default:"Mint Sealed" }}</span>
-          <span class="text-[12px] text-primary block mt-space-3xs">Vault certified</span>
+          <span class="text-[12px] text-primary block mt-space-3xs">Certified authentic</span>
         </div>
       </div>
       {% if product.description %}
@@ -465,7 +465,7 @@
     <div class="tab-pane hidden flex-col gap-space-lg" id="pane-shipping">
       <div>
         <h3 class="font-display text-lg font-bold text-on-surface mb-space-2xs">Museum-Grade Shipping Architecture</h3>
-        <p class="text-sm text-on-surface-variant">Four protective layers between the vault shelf and your display case.</p>
+        <p class="text-sm text-on-surface-variant">Four protective layers between our archive and your display case.</p>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-space-md">
         <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
@@ -482,7 +482,7 @@
         </div>
         <div class="p-space-md bg-surface-container rounded-xl flex flex-col gap-space-xs">
           <span class="font-mono text-sm text-secondary-fixed-dim font-bold">Layer 4: Armored Outer</span>
-          <p class="text-sm text-on-surface-variant">Crush-proof vault box, fully insured.</p>
+          <p class="text-sm text-on-surface-variant">Crush-proof archival box, fully insured.</p>
         </div>
       </div>
       <div class="bg-surface-container p-space-md rounded-xl flex items-center justify-between flex-wrap gap-space-md">
@@ -518,7 +518,7 @@
           <input name="target_price" type="number" min="1" step="0.01" value="{{ user_alert.target_price|default:product.price }}" required
                  class="w-full pl-8 pr-4 py-space-xs bg-surface-container rounded-lg text-on-surface font-mono font-bold focus:outline-none focus:ring-1 focus:ring-secondary-fixed-dim"/>
         </div>
-        <span class="text-[11px] text-outline mt-1">Current vault price: ₹{{ product.price }}</span>
+        <span class="text-[11px] text-outline mt-1">Current price: ₹{{ product.price }}</span>
       </div>
       <div class="flex items-center gap-space-sm pt-space-xs">
         <button class="flex-1 py-space-xs rounded-lg bg-surface-container text-on-surface-variant font-mono text-sm font-semibold hover:bg-surface-container-high transition-colors" onclick="closeAlertModal()" type="button">Cancel</button>
@@ -540,7 +540,7 @@
         <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
     </div>
-    <p class="text-sm text-on-surface-variant">Every tier is verified under 4K optical inspection before vault listing. Centering, corners, edges and surface are scored against PSA/BGS baselines.</p>
+    <p class="text-sm text-on-surface-variant">Every tier is verified under 4K optical inspection before listing. Centering, corners, edges and surface are scored against PSA/BGS baselines.</p>
     <div class="p-space-md rounded-lg bg-surface-container flex items-center justify-between">
       <span class="font-mono text-[12px] text-on-surface font-semibold uppercase">Inspection Passing Score:</span>
       <span class="font-mono text-sm font-bold text-secondary-fixed-dim">98.4 / 100 PTS</span>
@@ -552,57 +552,57 @@
 <!-- Reviews Section -->
 <section id="buyer-reviews" class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
 {% if reviews %}
-  <section class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
-    <div class="flex items-center justify-between mb-space-xl">
-      <h2 class="font-display text-xl font-bold text-on-surface">BUYER REVIEWS</h2>
-      <span class="font-mono text-[11px] text-outline">{{ reviews.count }} review{{ reviews.count|pluralize }}</span>
-    </div>
-    <div class="space-y-space-md">
-      {% for review in reviews %}
-        <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
-          <div class="flex items-center justify-between mb-space-sm">
-            <div class="flex items-center gap-space-sm">
-              <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-mono text-[11px] font-bold">
-                {{ review.buyer.get_full_name|default:review.buyer.email|truncatechars:1|upper }}
-              </div>
-              <div>
-                <span class="text-on-surface font-semibold text-sm">{{ review.buyer.get_full_name|default:review.buyer.email }}</span>
-                {% if review.is_verified_purchase %}
-                  <span class="inline-flex items-center gap-space-2xs ml-space-md text-tertiary text-[10px] font-mono">
-                    <span class="material-symbols-outlined text-[12px]">verified</span>
-                    Verified Purchase
-                  </span>
-                {% endif %}
-              </div>
+  <div class="flex items-center justify-between mb-space-xl">
+    <h2 class="font-display text-xl font-bold text-on-surface">BUYER REVIEWS</h2>
+    <span class="font-mono text-[11px] text-outline">{{ reviews.count }} review{{ reviews.count|pluralize }}</span>
+  </div>
+  <div class="space-y-space-md">
+    {% for review in reviews %}
+      <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
+        <div class="flex items-center justify-between mb-space-sm">
+          <div class="flex items-center gap-space-sm">
+            <div class="w-8 h-8 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-mono text-[11px] font-bold">
+              {{ review.buyer.get_full_name|default:review.buyer.email|truncatechars:1|upper }}
             </div>
-            <div class="flex items-center gap-space-1">
-              {% for i in "12345" %}
-                <span class="text-{% if forloop.counter0 < review.rating %}tertiary-fixed{% else %}outline{% endif %} text-sm">★</span>
-              {% endfor %}
+            <div>
+              <span class="text-on-surface font-semibold text-sm">{{ review.buyer.get_full_name|default:review.buyer.email }}</span>
+              {% if review.is_verified_purchase %}
+                <span class="inline-flex items-center gap-space-2xs ml-space-md text-tertiary text-[10px] font-mono">
+                  <span class="material-symbols-outlined text-[12px]">verified</span>
+                  Verified Purchase
+                </span>
+              {% endif %}
             </div>
           </div>
-          {% if review.comment %}
-            <p class="text-on-surface-variant text-sm leading-relaxed">{{ review.comment }}</p>
-          {% endif %}
-          <p class="text-on-surface-variant text-[11px] font-mono text-outline mt-space-md">
-            Reviewed {{ review.created_at|date:"M d, Y" }}
-          </p>
+          <div class="flex items-center gap-space-1">
+            {% for i in "12345" %}
+              <span class="text-{% if forloop.counter0 < review.rating %}tertiary-fixed{% else %}outline{% endif %} text-sm">★</span>
+            {% endfor %}
+          </div>
         </div>
-      {% endfor %}
-    </div>
-  </section>
+        {% if review.comment %}
+          <p class="text-on-surface-variant text-sm leading-relaxed">{{ review.comment }}</p>
+        {% endif %}
+        <p class="text-on-surface-variant text-[11px] font-mono text-outline mt-space-md">
+          Reviewed {{ review.created_at|date:"M d, Y" }}
+        </p>
+      </div>
+    {% endfor %}
+  </div>
 {% else %}
   {% if user.is_authenticated %}
-    <section class="mt-space-3xl pt-space-2xl border-t border-surface-container-high">
-      <div class="text-center py-space-3xl">
-        <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">rate_review</span>
-        <p class="text-on-surface-variant font-mono text-sm mb-space-md">Be the first to review this product.</p>
-        <a href="{% url 'add_review' product.pk %}"
-           class="inline-flex px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
-          Write a Review
-        </a>
-      </div>
-    </section>
+    <div class="text-center py-space-3xl">
+      <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">rate_review</span>
+      <p class="text-on-surface-variant font-mono text-sm mb-space-md">Be the first to review this product.</p>
+      <a href="{% url 'add_review' product.pk %}"
+         class="inline-flex px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+        Write a Review
+      </a>
+    </div>
+  {% else %}
+    <div class="text-center py-space-2xl text-on-surface-variant font-mono text-sm">
+      No reviews yet. <a href="{% url 'login' %}?next={% url 'product_detail' product.pk %}" class="text-primary hover:underline">Log in</a> to write a review.
+    </div>
   {% endif %}
 {% endif %}
 </section>
@@ -694,23 +694,23 @@
     });
   })();
 
-  // ---- Quantity stepper (capped at vault stock) ----
-  const VAULT_STOCK = {{ product.stock }};
+  // ---- Quantity stepper (capped at product stock) ----
+  const PRODUCT_STOCK = parseInt('{{ product.stock|default:"0" }}', 10);
   let currentQty = 1;
   function adjustQty(diff) {
-    currentQty = Math.max(1, Math.min(VAULT_STOCK, currentQty + diff));
+    currentQty = Math.max(1, Math.min(PRODUCT_STOCK, currentQty + diff));
     document.getElementById('quantity-val').textContent = currentQty;
   }
 
   // ---- Cart add: securing animation, then real add with qty ----
   function triggerCartAdd() {
-    const btn = document.getElementById('vault-add-btn');
+    const btn = document.getElementById('add-to-cart-btn');
     if (!btn) return;
     const base = btn.dataset.cartUrl;
     const original = btn.innerHTML;
     btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>SECURING COPY...</span>';
     setTimeout(() => {
-      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">done</span><span>ADDED TO VAULT CART</span>';
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">done</span><span>ADDED TO CART</span>';
       setTimeout(() => { window.location.href = base + '?qty=' + currentQty; }, 450);
     }, 600);
   }

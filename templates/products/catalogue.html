@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}TCG Vault Catalogue — NovaChrono{% endblock %}
+{% block title %}TCG Catalogue — NovaChrono{% endblock %}
 
 {% block content %}
 {% url 'home' as url_home %}
@@ -12,18 +12,18 @@
     <span class="text-surface-bright">/</span>
     <a href="{% url 'catalogue' %}" class="hover:text-on-surface transition-colors">SHOP</a>
     <span class="text-surface-bright">/</span>
-    <span class="text-secondary-fixed-dim font-medium">TCG VAULT &amp; SEALED CATALOG</span>
+    <span class="text-secondary-fixed-dim font-medium">TCG &amp; SEALED CATALOG</span>
   </div>
   <div class="flex items-center gap-space-2xs font-mono text-secondary-fixed-dim tracking-wider uppercase">
     <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span>
     Live Real-Time Inventory
   </div>
   <h1 class="font-display text-2xl md:text-3xl text-on-surface tracking-tight font-extrabold uppercase">
-    TCG VAULT &amp; SEALED CATALOG
+    TCG &amp; SEALED CATALOG
   </h1>
-  <div class="flex items-center gap-space-xs font-mono text-on-surface bg-surface-container px-space-sm py-space-xs rounded-lg text-outline">
+  <div class="flex items-center gap-space-xs font-mono text-on-surface bg-surface-container px-space-sm py-space-xs rounded-lg text-outline border border-surface-container-high">
     <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">verified_user</span>
-    <span>100% Cryptographically Sealed &amp; Graded</span>
+    <span>Authenticity Guaranteed · QR Verified &amp; Tamper-Evident</span>
   </div>
 </div>
 
@@ -61,7 +61,7 @@
     <div class="flex items-center justify-between pb-space-xs">
       <div class="flex items-center gap-space-2xs">
         <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">tune</span>
-        <span class="font-mono text-sm uppercase tracking-wider text-on-surface font-semibold">Vault Filters</span>
+        <span class="font-mono text-sm uppercase tracking-wider text-on-surface font-semibold">Filters</span>
       </div>
       <a href="{% url 'catalogue' %}" class="font-mono text-[11px] text-outline hover:text-on-surface transition-colors">Reset</a>
     </div>
@@ -172,17 +172,15 @@
     <!-- Results header -->
     <div class="flex items-center justify-between mb-space-lg">
       <span class="font-mono text-[11px] text-outline uppercase tracking-wider">{{ page_obj.paginator.count }} products found</span>
-      <form class="flex items-center gap-space-xs" method="get" action="{% url 'catalogue' %}">
-        {% for k, v in request.GET.items %}{% if k not in 'sort' %}
-          <input type="hidden" name="{{ k }}" value="{{ v }}">
-        {% endif %}{% endfor %}
-        <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
-               placeholder="Search by name or description..."
-               class="flex-1 min-w-0 max-w-[300px] px-space-md py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed"/>
-        <button type="submit" class="shrink-0 px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
-          <span class="material-symbols-outlined text-[16px]">search</span>
-        </button>
-      </form>
+      {% if request.GET.q %}
+      <div class="flex items-center gap-space-xs font-mono text-[11px] text-on-surface-variant">
+        <span>Showing results for <span class="text-primary font-semibold">"{{ request.GET.q }}"</span></span>
+        <a href="{% url 'catalogue' %}" class="inline-flex items-center gap-0.5 text-secondary-fixed-dim hover:underline uppercase tracking-wider ml-space-xs">
+          <span class="material-symbols-outlined text-[14px]">close</span>
+          Clear
+        </a>
+      </div>
+      {% endif %}
     </div>
 
     <!-- Grid -->

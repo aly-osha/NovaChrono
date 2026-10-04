@@ -1,9 +1,13 @@
 {% extends "base.html" %}
-{% block title %}Autenticity Verification — NovaChrono{% endblock %}
+{% block title %}Authenticity Verification — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto mt-space-3xl text-center">
-  <div class="mb-space-3xl">
+<div class="max-w-2xl mx-auto mt-space-2xl">
+  {% url 'home' as url_home %}
+  <div class="mb-space-md text-left">
+    {% include "partials/_back_link.html" with target=url_home label="Home" %}
+  </div>
+  <div class="text-center mb-space-3xl">
     <span class="material-symbols-outlined text-6xl text-secondary-fixed-dim block mb-space-lg">qr_code_2</span>
     <h1 class="font-display text-3xl md:text-4xl font-bold text-on-surface mb-space-md">VERIFY AUTHENTICITY</h1>
     <p class="text-on-surface-variant text-lg max-w-md mx-auto">

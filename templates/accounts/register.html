@@ -2,12 +2,16 @@
 {% block title %}Register — NovaChrono{% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto mt-space-3xl">
+<div class="max-w-md mx-auto mt-space-2xl">
+  {% url 'home' as url_home %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_home label="Home" %}
+  </div>
   <div class="text-center mb-space-2xl">
     <a href="{% url 'home' %}" class="flex items-center gap-space-sm mb-space-lg">
       <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase">NOVACHRONO</span>
     </a>
-    <h1 class="font-display text-3xl font-bold text-on-surface">JOIN THE VAULT</h1>
+    <h1 class="font-display text-3xl font-bold text-on-surface">JOIN NOVACHRONO</h1>
     <p class="text-on-surface-variant text-sm mt-space-sm">Create your collector account</p>
   </div>
 

@@ -81,7 +81,32 @@
     };
   </script>
   <style>
-    @layer base { html, body { margin: 0; padding: 0; } body { overscroll-behavior: none; }
+    @layer base { 
+      html { 
+        margin: 0; 
+        padding: 0; 
+        overflow-x: clip;
+        scroll-behavior: smooth;
+      } 
+      body { 
+        margin: 0;
+        padding: 0;
+        overflow-x: clip;
+        width: 100%;
+        min-height: 100vh;
+        overscroll-behavior-x: none;
+        overscroll-behavior-y: auto;
+        background-color: #121317;
+        background-image: 
+          radial-gradient(circle at 18% 10%, rgba(121, 40, 202, 0.16) 0%, transparent 45%),
+          radial-gradient(circle at 82% 14%, rgba(0, 219, 233, 0.12) 0%, transparent 40%),
+          radial-gradient(circle at 15% 55%, rgba(0, 219, 233, 0.09) 0%, transparent 42%),
+          radial-gradient(circle at 85% 65%, rgba(121, 40, 202, 0.14) 0%, transparent 45%),
+          radial-gradient(circle at 50% 92%, rgba(204, 168, 48, 0.08) 0%, transparent 42%);
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
       main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; }
       ::-webkit-scrollbar { display: none; }
     }
@@ -98,6 +123,48 @@
     @media (prefers-reduced-motion: reduce) {
       .nc-reveal { opacity: 1; transform: none; transition: none; }
       .nc-float, .nc-glow-pulse, .nc-cyan-ping { animation: none; }
+    }
+
+    /* Universal Button Theme & Micro-Motion System (strictly buttons, never cards) */
+    button, input[type="submit"], input[type="button"], .btn {
+      position: relative;
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+                  box-shadow 0.25s ease,
+                  background-color 0.2s ease,
+                  border-color 0.2s ease,
+                  color 0.2s ease;
+      will-change: transform, box-shadow;
+    }
+
+    button:hover:not(:disabled), input[type="submit"]:hover:not(:disabled), .btn:hover {
+      transform: translateY(-1.5px);
+    }
+
+    button:active:not(:disabled), input[type="submit"]:active:not(:disabled), .btn:active {
+      transform: translateY(0.5px) scale(0.98);
+    }
+
+    /* Primary CTA Glow */
+    button[class*="bg-primary-container"], button[class*="bg-primary"], .btn-primary {
+      box-shadow: 0 0 14px rgba(121, 40, 202, 0.25);
+    }
+    button[class*="bg-primary-container"]:hover:not(:disabled), button[class*="bg-primary"]:hover:not(:disabled), .btn-primary:hover {
+      box-shadow: 0 0 25px rgba(121, 40, 202, 0.55), 0 4px 14px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Secondary / Cyan Glow */
+    button[class*="bg-secondary"], .btn-secondary {
+      box-shadow: 0 0 12px rgba(0, 219, 233, 0.2);
+    }
+    button[class*="bg-secondary"]:hover:not(:disabled), .btn-secondary:hover {
+      box-shadow: 0 0 22px rgba(0, 219, 233, 0.5), 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Subtle hover scale on button icons */
+    button:hover .material-symbols-outlined:not(.animate-spin),
+    .btn:hover .material-symbols-outlined:not(.animate-spin) {
+      transform: scale(1.1);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
   </style>
   {% block extra_head %}{% endblock %}
@@ -120,7 +187,7 @@
         <span class="text-surface-bright mx-space-md">•</span>
         <span>⚡ Luffy Manga Foil — ₹98,000 <span class="text-tertiary-fixed-dim">ATH</span></span>
         <span class="text-surface-bright mx-space-md">•</span>
-        <span>✦ The One Ring 001/001 — ₹1,45,000 <span class="text-outline">VAULT</span></span>
+        <span>✦ The One Ring 001/001 — ₹1,45,000 <span class="text-outline">MINT</span></span>
         <span class="text-surface-bright mx-space-md">•</span>
         <span>📦 Prismatic Evolutions ETB — Pre-order</span>
       </div>
@@ -131,28 +198,33 @@
   <!-- Header / Nav -->
   <header class="sticky top-0 z-50 bg-surface-container-lowest/90 backdrop-blur-md border-b border-surface-container-high">
     <div class="max-w-[1440px] mx-auto px-margin-mobile md:px-margin-desktop flex items-center justify-between h-[64px]">
-      <a href="{% url 'home' %}" class="flex items-center gap-space-sm group">
-        <img alt="NovaChrono Emblem" src="{% static 'img/novachrono-logo.jpg' %}"
-             class="h-9 w-9 rounded-lg object-cover ring-1 ring-outline-variant group-hover:ring-primary group-hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] transition-all duration-300"/>
-        <span class="flex flex-col">
-          <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase group-hover:text-primary transition-colors leading-none">NOVACHRONO</span>
-          <span class="hidden sm:inline text-[10px] font-mono text-outline uppercase tracking-widest">VAULT</span>
-        </span>
-      </a>
+      <div class="flex items-center gap-space-lg">
+        <a href="{% url 'home' %}" class="flex items-center gap-space-sm group">
+          <img alt="NovaChrono Emblem" src="{% static 'img/novachrono-logo.jpg' %}"
+               class="h-9 w-9 rounded-lg object-cover ring-1 ring-outline-variant group-hover:ring-primary group-hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] transition-all duration-300"/>
+          <span class="flex flex-col">
+            <span class="font-display text-xl font-extrabold tracking-wider text-on-surface uppercase group-hover:text-primary transition-colors leading-none">NOVACHRONO</span>
+          </span>
+        </a>
 
-      <!-- Nav links -->
-      <nav class="hidden md:flex items-center gap-space-lg">
-        <a href="{% url 'catalogue' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Catalogue</a>
-        {% comment %}
-          Wishlist and Orders are buyer-only. Hiding them for guests avoids a
-          click that would only bounce to the login page; the view itself
-          still enforces @login_required.
-        {% endcomment %}
-        {% if user.is_authenticated %}
-          <a href="{% url 'wishlist' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Wishlist</a>
-          <a href="{% url 'order_list' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Orders</a>
-        {% endif %}
-      </nav>
+        <!-- Nav links -->
+        <nav class="hidden md:flex items-center gap-space-md">
+          <a href="{% url 'catalogue' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Catalogue</a>
+          <a href="{% url 'verify_certificate' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Verify</a>
+          {% if user.is_authenticated %}
+            <a href="{% url 'wishlist' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Wishlist</a>
+            <a href="{% url 'order_list' %}" class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Orders</a>
+          {% endif %}
+        </nav>
+      </div>
+
+      <!-- Quick Search Bar (Direct 1-click product discovery) -->
+      <form method="get" action="{% url 'catalogue' %}" class="hidden sm:flex items-center relative w-48 md:w-60 xl:w-72">
+        <span class="material-symbols-outlined absolute left-3 text-outline text-[18px] pointer-events-none">search</span>
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}"
+               placeholder="Search cards, sets, games..."
+               class="w-full pl-9 pr-3 py-1.5 rounded-full bg-surface-container border border-surface-container-high text-on-surface placeholder:text-outline font-mono text-[12px] focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
+      </form>
 
       <div class="flex items-center gap-space-md">
         {% if user.is_authenticated %}
@@ -235,7 +307,10 @@
             <span class="font-display text-lg font-extrabold tracking-wider text-on-surface uppercase group-hover:text-primary transition-colors">NOVACHRONO</span>
           </div>
           <p class="max-w-md text-on-surface-variant text-[14px] leading-relaxed">
-            The institutional-grade trading card vault and marketplace. Dedicated to absolute authenticity, verified chain of custody, and archival security for collectors and competitive players.
+            The institutional-grade trading card marketplace. Dedicated to absolute authenticity, verified chain of custody, and archival security for collectors and competitive players.
+          </p>
+          <p class="text-on-surface-variant text-xs font-mono">
+            1501 Collector's Way, Vault District, Atlantis, Al 400001, India
           </p>
         </div>
         <div class="space-y-space-md">
@@ -248,7 +323,7 @@
           </ul>
         </div>
         <div class="space-y-space-md">
-          <h4 class="font-mono text-[12px] uppercase tracking-widest text-on-surface font-semibold">Vault Operations</h4>
+          <h4 class="font-mono text-[12px] uppercase tracking-widest text-on-surface font-semibold">Quick Links</h4>
           <ul class="space-y-space-xs text-[14px]">
             <li><a href="{% url 'verify_certificate' %}" class="hover:text-primary transition-colors">Authenticity Verify</a></li>
             {% if user.is_authenticated %}
@@ -260,13 +335,131 @@
         </div>
       </div>
       <div class="border-t border-surface-container-high pt-space-xl flex flex-col sm:flex-row items-center justify-between gap-space-sm text-[11px] font-mono text-outline">
-        <span>© 2026 NovaChrono Vault Systems. All rights reserved.</span>
-        <span>AUTHENTICITY — PROVENANCE — SECURE VAULT</span>
+        <span>© 2026 NovaChrono. All rights reserved.</span>
+        <span>AUTHENTICITY — PROVENANCE — SECURITY</span>
       </div>
     </div>
   </footer>
 
+  <!-- NovaChrono Themed Confirmation Modal System -->
+  <div id="nc-confirm-modal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-md transition-all duration-200 opacity-0 pointer-events-none" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="nc-confirm-card" class="relative w-full max-w-md rounded-2xl bg-surface-container border border-primary/30 p-space-lg shadow-[0_0_50px_rgba(121,40,202,0.35)] transform scale-95 transition-all duration-200">
+      <!-- Glow ambient accent -->
+      <div class="absolute -top-12 -left-12 w-32 h-32 bg-primary/20 rounded-full blur-2xl pointer-events-none"></div>
+      <div class="absolute -bottom-12 -right-12 w-32 h-32 bg-secondary-fixed-dim/15 rounded-full blur-2xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex items-start gap-space-md mb-space-md">
+        <div id="nc-confirm-icon-box" class="w-12 h-12 rounded-xl bg-primary-container/20 border border-primary/40 flex items-center justify-center shrink-0 text-primary">
+          <span id="nc-confirm-icon" class="material-symbols-outlined text-2xl">help_outline</span>
+        </div>
+        <div class="flex-1">
+          <h3 id="nc-confirm-title" class="font-display text-lg font-bold text-on-surface">Confirm Action</h3>
+          <p id="nc-confirm-message" class="text-on-surface-variant font-mono text-xs sm:text-sm mt-space-2xs leading-relaxed">Are you sure you want to proceed?</p>
+        </div>
+      </div>
+
+      <div class="relative z-10 flex items-center justify-end gap-space-sm pt-space-md border-t border-surface-container-high">
+        <button id="nc-confirm-cancel-btn" type="button" class="px-space-lg py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant hover:bg-surface-bright hover:text-on-surface font-mono text-xs font-semibold transition-colors">
+          Cancel
+        </button>
+        <button id="nc-confirm-ok-btn" type="button" class="px-space-lg py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed shadow-[0_0_15px_rgba(121,40,202,0.4)] transition-all flex items-center gap-space-2xs">
+          <span id="nc-confirm-btn-icon" class="material-symbols-outlined text-[16px]">check</span>
+          <span id="nc-confirm-btn-text">Confirm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // Global Themed Confirmation Modal System
+    window.novaConfirm = function(options) {
+      return new Promise((resolve) => {
+        const modal = document.getElementById('nc-confirm-modal');
+        const card = document.getElementById('nc-confirm-card');
+        const titleEl = document.getElementById('nc-confirm-title');
+        const msgEl = document.getElementById('nc-confirm-message');
+        const iconEl = document.getElementById('nc-confirm-icon');
+        const iconBox = document.getElementById('nc-confirm-icon-box');
+        const okBtn = document.getElementById('nc-confirm-ok-btn');
+        const cancelBtn = document.getElementById('nc-confirm-cancel-btn');
+        const okText = document.getElementById('nc-confirm-btn-text');
+        const okIcon = document.getElementById('nc-confirm-btn-icon');
+
+        if (!modal) {
+          resolve(window.confirm(options.message || 'Confirm?'));
+          return;
+        }
+
+        const title = options.title || 'Confirm Action';
+        const message = options.message || 'Are you sure you want to proceed?';
+        const icon = options.icon || (options.isDestructive ? 'warning' : 'help_outline');
+        const confirmText = options.confirmText || (options.isDestructive ? 'Delete' : 'Confirm');
+        const cancelText = options.cancelText || 'Cancel';
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        iconEl.textContent = icon;
+        okText.textContent = confirmText;
+        cancelBtn.textContent = cancelText;
+
+        if (options.isDestructive) {
+          iconBox.className = 'w-12 h-12 rounded-xl bg-error/20 border border-error/40 flex items-center justify-center shrink-0 text-error';
+          okBtn.className = 'px-space-lg py-space-xs rounded-lg bg-error text-white font-mono text-xs font-semibold hover:brightness-110 shadow-[0_0_15px_rgba(255,180,171,0.3)] transition-all flex items-center gap-space-2xs';
+          okIcon.textContent = 'delete';
+        } else {
+          iconBox.className = 'w-12 h-12 rounded-xl bg-primary-container/20 border border-primary/40 flex items-center justify-center shrink-0 text-primary';
+          okBtn.className = 'px-space-lg py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed shadow-[0_0_15px_rgba(121,40,202,0.4)] transition-all flex items-center gap-space-2xs';
+          okIcon.textContent = 'check';
+        }
+
+        modal.classList.remove('hidden', 'opacity-0', 'pointer-events-none');
+        modal.classList.add('flex', 'opacity-100');
+        setTimeout(() => { card.classList.remove('scale-95'); card.classList.add('scale-100'); }, 10);
+
+        function cleanup(result) {
+          card.classList.remove('scale-100');
+          card.classList.add('scale-95');
+          modal.classList.remove('opacity-100');
+          modal.classList.add('opacity-0', 'pointer-events-none');
+          setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            okBtn.removeEventListener('click', onOk);
+            cancelBtn.removeEventListener('click', onCancel);
+            modal.removeEventListener('click', onBackdrop);
+            resolve(result);
+          }, 200);
+        }
+
+        function onOk() { cleanup(true); }
+        function onCancel() { cleanup(false); }
+        function onBackdrop(e) { if (e.target === modal) cleanup(false); }
+
+        okBtn.addEventListener('click', onOk);
+        cancelBtn.addEventListener('click', onCancel);
+        modal.addEventListener('click', onBackdrop);
+      });
+    };
+
+    // Auto-intercept actions requiring confirmation (replaces default browser popup)
+    document.addEventListener('submit', async function(e) {
+      const form = e.target;
+      const confirmMsg = form.dataset.confirm || (form.action && form.action.includes('/toggle/') ? 'Are you sure you want to change the active status of this product?' : null);
+      if (confirmMsg && !form._novaConfirmed) {
+        e.preventDefault();
+        const ok = await window.novaConfirm({
+          title: 'Product Status',
+          message: confirmMsg,
+          icon: 'swap_horiz',
+          confirmText: 'Change Status',
+        });
+        if (ok) {
+          form._novaConfirmed = true;
+          form.submit();
+        }
+      }
+    });
+
     // Mobile menu toggle
     document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
       const nav = document.querySelector('nav');

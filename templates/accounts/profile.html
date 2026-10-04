@@ -3,12 +3,15 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto mt-space-2xl">
+  {% url 'home' as url_home %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_home label="Home" %}
+  </div>
   <div class="flex items-center justify-between mb-space-xl">
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">COLLECTOR PROFILE</h1>
       <p class="text-on-surface-variant text-sm font-mono">Manage your account settings</p>
     </div>
-    <a href="{% url 'home' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">← Back</a>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
