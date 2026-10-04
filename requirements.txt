@@ -8,3 +8,5 @@
 #
 # Django is pinned to the version this project is verified against.
 Django==5.2.17
+Pillow>=10.0.0
+reportlab>=4.0.0
