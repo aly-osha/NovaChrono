@@ -3,67 +3,131 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
-  <div class="flex items-center gap-space-xl mb-space-xl">
-    <div>
-      <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">Order #{{ order.pk }}</h1>
-      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">
-        Placed {{ order.created_at|date:"M d, Y · H:i" }}
-      </p>
-    </div>
-    <span class="px-space-md py-space-xs rounded-full bg-{% if order.status == 'delivered' %}secondary-container/10 text-secondary-fixed-dim{% elif order.status == 'shipped' %}primary-container/10 text-primary{% elif order.status == 'packed' %}tertiary-container/10 text-tertiary{% else %}surface-container-high text-outline{% endif %} font-mono text-sm font-semibold">
-      {{ order.get_status_display }}
-    </span>
+  {% url 'order_list' as url_orders %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_orders label="My Orders" %}
   </div>
 
-  <!-- Status Timeline -->
-  <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high mb-space-xl">
-    <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-lg">Order Status</h3>
-    <div class="flex items-center justify-between relative">
-      <div class="absolute top-4 left-0 right-0 h-0.5 bg-surface-container-highest z-0"></div>
-      <div class="absolute top-4 left-0 h-0.5 bg-secondary-fixed-dim/30 z-0" style="width: 25%"></div>
-      <div class="absolute top-4 left-0 h-0.5 bg-secondary-fixed-dim/50 z-0" style="width: 50%"></div>
-      <div class="absolute top-4 left-0 h-0.5 bg-secondary-fixed-dim/70 z-0" style="width: 75%"></div>
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-md mb-space-xl">
+    <div class="flex items-center gap-space-md">
+      <div>
+        <h1 class="font-display text-2xl md:text-3xl font-bold text-on-surface">Order #{{ order.pk }}</h1>
+        <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">
+          Placed {{ order.created_at|date:"M d, Y · H:i" }}
+        </p>
+      </div>
+      <span class="px-space-md py-space-xs rounded-full bg-{% if order.status == 'delivered' %}secondary-container/10 text-secondary-fixed-dim{% elif order.status == 'shipped' %}primary-container/10 text-primary{% elif order.status == 'packed' %}tertiary-container/10 text-tertiary{% else %}surface-container-high text-outline{% endif %} font-mono text-sm font-semibold">
+        {{ order.get_status_display }}
+      </span>
+    </div>
+  </div>
 
-      <div class="relative z-10 flex items-center gap-space-xl flex-1">
+  <!-- Themed Order Status Tracker with Cyber Animation -->
+  <div class="bg-surface-container rounded-2xl p-space-lg border border-surface-container-high shadow-xl mb-space-xl overflow-hidden relative">
+    <div class="flex items-center justify-between mb-space-xl">
+      <div class="flex items-center gap-space-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-secondary-fixed-dim animate-pulse shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span>
+        <h3 class="font-mono text-[12px] text-on-surface uppercase tracking-widest font-semibold">Order Status</h3>
+      </div>
+      <span class="font-mono text-[11px] text-outline uppercase tracking-wider">
+        Stage: <span class="text-secondary-fixed-dim font-bold">{{ order.get_status_display }}</span>
+      </span>
+    </div>
+
+    <!-- Stepper Track Container -->
+    <div class="relative px-4 sm:px-8 py-2">
+      <!-- Background Track Line -->
+      <div class="absolute top-7 left-8 right-8 sm:left-12 sm:right-12 h-1 bg-surface-container-highest rounded-full z-0"></div>
+
+      <!-- Animated Glowing Progress Track Line -->
+      <div class="absolute top-7 left-8 sm:left-12 h-1 rounded-full z-0 bg-gradient-to-r from-secondary-fixed-dim via-primary to-secondary-fixed shadow-[0_0_14px_rgba(0,219,233,0.6)] transition-all duration-700 ease-out {% if order.status == 'delivered' %}right-8 sm:right-12{% elif order.status == 'shipped' %}w-[75%]{% elif order.status == 'packed' %}w-[42%]{% else %}w-[12%]{% endif %}"></div>
+
+      <!-- Stepper Nodes -->
+      <div class="relative z-10 flex items-center justify-between w-full">
+        <!-- 1. Placed -->
         <div class="flex flex-col items-center text-center">
-          <div class="w-8 h-8 rounded-full {% if order.status == 'placed' or order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}bg-secondary-fixed-dim border-2 border-secondary-fixed-dim{% else %}bg-surface-container-high border-2 border-surface-container-high{% endif %} flex items-center justify-center mb-space-2xs">
-            {% if order.status == 'placed' or order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}
-              <span class="material-symbols-outlined text-[14px] text-secondary-fixed-dim">check</span>
-            {% else %}
-              <span class="material-symbols-outlined text-[14px] text-outline">radio_button_unchecked</span>
+          <div class="relative flex items-center justify-center mb-space-xs">
+            {% if order.status == 'placed' %}
+              <!-- Active Glow Ping -->
+              <span class="absolute -inset-1 rounded-full bg-secondary-fixed-dim/40 animate-ping"></span>
             {% endif %}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center {% if order.status == 'placed' or order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}bg-secondary-fixed-dim text-surface-container-lowest font-bold shadow-[0_0_15px_rgba(0,219,233,0.5)] border-2 border-secondary-fixed{% else %}bg-surface-container-high border-2 border-surface-container-highest text-outline{% endif %} transition-all duration-300">
+              <span class="material-symbols-outlined text-[18px]">check</span>
+            </div>
           </div>
-          <span class="font-mono text-[11px] text-outline uppercase">Placed</span>
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider {% if order.status == 'placed' %}text-secondary-fixed-dim{% elif order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}text-on-surface{% else %}text-outline{% endif %}">
+            Placed
+          </span>
+          <span class="font-mono text-[10px] text-outline mt-0.5">{{ order.created_at|date:"M d" }}</span>
         </div>
+
+        <!-- 2. Packed -->
         <div class="flex flex-col items-center text-center">
-          <div class="w-8 h-8 rounded-full {% if order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}bg-secondary-fixed-dim border-2 border-secondary-fixed-dim flex items-center justify-center{% else %}bg-surface-container-high border-2 border-surface-container-high{% endif %} mb-space-2xs">
-            {% if order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}
-              <span class="material-symbols-outlined text-[14px] text-surface-container-lowest">check</span>
-            {% else %}
-              <span class="material-symbols-outlined text-[14px] text-outline">radio_button_unchecked</span>
+          <div class="relative flex items-center justify-center mb-space-xs">
+            {% if order.status == 'packed' %}
+              <!-- Active Glow Ping -->
+              <span class="absolute -inset-1 rounded-full bg-primary/40 animate-ping"></span>
             {% endif %}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center {% if order.status == 'packed' %}bg-primary-container text-on-primary font-bold shadow-[0_0_20px_rgba(121,40,202,0.6)] border-2 border-primary{% elif order.status == 'shipped' or order.status == 'delivered' %}bg-secondary-fixed-dim text-surface-container-lowest font-bold shadow-[0_0_15px_rgba(0,219,233,0.5)] border-2 border-secondary-fixed{% else %}bg-surface-container-high border-2 border-surface-container-highest text-outline/50{% endif %} transition-all duration-300">
+              {% if order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}
+                <span class="material-symbols-outlined text-[18px]">check</span>
+              {% else %}
+                <span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+              {% endif %}
+            </div>
           </div>
-          <span class="font-mono text-[11px] text-outline uppercase">Packed</span>
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider {% if order.status == 'packed' %}text-primary{% elif order.status == 'shipped' or order.status == 'delivered' %}text-on-surface{% else %}text-outline{% endif %}">
+            Packed
+          </span>
+          <span class="font-mono text-[10px] text-outline mt-0.5">
+            {% if order.status == 'packed' or order.status == 'shipped' or order.status == 'delivered' %}Verified{% else %}Pending{% endif %}
+          </span>
         </div>
+
+        <!-- 3. Shipped -->
         <div class="flex flex-col items-center text-center">
-          <div class="w-8 h-8 rounded-full {% if order.status == 'shipped' or order.status == 'delivered' %}bg-secondary-fixed-dim border-2 border-secondary-fixed-dim flex items-center justify-center{% else %}bg-surface-container-high border-2 border-surface-container-high{% endif %} mb-space-2xs">
-            {% if order.status == 'shipped' or order.status == 'delivered' %}
-              <span class="material-symbols-outlined text-[14px] text-surface-container-lowest">check</span>
-            {% else %}
-              <span class="material-symbols-outlined text-[14px] text-outline">radio_button_unchecked</span>
+          <div class="relative flex items-center justify-center mb-space-xs">
+            {% if order.status == 'shipped' %}
+              <!-- Active Glow Ping -->
+              <span class="absolute -inset-1 rounded-full bg-primary/40 animate-ping"></span>
             {% endif %}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center {% if order.status == 'shipped' %}bg-primary-container text-on-primary font-bold shadow-[0_0_20px_rgba(121,40,202,0.6)] border-2 border-primary{% elif order.status == 'delivered' %}bg-secondary-fixed-dim text-surface-container-lowest font-bold shadow-[0_0_15px_rgba(0,219,233,0.5)] border-2 border-secondary-fixed{% else %}bg-surface-container-high border-2 border-surface-container-highest text-outline/50{% endif %} transition-all duration-300">
+              {% if order.status == 'shipped' or order.status == 'delivered' %}
+                <span class="material-symbols-outlined text-[18px]">check</span>
+              {% else %}
+                <span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+              {% endif %}
+            </div>
           </div>
-          <span class="font-mono text-[11px] text-outline uppercase">Shipped</span>
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider {% if order.status == 'shipped' %}text-primary{% elif order.status == 'delivered' %}text-on-surface{% else %}text-outline{% endif %}">
+            Shipped
+          </span>
+          <span class="font-mono text-[10px] text-outline mt-0.5">
+            {% if order.status == 'shipped' or order.status == 'delivered' %}In Transit{% else %}Awaiting{% endif %}
+          </span>
         </div>
+
+        <!-- 4. Delivered -->
         <div class="flex flex-col items-center text-center">
-          <div class="w-8 h-8 rounded-full {% if order.status == 'delivered' %}bg-secondary-fixed-dim border-2 border-secondary-fixed-dim flex items-center justify-center{% else %}bg-surface-container-high border-2 border-surface-container-high{% endif %} mb-space-2xs">
+          <div class="relative flex items-center justify-center mb-space-xs">
             {% if order.status == 'delivered' %}
-              <span class="material-symbols-outlined text-[14px] text-surface-container-lowest">check</span>
-            {% else %}
-              <span class="material-symbols-outlined text-[14px] text-outline">radio_button_unchecked</span>
+              <!-- Active Celebration Ping -->
+              <span class="absolute -inset-1 rounded-full bg-secondary-fixed-dim/40 animate-ping"></span>
             {% endif %}
+            <div class="w-10 h-10 rounded-full flex items-center justify-center {% if order.status == 'delivered' %}bg-secondary-fixed-dim text-surface-container-lowest font-bold shadow-[0_0_25px_rgba(0,219,233,0.7)] border-2 border-secondary-fixed{% else %}bg-surface-container-high border-2 border-surface-container-highest text-outline/50{% endif %} transition-all duration-300">
+              {% if order.status == 'delivered' %}
+                <span class="material-symbols-outlined text-[18px]">check</span>
+              {% else %}
+                <span class="material-symbols-outlined text-[18px]">radio_button_unchecked</span>
+              {% endif %}
+            </div>
           </div>
-          <span class="font-mono text-[11px] text-outline uppercase">Delivered</span>
+          <span class="font-mono text-xs font-semibold uppercase tracking-wider {% if order.status == 'delivered' %}text-secondary-fixed-dim{% else %}text-outline{% endif %}">
+            Delivered
+          </span>
+          <span class="font-mono text-[10px] text-outline mt-0.5">
+            {% if order.status == 'delivered' %}Completed{% else %}Final{% endif %}
+          </span>
         </div>
       </div>
     </div>
@@ -110,12 +174,12 @@
           <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest">Shipping Address</h3>
         </div>
         <div class="text-on-surface text-sm space-y-space-2xs">
-          <p>{{ order.shipping_address.line1 }}</p>
-          {% if order.shipping_address.line2 %}
-            <p>{{ order.shipping_address.line2 }}</p>
+          <p>{{ order.shipping_address_line1|default:order.shipping_address.line1 }}</p>
+          {% if order.shipping_address_line2 or order.shipping_address.line2 %}
+            <p>{{ order.shipping_address_line2|default:order.shipping_address.line2 }}</p>
           {% endif %}
-          <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} — {{ order.shipping_address.postal_code }}</p>
-          <p>{{ order.shipping_address.country }}</p>
+          <p>{{ order.shipping_city|default:order.shipping_address.city }}, {{ order.shipping_state|default:order.shipping_address.state }} — {{ order.shipping_postal_code|default:order.shipping_address.postal_code }}</p>
+          <p>{{ order.shipping_country|default:order.shipping_address.country }}</p>
         </div>
       </div>
     </div>
@@ -142,21 +206,18 @@
           </div>
         </div>
 
-        {% if order.status != 'delivered' %}
-          <div class="mt-space-lg pt-space-lg border-t border-surface-container-high">
-            <a href="{% url 'order_list' %}"
-               class="w-full py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors text-center">
-              Back to Orders
-            </a>
-          </div>
-        {% else %}
-          <div class="mt-space-lg pt-space-lg border-t border-surface-container-high text-center">
-            <span class="text-on-surface-variant font-mono text-sm">Thank you for your purchase!</span>
-            <div class="mt-space-md flex justify-center gap-space-2xs text-tertiary-fixed">
-              <span class="material-symbols-outlined text-2xl">verified</span>
-            </div>
-          </div>
-        {% endif %}
+        <div class="mt-space-lg pt-space-lg border-t border-surface-container-high space-y-space-sm">
+          <a href="{% url 'order_invoice_pdf' order.pk %}"
+             class="group relative w-full py-space-sm rounded-xl bg-gradient-to-r from-primary-container via-surface-container-high to-surface-container border border-primary/40 text-on-surface font-mono text-sm font-semibold hover:text-white hover:border-primary hover:shadow-[0_0_24px_rgba(121,40,202,0.55)] transition-all duration-300 flex items-center justify-center gap-space-xs overflow-hidden">
+            <span class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
+            <span class="material-symbols-outlined text-base text-primary group-hover:text-white group-hover:translate-y-0.5 transition-all">receipt_long</span>
+            <span>Download Invoice (PDF)</span>
+          </a>
+          <a href="{% url 'order_list' %}"
+             class="w-full py-space-sm rounded-xl bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-bright hover:text-primary transition-colors text-center block">
+            Back to Orders
+          </a>
+        </div>
       </div>
     </div>
   </div>

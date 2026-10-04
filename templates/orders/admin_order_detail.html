@@ -4,15 +4,27 @@
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
-  <div class="flex items-center justify-between mb-space-xl">
+  {% url 'admin_order_list' as url_admin_orders %}
+  <div class="mb-space-md">
+    {% include "partials/_back_link.html" with target=url_admin_orders label="All Orders" %}
+  </div>
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-md mb-space-xl">
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">Order #{{ order.pk }}</h1>
       <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Placed {{ order.created_at|date:"M d, Y · H:i" }} by {{ order.buyer.email }}</p>
     </div>
-    <a href="{% url 'admin_order_list' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
-      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
-      All Orders
-    </a>
+    <div class="flex items-center gap-space-xs">
+      <a href="{% url 'order_invoice_pdf' order.pk %}"
+         class="group relative inline-flex items-center justify-center gap-space-xs px-space-md py-space-sm rounded-xl bg-gradient-to-r from-primary-container/80 via-surface-container-high to-surface-container border border-primary/40 text-on-surface font-mono text-sm font-semibold hover:text-white hover:border-primary hover:shadow-[0_0_20px_rgba(121,40,202,0.45)] transition-all duration-300 overflow-hidden">
+        <span class="material-symbols-outlined text-[16px] text-primary group-hover:text-white group-hover:translate-y-0.5 transition-all duration-200">download</span>
+        <span>Invoice PDF</span>
+      </a>
+      <a href="{% url 'admin_order_list' %}" class="px-space-md py-space-sm rounded-xl bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors inline-flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        All Orders
+      </a>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-space-xl">
@@ -64,8 +76,8 @@
           <div>
             <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Update Status</label>
             <select name="status" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed">
-              {% for s in "placed,packed,shipped,delivered,cancelled" %}
-                <option value="{{ s }}" {% if order.status == s %}selected{% endif %}>{{ s|title }}</option>
+              {% for val, label in statuses %}
+                <option value="{{ val }}" {% if order.status == val %}selected{% endif %}>{{ label }}</option>
               {% endfor %}
             </select>
           </div>
