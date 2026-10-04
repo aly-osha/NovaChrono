@@ -61,9 +61,11 @@ class AuthenticityCertificate(models.Model):
         # even when verification_code is assigned after construction.
         if not self.certificate_number and self.verification_code:
             self.certificate_number = f"NC-{self.verification_code}"
-        # Keep the schema's status column and the legacy is_active flag in sync.
-        if self.status == "valid":
-            self.is_active = True
-        elif self.status in ("revoked", "expired"):
+        # Keep the schema's status column and the is_active flag in sync.
+        if not self.is_active or self.status in ("revoked", "expired"):
             self.is_active = False
+            if self.status == "valid":
+                self.status = "revoked"
+        elif self.status == "valid":
+            self.is_active = True
         super().save(*args, **kwargs)
