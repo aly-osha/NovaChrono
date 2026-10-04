@@ -4,7 +4,7 @@ analytics/views.py
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.db.models import Sum, Count, Avg
+from django.db.models import Sum, Count, Avg, F
 from django.utils import timezone
 from datetime import timedelta
 
@@ -68,13 +68,11 @@ def dashboard(request):
 
     # inventory value
     inventory_value = Product.objects.filter(is_active=True).aggregate(
-        value=Sum("price", field="price * stock"),
+        value=Sum(F("price") * F("stock")),
     )["value"] or 0
 
     # pending orders
-    pending_orders = Order.objects.filter(
-        status="placed",
-    ).select_related("buyer").count()
+    pending_orders = Order.objects.filter(status="placed").count()
 
     # recent activity
     recent_activity = ActivityLog.objects.select_related("admin_user")[:20]

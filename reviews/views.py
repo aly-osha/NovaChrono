@@ -1,7 +1,7 @@
 """
 reviews/views.py
 """
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Avg
@@ -89,14 +89,22 @@ def edit_review(request, pk):
 
 # ---- Admin review moderation ----
 
+def _is_admin(user):
+    return user.is_authenticated and user.role in ("admin", "super_admin")
 
+
+@login_required
+@user_passes_test(_is_admin)
 def admin_review_list(request):
-    from django.contrib.auth.decorators import user_passes_test
     reviews = Review.objects.select_related("buyer", "product").all()
     return render(request, "reviews/admin_list.html", {"reviews": reviews})
 
 
+@login_required
+@user_passes_test(_is_admin)
 def admin_review_detail(request, pk):
+    from analytics.models import ActivityLog
+
     review = get_object_or_404(
         Review.objects.select_related("buyer", "product"),
         pk=pk,
@@ -107,18 +115,45 @@ def admin_review_detail(request, pk):
 
         if action == "approve":
             review.is_approved = True
+            review.status = "approved"
             review.save()
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Review #{review.pk} approved",
+                target_table="reviews",
+                target_id=review.pk,
+            )
             messages.success(request, "Review approved.")
         elif action == "hide":
             review.is_approved = False
+            review.status = "pending"
             review.save()
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Review #{review.pk} hidden",
+                target_table="reviews",
+                target_id=review.pk,
+            )
             messages.success(request, "Review hidden.")
         elif action == "response":
             review.admin_response = request.POST.get("admin_response", "")
             review.save()
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Response added to Review #{review.pk}",
+                target_table="reviews",
+                target_id=review.pk,
+            )
             messages.success(request, "Admin response added.")
         elif action == "remove":
+            pk_val = review.pk
             review.delete()
+            ActivityLog.objects.create(
+                admin_user=request.user,
+                action=f"Review #{pk_val} removed",
+                target_table="reviews",
+                target_id=pk_val,
+            )
             messages.success(request, "Review permanently removed.")
             return redirect("admin_review_list")
 

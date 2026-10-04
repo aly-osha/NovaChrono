@@ -3,7 +3,7 @@ certificates/views.py
 """
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 
 from .models import AuthenticityCertificate
 from products.models import Product
@@ -45,23 +45,32 @@ def public_verify(request):
     return render(request, "certificates/verify.html", context)
 
 
+def _is_admin(user):
+    return user.is_authenticated and user.role in ("admin", "super_admin")
+
+
 @login_required
+@user_passes_test(_is_admin)
 def admin_certificate_list(request):
-    from django.contrib.auth.decorators import user_passes_test
     certs = list(AuthenticityCertificate.objects.select_related(
         "product", "issued_by",
     ).all())
-    # FR-53: attach a computed QR URL per certificate for the admin to
-    # print / download. No schema change, nothing persisted.
+    # FR-53: attach a computed QR URL per certificate for the admin to print / download.
     attach_qr_urls(request, certs)
-    return render(request, "certificates/admin_list.html", {"certs": certs})
+    # Supply active products with prefetched certificates so admin can issue certificates
+    products = Product.objects.filter(is_active=True).select_related(
+        "set", "game"
+    ).prefetch_related("certificates")
+    return render(request, "certificates/admin_list.html", {
+        "certs": certs,
+        "products": products,
+    })
 
 
 @login_required
+@user_passes_test(_is_admin)
 def admin_certificate_create(request, pk):
     """Generate an authenticity certificate for a product."""
-    from django.contrib.auth.decorators import user_passes_test
-
     product = get_object_or_404(Product, pk=pk, is_active=True)
 
     # check existing active cert
@@ -76,6 +85,8 @@ def admin_certificate_create(request, pk):
             product=product,
             verification_code=code,
             issued_by=request.user,
+            status="valid",
+            is_active=True,
         )
         ActivityLog.objects.create(
             admin_user=request.user,
@@ -93,12 +104,12 @@ def admin_certificate_create(request, pk):
 
 
 @login_required
+@user_passes_test(_is_admin)
 def admin_certificate_revoke(request, pk):
     """Revoke an active certificate."""
-    from django.contrib.auth.decorators import user_passes_test
-
     cert = get_object_or_404(AuthenticityCertificate, pk=pk)
     cert.is_active = False
+    cert.status = "revoked"
     cert.save()
 
     ActivityLog.objects.create(

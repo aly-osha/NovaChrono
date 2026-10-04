@@ -45,23 +45,36 @@ def cart_add(request, pk):
     return redirect("cart")
 
 
+from django.db.models import Q
+
+
 @login_required
 def cart_update(request, pk):
-    cart = Cart.objects.get(buyer=request.user)
-    item = get_object_or_404(cart.items, product_id=pk)
-    qty = int(request.POST.get("quantity", 1))
+    cart, _ = Cart.objects.get_or_create(buyer=request.user)
+    # Support both CartItem pk (sent by JS) and product_id pk
+    item = cart.items.select_related("product").filter(Q(pk=pk) | Q(product_id=pk)).first()
+    if not item:
+        messages.error(request, "Cart item not found.")
+        return redirect("cart")
+
+    try:
+        qty = int(request.POST.get("quantity", 1))
+    except (ValueError, TypeError):
+        qty = 1
+
     if qty < 1:
         item.delete()
     else:
-        item.quantity = qty
+        # Cap at available product stock
+        item.quantity = min(qty, item.product.stock)
         item.save()
     return redirect("cart")
 
 
 @login_required
 def cart_remove(request, pk):
-    cart = Cart.objects.get(buyer=request.user)
-    cart.items.filter(product_id=pk).delete()
+    cart, _ = Cart.objects.get_or_create(buyer=request.user)
+    cart.items.filter(Q(pk=pk) | Q(product_id=pk)).delete()
     messages.success(request, "Item removed from cart.")
     return redirect("cart")
 
