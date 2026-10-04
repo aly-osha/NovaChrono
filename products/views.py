@@ -43,10 +43,11 @@ def catalogue(request):
     if cat_ids:
         qs = qs.filter(category_id__in=cat_ids)
 
-    # product type
-    ptype = request.GET.get("type", "").strip()
-    if ptype:
-        qs = qs.filter(product_type=ptype)
+    # product type tabs: Single Cards vs Sealed Products
+    ptype = request.GET.get("type", "single_card").strip()
+    if ptype not in ["single_card", "sealed", "related"]:
+        ptype = "single_card"
+    qs = qs.filter(product_type=ptype)
 
     # rarity (single cards)
     rarity = request.GET.get("rarity", "").strip()
@@ -63,20 +64,12 @@ def catalogue(request):
     if condition:
         qs = qs.filter(single_card__condition=condition)
 
-    # price range — coerce defensively. Browsers submit type="number" as text, so
-    # an empty field, a stray space, or a partially-typed value like "12." can reach
-    # here. Decimal would raise InvalidOperation and 500 the whole catalogue page.
+    # price range — coerce defensively.
     min_price = request.GET.get("min_price", "").strip()
     max_price = request.GET.get("max_price", "").strip()
     price_filter_error = None
 
     def _to_decimal(raw):
-        """Return a Decimal, None for 'absent', or False for 'invalid'.
-
-        The comparison itself can raise InvalidOperation, not just the
-        construction: Decimal('NaN') constructs fine but NaN >= 0 raises
-        decimal.InvalidOperation. Both the parse and the compare need guarding.
-        """
         if not raw:
             return None
         try:
@@ -114,9 +107,29 @@ def catalogue(request):
     else:
         qs = qs.order_by("name")
 
-    # sidebar data
+    # Tab counts (for active items)
+    single_cards_count = Product.objects.filter(is_active=True, product_type="single_card").count()
+    sealed_count = Product.objects.filter(is_active=True, product_type="sealed").count()
+
+    # Active filters count for filter icon badge
+    active_filters_count = 0
+    if game_ids:
+        active_filters_count += len(game_ids)
+    if cat_ids:
+        active_filters_count += len(cat_ids)
+    if rarity:
+        active_filters_count += 1
+    if lang:
+        active_filters_count += 1
+    if condition:
+        active_filters_count += 1
+    if min_dec is not None or max_dec is not None:
+        active_filters_count += 1
+    if avail == "1":
+        active_filters_count += 1
+
+    # sidebar & filter data
     games = Game.objects.all()
-    # categories are flat in the schema — no parent__isnull filter
     categories = Category.objects.filter(is_active=True)
 
     paginator = Paginator(qs, PAGINATE_BY)
@@ -135,6 +148,10 @@ def catalogue(request):
         "query_params": params,
         "page_obj": products,
         "price_filter_error": price_filter_error,
+        "current_type": ptype,
+        "single_cards_count": single_cards_count,
+        "sealed_count": sealed_count,
+        "active_filters_count": active_filters_count,
     })
 
 

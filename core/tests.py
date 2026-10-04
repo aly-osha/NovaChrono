@@ -192,9 +192,9 @@ class NovaChronoIntegrationTests(TestCase):
     def test_cart_workflow_and_update(self):
         self.client.login(username="buyer@example.com", password="Password123!")
 
-        # Add to cart
+        # Add to cart (stays on product page)
         response = self.client.get(reverse("cart_add", args=[self.product1.pk]) + "?qty=2")
-        self.assertRedirects(response, reverse("cart"))
+        self.assertRedirects(response, reverse("product_detail", args=[self.product1.pk]))
 
         cart = Cart.objects.get(buyer=self.buyer)
         item = cart.items.first()

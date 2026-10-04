@@ -92,19 +92,21 @@
 
       <!-- View modes: Front 4K / Reverse / Foil Angle / Hologram -->
       <div class="flex items-center gap-space-xs mt-space-lg bg-surface-container-lowest/90 backdrop-blur-md p-space-3xs rounded-xl overflow-x-auto">
-        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-secondary-fixed-dim bg-surface-container flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(0)" type="button">
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-secondary-fixed-dim bg-surface-container flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(0)" type="button">
           <span class="material-symbols-outlined text-[16px]">visibility</span>
           <span>Front 4K Face</span>
         </button>
-        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(1)" type="button">
+        {% if product.has_back_image %}
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(1)" type="button">
           <span class="material-symbols-outlined text-[16px]">flip</span>
           <span>Reverse Centering</span>
         </button>
-        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(2)" type="button">
+        {% endif %}
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(2)" type="button">
           <span class="material-symbols-outlined text-[16px]">wb_twilight</span>
           <span>Foil Angle Dynamic</span>
         </button>
-        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0" onclick="switchPerspective(3)" type="button">
+        <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(3)" type="button">
           <span class="material-symbols-outlined text-[16px]">verified_user</span>
           <span>Hologram Seal</span>
         </button>
@@ -112,22 +114,24 @@
     </div>
 
     <!-- Thumbnail micro carousel (bound to perspective views) -->
-    <div class="grid grid-cols-4 gap-space-sm">
-      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(0)" type="button">
+    <div class="grid {% if product.has_back_image %}grid-cols-4{% else %}grid-cols-3{% endif %} gap-space-sm">
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(0)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
           {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} front"/>{% endif %}
         </div>
         <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Front Face (4K)</span>
         <span class="block font-mono text-[10px] text-secondary-fixed-dim">Surface Inspection</span>
       </button>
-      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(1)" type="button">
+      {% if product.has_back_image %}
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(1)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
-          {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} reverse" style="transform: scaleX(-1);"/>{% endif %}
+          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ product.back_image.image.url }}" alt="{{ product.name }} reverse"/>
         </div>
         <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Card Back</span>
         <span class="block font-mono text-[10px] text-outline">Centering Check</span>
       </button>
-      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(2)" type="button">
+      {% endif %}
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(2)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest relative">
           {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} foil angle"/>{% endif %}
           <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-secondary-fixed-dim/20 to-primary/20 pointer-events-none"></div>
@@ -135,7 +139,7 @@
         <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Foil Shimmer</span>
         <span class="block font-mono text-[10px] text-outline">35° Light Glare</span>
       </button>
-      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none" onclick="switchPerspective(3)" type="button">
+      <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(3)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest flex items-center justify-center">
           <span class="material-symbols-outlined text-4xl text-tertiary-fixed group-hover:scale-110 transition-transform">verified_user</span>
         </div>
@@ -643,6 +647,9 @@
     });
   }
 
+  const FRONT_IMG_URL = "{% if images.first %}{{ images.first.image.url }}{% endif %}";
+  const BACK_IMG_URL = "{% if product.has_back_image %}{{ product.back_image.image.url }}{% endif %}";
+
   // ---- Perspective switcher for the slab (Stitch detail system) ----
   function switchPerspective(index) {
     const btns = document.querySelectorAll('.view-mode-btn');
@@ -656,21 +663,24 @@
       }
     });
     const viewport = document.getElementById('card-viewport');
+    const main = document.getElementById('main-product-img');
     if (!viewport) return;
     if (index === 0) {
       viewport.style.transform = 'perspective(800px) rotateX(0deg) rotateY(0deg)';
+      if (main && FRONT_IMG_URL) main.src = FRONT_IMG_URL;
     } else if (index === 1) {
       viewport.style.transform = 'perspective(800px) rotateY(180deg) scale(0.96)';
+      if (main && BACK_IMG_URL) {
+        main.src = BACK_IMG_URL;
+      } else if (main && FRONT_IMG_URL) {
+        main.src = FRONT_IMG_URL;
+      }
     } else if (index === 2) {
       viewport.style.transform = 'perspective(800px) rotateX(12deg) rotateY(-18deg) scale(1.02)';
+      if (main && FRONT_IMG_URL) main.src = FRONT_IMG_URL;
     } else if (index === 3) {
       viewport.style.transform = 'perspective(800px) rotateX(-8deg) rotateY(10deg) scale(1.04)';
-    }
-    // Cycle alternate product photography when available.
-    const alts = document.querySelectorAll('#alt-images [data-src]');
-    const main = document.getElementById('main-product-img');
-    if (alts.length > 1 && main) {
-      main.src = alts[index % alts.length].getAttribute('data-src');
+      if (main && FRONT_IMG_URL) main.src = FRONT_IMG_URL;
     }
   }
 
@@ -702,17 +712,75 @@
     document.getElementById('quantity-val').textContent = currentQty;
   }
 
-  // ---- Cart add: securing animation, then real add with qty ----
+  // ---- Cart add: stays on product page with smooth asynchronous fetch ----
   function triggerCartAdd() {
     const btn = document.getElementById('add-to-cart-btn');
     if (!btn) return;
     const base = btn.dataset.cartUrl;
-    const original = btn.innerHTML;
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
     btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">sync</span><span>SECURING COPY...</span>';
+
+    fetch(base + '?qty=' + currentQty, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => {
+      if (r.redirected && r.url.includes('/login/')) {
+        window.location.href = r.url;
+        return null;
+      }
+      return r.json();
+    })
+    .then(data => {
+      if (!data) return;
+      if (data.status === 'success') {
+        btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">done</span><span>ADDED (' + currentQty + ')</span>';
+
+        // Update header badge dynamically if present
+        const badge = document.getElementById('nav-cart-badge');
+        if (badge) {
+          badge.textContent = data.cart_count;
+          badge.classList.remove('hidden');
+        }
+
+        // Show floating toast
+        showDetailToast(data.message, 'success');
+
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = originalHtml;
+        }, 2200);
+      } else {
+        showDetailToast(data.message || 'Unable to add to cart', 'error');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
+      }
+    })
+    .catch(() => {
+      // Graceful fallback: stay on page
+      window.location.reload();
+    });
+  }
+
+  function showDetailToast(msg, type = 'success') {
+    const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    toast.className = `fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl font-mono text-xs shadow-2xl border flex items-center gap-2 transition-all transform duration-300 translate-y-2 opacity-0 ${
+      isSuccess
+        ? 'bg-secondary-container text-on-secondary-container border-secondary-fixed'
+        : 'bg-error-container text-on-error-container border-error'
+    }`;
+    toast.innerHTML = `<span class="material-symbols-outlined text-[18px]">${isSuccess ? 'shopping_bag' : 'error'}</span> <span>${msg}</span>`;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.classList.remove('translate-y-2', 'opacity-0');
+    });
     setTimeout(() => {
-      btn.innerHTML = '<span class="material-symbols-outlined text-[20px] text-tertiary-fixed">done</span><span>ADDED TO CART</span>';
-      setTimeout(() => { window.location.href = base + '?qty=' + currentQty; }, 450);
-    }, 600);
+      toast.classList.add('opacity-0', 'translate-y-2');
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
   }
 
   // ---- Modal handlers ----

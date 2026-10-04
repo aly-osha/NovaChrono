@@ -3,216 +3,331 @@
 
 {% block content %}
 {% url 'home' as url_home %}
-<div class="flex flex-col gap-space-sm mb-space-xl">
+<div class="flex flex-col gap-space-sm mb-space-lg">
   <div>
     {% include "partials/_back_link.html" with target=url_home label="Home" %}
   </div>
-  <div class="flex items-center gap-space-2xs font-mono text-outline">
+  <div class="flex items-center gap-space-2xs font-mono text-outline text-xs">
     <a href="{% url 'home' %}" class="hover:text-on-surface transition-colors">HOME</a>
     <span class="text-surface-bright">/</span>
     <a href="{% url 'catalogue' %}" class="hover:text-on-surface transition-colors">SHOP</a>
     <span class="text-surface-bright">/</span>
-    <span class="text-secondary-fixed-dim font-medium">TCG &amp; SEALED CATALOG</span>
+    <span class="text-secondary-fixed-dim font-medium uppercase">
+      {% if current_type == 'sealed' %}Sealed Products{% else %}Single Cards{% endif %}
+    </span>
   </div>
-  <div class="flex items-center gap-space-2xs font-mono text-secondary-fixed-dim tracking-wider uppercase">
-    <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span>
-    Live Real-Time Inventory
-  </div>
-  <h1 class="font-display text-2xl md:text-3xl text-on-surface tracking-tight font-extrabold uppercase">
-    TCG &amp; SEALED CATALOG
-  </h1>
-  <div class="flex items-center gap-space-xs font-mono text-on-surface bg-surface-container px-space-sm py-space-xs rounded-lg text-outline border border-surface-container-high">
-    <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">verified_user</span>
-    <span>Authenticity Guaranteed · QR Verified &amp; Tamper-Evident</span>
+
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+    <div>
+      <div class="flex items-center gap-space-2xs font-mono text-secondary-fixed-dim text-xs tracking-wider uppercase mb-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-secondary-fixed-dim shadow-[0_0_8px_rgba(0,219,233,0.8)]"></span>
+        Live Real-Time Inventory
+      </div>
+      <h1 class="font-display text-2xl md:text-3xl text-on-surface tracking-tight font-extrabold uppercase">
+        TCG Vault Catalogue
+      </h1>
+    </div>
+
+    <div class="flex items-center gap-space-xs font-mono text-xs text-outline bg-surface-container px-space-md py-space-xs rounded-xl border border-surface-container-high self-start md:self-auto">
+      <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">verified_user</span>
+      <span>Authenticity Guaranteed · QR Verified &amp; Encrypted Slab</span>
+    </div>
   </div>
 </div>
 
-<!-- Active Filters -->
-{% if request.GET %}
-<div class="flex flex-wrap items-center gap-space-xs pt-space-xs">
-  <span class="font-mono text-[11px] text-outline uppercase tracking-wider mr-space-2xs">Active Filters:</span>
-  {% for game in games %}
-    {% if game.pk|slugify in request.GET|default:'' %}
-    {% endif %}
-  {% endfor %}
-  <a href="{% url 'catalogue' %}" class="font-mono text-[11px] text-primary hover:underline uppercase tracking-wider ml-space-xs">Clear All Filters</a>
-</div>
-{% endif %}
+<!-- Tabs & Control Toolbar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-lg border-b border-surface-container-high pb-space-md">
+  <!-- Split Tabs: Single Cards vs Sealed Products -->
+  <div class="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl border border-surface-container-high w-fit">
+    <!-- Single Cards Tab -->
+    <a href="{% url 'catalogue' %}?type=single_card{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+       class="flex items-center gap-space-xs px-space-md py-2 rounded-lg font-mono text-xs font-semibold transition-all {% if current_type == 'single_card' %}bg-primary-container text-on-primary shadow-lg shadow-primary-container/30 border border-primary/30{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container{% endif %}">
+      <span class="material-symbols-outlined text-[18px]">style</span>
+      <span>Single Cards</span>
+      <span class="px-1.5 py-0.5 rounded-full text-[10px] {% if current_type == 'single_card' %}bg-on-primary/20 text-on-primary{% else %}bg-surface-container-high text-outline{% endif %}">
+        {{ single_cards_count }}
+      </span>
+    </a>
 
-<!-- Main Layout -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
-  {% comment %}
-    Sticky panel + independent scroll. The header is h-[64px] (4rem), so top-20
-    (5rem) clears it with a 1rem gap. Without a max-height, a sticky element
-    taller than the viewport gets pinned and its lower half can never be
-    reached — the page scrolls, the panel does not. max-h + overflow-y-auto
-    keeps every control reachable while the panel stays pinned.
-{% endcomment %}
-  <aside class="lg:col-span-3 bg-surface-container-low p-space-md rounded-xl shadow-md
-                lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
-    {% comment %}
-    The form lives INSIDE the aside, not around it. Wrapping the aside instead
-    would need display:contents on the form, and that silently makes every
-    sibling of the aside its own grid item — the Apply button then steals a
-    column and the 3/9 split collapses.
-    {% endcomment %}
-    <form method="get" action="{% url 'catalogue' %}" class="flex flex-col gap-space-md">
-    <input type="hidden" name="q" value="{{ request.GET.q|default:'' }}">
-    <div class="flex items-center justify-between pb-space-xs">
-      <div class="flex items-center gap-space-2xs">
-        <span class="material-symbols-outlined text-secondary-fixed-dim text-lg">tune</span>
-        <span class="font-mono text-sm uppercase tracking-wider text-on-surface font-semibold">Filters</span>
-      </div>
-      <a href="{% url 'catalogue' %}" class="font-mono text-[11px] text-outline hover:text-on-surface transition-colors">Reset</a>
-    </div>
+    <!-- Sealed Products Tab -->
+    <a href="{% url 'catalogue' %}?type=sealed{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}"
+       class="flex items-center gap-space-xs px-space-md py-2 rounded-lg font-mono text-xs font-semibold transition-all {% if current_type == 'sealed' %}bg-tertiary-container text-on-tertiary shadow-lg shadow-tertiary-container/30 border border-tertiary/30{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container{% endif %}">
+      <span class="material-symbols-outlined text-[18px]">inventory_2</span>
+      <span>Sealed Products</span>
+      <span class="px-1.5 py-0.5 rounded-full text-[10px] {% if current_type == 'sealed' %}bg-on-tertiary/20 text-on-tertiary{% else %}bg-surface-container-high text-outline{% endif %}">
+        {{ sealed_count }}
+      </span>
+    </a>
+  </div>
 
-    <!-- Game Filter -->
-    <div class="space-y-space-xs">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Trading Card Game</span>
-      <div class="space-y-space-2xs">
-        {% for game in games %}
-          <label class="flex items-center justify-between p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
-            <div class="flex items-center gap-space-xs">
-              <input type="checkbox" name="game"
-                     value="{{ game.pk }}"
-                     {% if game.pk|slugify in request.GET %}
-                       checked
-                     {% endif %}
-                     class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
-              <span class="text-on-surface text-sm group-hover:text-primary transition-colors">{{ game.name }}</span>
-            </div>
-            <span class="font-mono text-[11px] text-outline">{{ game.active_product_count }}</span>
-          </label>
-        {% endfor %}
-      </div>
-    </div>
-
-    <!-- Product Type -->
-    <div class="space-y-space-xs">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Product Type</span>
-      <div class="space-y-space-2xs">
-        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
-          <input type="radio" name="type" value="sealed"
-                 {% if request.GET.type == 'sealed' %}checked{% endif %}
-                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
-          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Sealed Products</span>
-        </label>
-        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
-          <input type="radio" name="type" value="single_card"
-                 {% if request.GET.type == 'single_card' %}checked{% endif %}
-                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
-          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Single Cards</span>
-        </label>
-        <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
-          <input type="radio" name="type" value="related"
-                 {% if request.GET.type == 'related' %}checked{% endif %}
-                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
-          <span class="text-on-surface text-sm group-hover:text-primary transition-colors">Related Products</span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Price Range -->
-    <div class="space-y-space-xs">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Price Range (₹)</span>
-      <div class="flex gap-space-2xs">
-        {% comment %}
-    min-w-0 is required: a flex child defaults to min-width:auto, which resolves
-    to the number input's intrinsic width (~20ch for the spinner plus digits).
-    That intrinsic floor wins over flex-1 and pushes the pair past the sidebar
-    edge. min-w-0 lets them actually shrink.
-{% endcomment %}
-        <input type="number" name="min_price" placeholder="Min" inputmode="decimal"
-               value="{{ request.GET.min_price|default:'' }}"
-               class="flex-1 min-w-0 w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"/>
-        <input type="number" name="max_price" placeholder="Max" inputmode="decimal"
-               value="{{ request.GET.max_price|default:'' }}"
-               class="flex-1 min-w-0 w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"/>
-      {% if price_filter_error %}
-      <p class="font-mono text-[11px] text-error mt-space-2xs" role="alert">{{ price_filter_error }}</p>
+  <!-- Right toolbar actions: Filter Trigger Button & Sorting -->
+  <div class="flex items-center gap-space-sm flex-wrap">
+    <!-- Filter Toggle Button (with Icon) -->
+    <button type="button" id="open-filter-btn"
+            class="px-space-md py-2 rounded-xl bg-surface-container-low border border-surface-container-high hover:border-secondary-fixed text-on-surface font-mono text-xs flex items-center gap-space-xs shadow-sm hover:shadow transition-all cursor-pointer">
+      <span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim">tune</span>
+      <span class="font-semibold">Filters</span>
+      {% if active_filters_count > 0 %}
+        <span class="px-1.5 py-0.2 rounded-full bg-secondary-fixed-dim text-surface-container-lowest font-mono text-[10px] font-bold">
+          {{ active_filters_count }}
+        </span>
       {% endif %}
-      </div>
-    </div>
-
-    <!-- Availability -->
-    <div class="space-y-space-xs">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Availability</span>
-      <label class="flex items-center gap-space-xs p-space-2xs rounded hover:bg-surface-container transition-colors cursor-pointer group">
-        <input type="checkbox" name="available" value="1"
-               {% if request.GET.available == '1' %}checked{% endif %}
-               class="w-4 h-4 rounded bg-surface-container-highest accent-primary"/>
-        <span class="text-on-surface text-sm group-hover:text-primary transition-colors">In Stock Only</span>
-      </label>
-    </div>
-
-    <!-- Sorting -->
-    <div class="space-y-space-xs pt-space-sm border-t border-surface-container-high">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider block">Sort By</span>
-      <select name="sort" onchange="this.form.submit()"
-              class="w-full px-space-sm py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-[11px] focus:outline-none focus:border-secondary-fixed appearance-none">
-        <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Name A–Z</option>
-        <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Price: Low → High</option>
-        <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
-        <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Top Rated</option>
-      </select>
-    </div>
-    {% comment %}
-    Apply button: the sort select self-submits on change, but price, checkbox and
-    radio filters fire no change handler, so the rail needs an explicit apply.
-    {% endcomment %}
-    <button type="submit"
-            class="w-full px-space-sm py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-[11px] font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
-      Apply Filters
     </button>
-    </form>
-    </aside>
 
-  <!-- Product Grid -->
-  <div class="lg:col-span-9">
-    <!-- Results header -->
-    <div class="flex items-center justify-between mb-space-lg">
-      <span class="font-mono text-[11px] text-outline uppercase tracking-wider">{{ page_obj.paginator.count }} products found</span>
-      {% if request.GET.q %}
-      <div class="flex items-center gap-space-xs font-mono text-[11px] text-on-surface-variant">
-        <span>Showing results for <span class="text-primary font-semibold">"{{ request.GET.q }}"</span></span>
-        <a href="{% url 'catalogue' %}" class="inline-flex items-center gap-0.5 text-secondary-fixed-dim hover:underline uppercase tracking-wider ml-space-xs">
-          <span class="material-symbols-outlined text-[14px]">close</span>
-          Clear
+    <!-- Sort Dropdown -->
+    <div class="relative">
+      <form id="sort-form" method="get" action="{% url 'catalogue' %}" class="flex items-center gap-space-2xs">
+        <input type="hidden" name="type" value="{{ current_type }}">
+        {% if request.GET.q %}<input type="hidden" name="q" value="{{ request.GET.q }}">{% endif %}
+        {% for g in request.GET.getlist.game %}<input type="hidden" name="game" value="{{ g }}">{% endfor %}
+        {% for c in request.GET.getlist.category %}<input type="hidden" name="category" value="{{ c }}">{% endfor %}
+        {% if request.GET.min_price %}<input type="hidden" name="min_price" value="{{ request.GET.min_price }}">{% endif %}
+        {% if request.GET.max_price %}<input type="hidden" name="max_price" value="{{ request.GET.max_price }}">{% endif %}
+        {% if request.GET.available %}<input type="hidden" name="available" value="{{ request.GET.available }}">{% endif %}
+        {% if request.GET.rarity %}<input type="hidden" name="rarity" value="{{ request.GET.rarity }}">{% endif %}
+        {% if request.GET.language %}<input type="hidden" name="language" value="{{ request.GET.language }}">{% endif %}
+        {% if request.GET.condition %}<input type="hidden" name="condition" value="{{ request.GET.condition }}">{% endif %}
+
+        <span class="material-symbols-outlined text-outline text-[16px] pointer-events-none">swap_vert</span>
+        <select name="sort" onchange="this.form.submit()"
+                class="px-space-md py-2 rounded-xl bg-surface-container-low border border-surface-container-high text-on-surface font-mono text-xs focus:outline-none focus:border-secondary-fixed cursor-pointer appearance-none pr-8">
+          <option value="name" {% if request.GET.sort == 'name' %}selected{% endif %}>Sort: Name A–Z</option>
+          <option value="price_asc" {% if request.GET.sort == 'price_asc' %}selected{% endif %}>Sort: Price Low → High</option>
+          <option value="price_desc" {% if request.GET.sort == 'price_desc' %}selected{% endif %}>Sort: Price High → Low</option>
+          <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Sort: Top Rated</option>
+        </select>
+        <span class="material-symbols-outlined absolute right-2.5 text-outline text-[16px] pointer-events-none">arrow_drop_down</span>
+      </form>
+    </div>
+
+    <!-- Active filter badges & Reset -->
+    {% if active_filters_count > 0 or request.GET.q %}
+      <a href="{% url 'catalogue' %}?type={{ current_type }}"
+         class="font-mono text-xs text-primary hover:underline flex items-center gap-1">
+        <span class="material-symbols-outlined text-[14px]">refresh</span>
+        Clear Filters
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Results Header -->
+<div class="flex items-center justify-between mb-space-md font-mono text-xs text-outline">
+  <span>{{ page_obj.paginator.count }} {% if current_type == 'sealed' %}sealed products{% else %}single cards{% endif %} available</span>
+  {% if request.GET.q %}
+    <span class="text-on-surface-variant">
+      Search matching: <strong class="text-primary">"{{ request.GET.q }}"</strong>
+    </span>
+  {% endif %}
+</div>
+
+<!-- Full-Width Product Showcase Grid -->
+<div class="w-full">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-space-lg">
+    {% for product in products %}
+      {% include "products/_product_card.html" with product=product %}
+    {% empty %}
+      <div class="col-span-full text-center py-space-3xl text-on-surface-variant font-mono text-sm bg-surface-container-low rounded-2xl border border-surface-container-high p-space-xl">
+        <span class="material-symbols-outlined text-5xl text-outline block mb-space-md">search_off</span>
+        <p class="font-bold text-on-surface text-base mb-1">No {% if current_type == 'sealed' %}sealed products{% else %}single cards{% endif %} found</p>
+        <p class="text-outline text-xs mb-space-md">Try removing filters or searching for another set/character.</p>
+        <a href="{% url 'catalogue' %}?type={{ current_type }}"
+           class="inline-flex items-center gap-space-xs px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-xs hover:bg-primary transition-colors">
+          Reset Filter Options
         </a>
       </div>
+    {% endfor %}
+  </div>
+
+  <!-- Pagination -->
+  {% if page_obj.has_other_pages %}
+    <div class="flex items-center justify-center gap-space-xs mt-space-2xl">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
+           class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container hover:text-primary transition-colors">
+          ← Prev
+        </a>
+      {% endif %}
+      <span class="font-mono text-xs text-outline px-space-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
+           class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container hover:text-primary transition-colors">
+          Next →
+        </a>
       {% endif %}
     </div>
+  {% endif %}
+</div>
 
-    <!-- Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-space-lg">
-      {% for product in products %}
-        {% include "products/_product_card.html" with product=product %}
-      {% empty %}
-        <div class="col-span-full text-center py-space-3xl text-on-surface-variant font-mono text-sm">
-          <span class="material-symbols-outlined text-4xl text-outline block mb-space-md">search_off</span>
-          No products match your filters. Try adjusting your search.
-        </div>
-      {% endfor %}
+<!-- Filter Drawer Modal (Appears when filter icon is tapped) -->
+<div id="filter-drawer-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex justify-end transition-opacity duration-300">
+  <div class="w-full max-w-md bg-surface-container h-full shadow-2xl border-l border-surface-container-high flex flex-col justify-between overflow-hidden">
+    <!-- Drawer Header -->
+    <div class="p-space-lg border-b border-surface-container-high flex items-center justify-between bg-surface-container-low">
+      <div class="flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-secondary-fixed-dim text-[22px]">tune</span>
+        <h3 class="font-display text-lg font-bold text-on-surface">Filter Catalogue</h3>
+      </div>
+      <button type="button" id="close-filter-btn" class="w-8 h-8 rounded-full bg-surface-container-high hover:bg-surface-container text-outline hover:text-on-surface flex items-center justify-center cursor-pointer transition-colors">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
     </div>
 
-    <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
-      <div class="flex items-center justify-center gap-space-xs mt-space-2xl">
-        {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
-             class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-surface-container hover:text-primary transition-colors">
-            ← Prev
-          </a>
-        {% endif %}
-        <span class="font-mono text-[11px] text-outline px-space-sm">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
-        {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}{% if request.GET %}&{{ request.GET.urlencode }}{% endif %}"
-             class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-surface-container hover:text-primary transition-colors">
-            Next →
-          </a>
+    <!-- Filter Form Content (Scrollable) -->
+    <form id="catalogue-filter-form" method="get" action="{% url 'catalogue' %}" class="flex-1 overflow-y-auto p-space-lg space-y-space-lg">
+      <input type="hidden" name="type" value="{{ current_type }}">
+      <input type="hidden" name="q" value="{{ request.GET.q|default:'' }}">
+      <input type="hidden" name="sort" value="{{ request.GET.sort|default:'name' }}">
+
+      <!-- Game Filter -->
+      <div>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-wider block mb-space-xs font-bold">Trading Card Game</span>
+        <div class="space-y-1 max-h-48 overflow-y-auto pr-1">
+          {% for game in games %}
+            <label class="flex items-center justify-between p-space-xs rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer group">
+              <div class="flex items-center gap-space-xs">
+                <input type="checkbox" name="game" value="{{ game.pk }}"
+                       {% if game.pk|slugify in request.GET.getlist.game %}checked{% endif %}
+                       class="w-4 h-4 rounded bg-surface-container-highest accent-primary cursor-pointer"/>
+                <span class="text-on-surface text-sm group-hover:text-primary transition-colors">{{ game.name }}</span>
+              </div>
+              <span class="font-mono text-[11px] text-outline">{{ game.active_product_count }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Categories Filter -->
+      <div>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-wider block mb-space-xs font-bold">Category</span>
+        <div class="space-y-1 max-h-40 overflow-y-auto pr-1">
+          {% for cat in categories %}
+            <label class="flex items-center gap-space-xs p-space-xs rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer group">
+              <input type="checkbox" name="category" value="{{ cat.pk }}"
+                     {% if cat.pk|slugify in request.GET.getlist.category %}checked{% endif %}
+                     class="w-4 h-4 rounded bg-surface-container-highest accent-primary cursor-pointer"/>
+              <span class="text-on-surface text-sm group-hover:text-primary transition-colors">{{ cat.name }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Card-specific specifications (Only shown on Single Cards tab) -->
+      {% if current_type == 'single_card' %}
+        <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high space-y-space-md">
+          <span class="font-mono text-[11px] text-tertiary-fixed uppercase tracking-wider block font-bold flex items-center gap-1">
+            <span class="material-symbols-outlined text-[16px]">grade</span>
+            Single Card Specs
+          </span>
+
+          <!-- Rarity -->
+          <div>
+            <label class="font-mono text-[10px] text-outline uppercase tracking-wider block mb-1">Rarity</label>
+            <select name="rarity" class="w-full px-space-md py-1.5 rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-body text-xs focus:outline-none focus:border-secondary-fixed">
+              <option value="">Any Rarity</option>
+              <option value="common" {% if request.GET.rarity == 'common' %}selected{% endif %}>Common</option>
+              <option value="uncommon" {% if request.GET.rarity == 'uncommon' %}selected{% endif %}>Uncommon</option>
+              <option value="rare" {% if request.GET.rarity == 'rare' %}selected{% endif %}>Rare</option>
+              <option value="mythic_rare" {% if request.GET.rarity == 'mythic_rare' %}selected{% endif %}>Mythic Rare</option>
+              <option value="special_illustration_rare" {% if request.GET.rarity == 'special_illustration_rare' %}selected{% endif %}>Special Illustration Rare</option>
+              <option value="secret_rare" {% if request.GET.rarity == 'secret_rare' %}selected{% endif %}>Secret Rare</option>
+            </select>
+          </div>
+
+          <!-- Language -->
+          <div>
+            <label class="font-mono text-[10px] text-outline uppercase tracking-wider block mb-1">Language</label>
+            <select name="language" class="w-full px-space-md py-1.5 rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-body text-xs focus:outline-none focus:border-secondary-fixed">
+              <option value="">Any Language</option>
+              <option value="English" {% if request.GET.language == 'English' %}selected{% endif %}>English</option>
+              <option value="Japanese" {% if request.GET.language == 'Japanese' %}selected{% endif %}>Japanese</option>
+              <option value="Korean" {% if request.GET.language == 'Korean' %}selected{% endif %}>Korean</option>
+              <option value="Chinese" {% if request.GET.language == 'Chinese' %}selected{% endif %}>Chinese</option>
+            </select>
+          </div>
+
+          <!-- Condition -->
+          <div>
+            <label class="font-mono text-[10px] text-outline uppercase tracking-wider block mb-1">Condition</label>
+            <select name="condition" class="w-full px-space-md py-1.5 rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-body text-xs focus:outline-none focus:border-secondary-fixed">
+              <option value="">Any Condition</option>
+              <option value="near_mint" {% if request.GET.condition == 'near_mint' %}selected{% endif %}>Near Mint</option>
+              <option value="lightly_played" {% if request.GET.condition == 'lightly_played' %}selected{% endif %}>Lightly Played</option>
+              <option value="moderately_played" {% if request.GET.condition == 'moderately_played' %}selected{% endif %}>Moderately Played</option>
+              <option value="heavily_played" {% if request.GET.condition == 'heavily_played' %}selected{% endif %}>Heavily Played</option>
+              <option value="damaged" {% if request.GET.condition == 'damaged' %}selected{% endif %}>Damaged</option>
+            </select>
+          </div>
+        </div>
+      {% endif %}
+
+      <!-- Price Range -->
+      <div>
+        <span class="font-mono text-[11px] text-outline uppercase tracking-wider block mb-space-xs font-bold">Price Range (₹)</span>
+        <div class="flex gap-space-2xs items-center">
+          <input type="number" name="min_price" placeholder="Min ₹" inputmode="decimal"
+                 value="{{ request.GET.min_price|default:'' }}"
+                 class="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-mono text-xs focus:outline-none focus:border-secondary-fixed"/>
+          <span class="text-outline font-mono text-xs">to</span>
+          <input type="number" name="max_price" placeholder="Max ₹" inputmode="decimal"
+                 value="{{ request.GET.max_price|default:'' }}"
+                 class="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface font-mono text-xs focus:outline-none focus:border-secondary-fixed"/>
+        </div>
+        {% if price_filter_error %}
+          <p class="font-mono text-[11px] text-error mt-1" role="alert">{{ price_filter_error }}</p>
         {% endif %}
       </div>
-    {% endif %}
+
+      <!-- Availability -->
+      <div>
+        <label class="flex items-center gap-space-xs p-space-xs rounded-lg hover:bg-surface-container-high transition-colors cursor-pointer group">
+          <input type="checkbox" name="available" value="1"
+                 {% if request.GET.available == '1' %}checked{% endif %}
+                 class="w-4 h-4 rounded bg-surface-container-highest accent-primary cursor-pointer"/>
+          <span class="text-on-surface text-sm group-hover:text-primary transition-colors font-medium">In Stock Only</span>
+        </label>
+      </div>
+    </form>
+
+    <!-- Drawer Footer Actions: Filtering ONLY fires when Apply Filters is clicked -->
+    <div class="p-space-lg border-t border-surface-container-high bg-surface-container-low flex items-center gap-space-md">
+      <a href="{% url 'catalogue' %}?type={{ current_type }}"
+         class="px-space-md py-space-sm rounded-xl bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container hover:text-on-surface transition-colors text-center">
+        Reset
+      </a>
+      <button type="submit" form="catalogue-filter-form"
+              class="flex-1 py-space-sm rounded-xl bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-1 shadow-lg shadow-primary-container/20 cursor-pointer">
+        <span class="material-symbols-outlined text-[18px]">done</span>
+        Apply Filters
+      </button>
+    </div>
   </div>
 </div>
+
+<script>
+// Filter Drawer interaction
+const filterDrawer = document.getElementById('filter-drawer-modal');
+const openFilterBtn = document.getElementById('open-filter-btn');
+const closeFilterBtn = document.getElementById('close-filter-btn');
+
+openFilterBtn?.addEventListener('click', () => {
+  filterDrawer.classList.remove('hidden');
+});
+
+closeFilterBtn?.addEventListener('click', () => {
+  filterDrawer.classList.add('hidden');
+});
+
+filterDrawer?.addEventListener('click', (e) => {
+  if (e.target === filterDrawer) {
+    filterDrawer.classList.add('hidden');
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !filterDrawer.classList.contains('hidden')) {
+    filterDrawer.classList.add('hidden');
+  }
+});
+</script>
 {% endblock %}

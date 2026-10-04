@@ -156,6 +156,17 @@ class Product(models.Model):
         imgs = self.images.all()
         return imgs[0] if imgs else None
 
+    @property
+    def back_image(self):
+        imgs = list(self.images.all())
+        return imgs[1] if len(imgs) > 1 else None
+
+    @property
+    def has_back_image(self):
+        imgs = list(self.images.all())
+        return len(imgs) > 1 and bool(imgs[1].image)
+
+
 
 class SealedPack(models.Model):
     """Schema table: sealed_packs — one-to-one marker for sealed products.

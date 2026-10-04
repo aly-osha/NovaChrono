@@ -6,6 +6,9 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 
+from django.http import JsonResponse
+from django.urls import reverse
+
 from .models import Cart, CartItem
 from products.models import Product
 
@@ -23,9 +26,14 @@ def cart(request):
 @login_required
 def cart_add(request, pk):
     product = get_object_or_404(Product, pk=pk, is_active=True)
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("format") == "json" or "application/json" in request.headers.get("Accept", "")
+
     if not product.is_available:
+        if is_ajax:
+            return JsonResponse({"status": "error", "message": f"{product.name} is out of stock."}, status=400)
         messages.error(request, f"{product.name} is out of stock.")
-        return redirect("product_detail", pk=pk)
+        fallback = request.META.get("HTTP_REFERER") or reverse("product_detail", kwargs={"pk": pk})
+        return redirect(fallback)
 
     try:
         qty = max(1, int(request.GET.get("qty", 1)))
@@ -41,8 +49,21 @@ def cart_add(request, pk):
     else:
         item.quantity = qty
         item.save()
-    messages.success(request, f"Added {qty}× {product.name} to cart.")
-    return redirect("cart")
+
+    msg = f"Added {qty}× {product.name} to cart."
+    if is_ajax:
+        return JsonResponse({
+            "status": "success",
+            "message": msg,
+            "cart_count": cart.total_items,
+            "qty": item.quantity,
+            "product_name": product.name,
+        })
+
+    messages.success(request, msg)
+    # Stay on the current page instead of redirecting to the cart page
+    next_url = request.GET.get("next") or request.META.get("HTTP_REFERER") or reverse("product_detail", kwargs={"pk": pk})
+    return redirect(next_url)
 
 
 from django.db.models import Q

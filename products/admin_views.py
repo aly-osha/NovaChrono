@@ -2,7 +2,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 
 from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage, SealedPack
@@ -313,9 +313,21 @@ def admin_product_create(request):
                     condition=request.POST.get("condition", "near_mint"),
                 )
 
-            # images
-            for img in request.FILES.getlist("images"):
-                ProductImage.objects.create(product=product, image=img)
+            # images: front image, back image (for single cards/inspection), and additional gallery images
+            image_front = request.FILES.get("image_front")
+            image_back = request.FILES.get("image_back")
+            extra_images = request.FILES.getlist("images")
+
+            order = 0
+            if image_front:
+                ProductImage.objects.create(product=product, image=image_front, sort_order=order)
+                order += 1
+            if image_back:
+                ProductImage.objects.create(product=product, image=image_back, sort_order=order)
+                order += 1
+            for img in extra_images:
+                ProductImage.objects.create(product=product, image=img, sort_order=order)
+                order += 1
 
         ActivityLog.objects.create(
             admin_user=request.user,
@@ -338,6 +350,10 @@ def admin_product_edit(request, pk):
     games = Game.objects.all()
     sets = Set.objects.select_related("game").all()
     categories = Category.objects.filter(is_active=True).all()
+    existing_images = list(product.images.all())
+    front_image = existing_images[0] if len(existing_images) > 0 else None
+    back_image = existing_images[1] if len(existing_images) > 1 else None
+    gallery_images = existing_images[2:] if len(existing_images) > 2 else []
 
     if request.method == "POST":
         product.name = request.POST.get("name", "").strip()
@@ -369,8 +385,38 @@ def admin_product_edit(request, pk):
             SealedPack.objects.filter(product=product).delete()
             SingleCardDetail.objects.filter(product=product).delete()
 
-        for img in request.FILES.getlist("images"):
-            ProductImage.objects.create(product=product, image=img)
+        # Handle front image update
+        if request.FILES.get("image_front"):
+            if front_image:
+                front_image.image = request.FILES.get("image_front")
+                front_image.save()
+            else:
+                ProductImage.objects.create(product=product, image=request.FILES.get("image_front"), sort_order=0)
+
+        # Handle back image update or removal
+        if request.POST.get("delete_back_image") == "1":
+            if back_image:
+                back_image.delete()
+        elif request.FILES.get("image_back"):
+            if back_image:
+                back_image.image = request.FILES.get("image_back")
+                back_image.save()
+            else:
+                ProductImage.objects.create(product=product, image=request.FILES.get("image_back"), sort_order=1)
+
+        # Handle deleting individual gallery images
+        delete_ids = request.POST.getlist("delete_image_ids")
+        if delete_ids:
+            ProductImage.objects.filter(product=product, pk__in=delete_ids).delete()
+
+        # Handle extra gallery images
+        new_extras = request.FILES.getlist("images")
+        if new_extras:
+            max_order = product.images.aggregate(m=models.Max("sort_order"))["m"]
+            curr_order = (max_order + 1) if max_order is not None else 2
+            for img in new_extras:
+                ProductImage.objects.create(product=product, image=img, sort_order=curr_order)
+                curr_order += 1
 
         ActivityLog.objects.create(
             admin_user=request.user,
@@ -384,6 +430,9 @@ def admin_product_edit(request, pk):
     return render(request, "admin/product_form.html", {
         "product": product,
         "games": games, "sets": sets, "categories": categories,
+        "front_image": front_image,
+        "back_image": back_image,
+        "gallery_images": gallery_images,
         "title": "Edit Product",
     })
 

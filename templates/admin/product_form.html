@@ -65,11 +65,12 @@
       </div>
     </div>
 
-    <!-- Game & Set -->
+    <!-- Game & Set (Searchable Typeahead) -->
     <div>
       <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest mb-space-md">Game &amp; Set</h3>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
-        <div>
+        <!-- Searchable Game Combobox -->
+        <div class="relative" id="game-combobox-wrapper">
           <div class="flex items-center justify-between mb-space-2xs">
             <label class="font-mono text-[11px] text-outline uppercase tracking-widest block">Game *</label>
             <button type="button" id="open-game-modal-btn" class="font-mono text-[11px] text-primary hover:underline flex items-center gap-1 cursor-pointer">
@@ -77,14 +78,24 @@
               + New Game
             </button>
           </div>
-          <select name="game" id="game-select" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" required>
-            <option value="">Select a game...</option>
-            {% for g in games %}
-              <option value="{{ g.pk }}" {% if product.game_id == g.pk %}selected{% endif %}>{{ g.name }}</option>
-            {% endfor %}
-          </select>
+          <div class="relative">
+            <input type="text" id="game-search-input" autocomplete="off"
+                   placeholder="Type letters to search games (e.g. Pokemon, Magic)..."
+                   value="{% if product.game %}{{ product.game.name }}{% endif %}"
+                   class="w-full px-space-md py-space-sm pr-10 rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30"/>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none" id="game-search-icon">search</span>
+          </div>
+          <input type="hidden" name="game" id="game-hidden-id" value="{{ product.game_id|default:'' }}" required/>
+          <!-- Filtered dropdown list -->
+          <div id="game-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto bg-surface-container-high rounded-xl border border-surface-container-highest shadow-2xl z-40 divide-y divide-surface-container-highest/50">
+            <div id="game-options-container" class="py-1">
+              <!-- Dynamically populated options -->
+            </div>
+          </div>
         </div>
-        <div>
+
+        <!-- Searchable Set / Expansion Combobox -->
+        <div class="relative" id="set-combobox-wrapper">
           <div class="flex items-center justify-between mb-space-2xs">
             <label class="font-mono text-[11px] text-outline uppercase tracking-widest block">Set / Expansion</label>
             <button type="button" id="open-set-modal-btn" class="font-mono text-[11px] text-secondary-fixed-dim hover:underline flex items-center gap-1 cursor-pointer">
@@ -92,12 +103,20 @@
               + New Set
             </button>
           </div>
-          <select name="set" id="set-select" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30">
-            <option value="">Select a set...</option>
-            {% for s in sets %}
-              <option value="{{ s.pk }}" {% if product.set_id == s.pk %}selected{% endif %}>{{ s.game.name }} — {{ s.name }}</option>
-            {% endfor %}
-          </select>
+          <div class="relative">
+            <input type="text" id="set-search-input" autocomplete="off"
+                   placeholder="Type letters to search expansions..."
+                   value="{% if product.set %}{{ product.set.game.name }} — {{ product.set.name }}{% endif %}"
+                   class="w-full px-space-md py-space-sm pr-10 rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30"/>
+            <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline text-[18px] pointer-events-none" id="set-search-icon">search</span>
+          </div>
+          <input type="hidden" name="set" id="set-hidden-id" value="{{ product.set_id|default:'' }}"/>
+          <!-- Filtered dropdown list -->
+          <div id="set-dropdown" class="hidden absolute left-0 right-0 top-full mt-1 max-h-56 overflow-y-auto bg-surface-container-high rounded-xl border border-surface-container-highest shadow-2xl z-40 divide-y divide-surface-container-highest/50">
+            <div id="set-options-container" class="py-1">
+              <!-- Dynamically populated options -->
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -158,12 +177,82 @@
       </div>
     </div>
 
-    <!-- Product images -->
-    <div>
-      <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Images</label>
-      <input type="file" name="images" multiple accept="image/*"
-             class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-dashed border-surface-container-high text-on-surface font-body text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary-container file:text-on-primary hover:file:bg-primary hover:file:text-on-primary-fixed transition-colors"/>
-      <p class="text-on-surface-variant text-xs font-mono mt-space-2xs">Upload product images (multiple allowed). First image will be the primary.</p>
+    <!-- Product Imagery: Front Face, Back Image, and Additional Angles -->
+    <div class="space-y-space-md">
+      <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest">Product Imagery</h3>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <!-- Front Image -->
+        <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-space-xs mb-space-xs">
+              <span class="material-symbols-outlined text-primary text-[18px]">crop_portrait</span>
+              <label class="font-mono text-[11px] text-outline uppercase tracking-widest block font-bold">Front Face Image {% if not product %}*{% endif %}</label>
+            </div>
+            <p class="text-on-surface-variant text-xs mb-space-sm">Main primary image displayed in catalogue and front inspection.</p>
+            {% if front_image %}
+              <div class="flex items-center gap-space-sm mb-space-sm p-space-xs bg-surface-container rounded-lg border border-surface-container-high">
+                <img src="{{ front_image.image.url }}" alt="Front face" class="w-14 h-18 object-cover rounded shadow"/>
+                <div class="text-xs font-mono text-on-surface-variant truncate">
+                  <span class="text-tertiary-fixed font-bold block">Current Front Face</span>
+                  <span class="text-[10px] text-outline truncate block">Choose below to replace</span>
+                </div>
+              </div>
+            {% endif %}
+          </div>
+          <input type="file" name="image_front" accept="image/*"
+                 class="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-dashed border-surface-container-high text-on-surface font-body text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-mono file:bg-primary-container file:text-on-primary hover:file:bg-primary transition-colors"/>
+        </div>
+
+        <!-- Back Image (Card Reverse) -->
+        <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-space-xs mb-space-xs">
+              <span class="material-symbols-outlined text-secondary-fixed-dim text-[18px]">flip</span>
+              <label class="font-mono text-[11px] text-outline uppercase tracking-widest block font-bold">Back Image (Card Reverse)</label>
+            </div>
+            <p class="text-on-surface-variant text-xs mb-space-sm">Displayed when card reverse option is selected. Sealed items do not require this.</p>
+            {% if back_image %}
+              <div class="flex items-center justify-between gap-space-sm mb-space-sm p-space-xs bg-surface-container rounded-lg border border-surface-container-high">
+                <div class="flex items-center gap-space-sm">
+                  <img src="{{ back_image.image.url }}" alt="Back image" class="w-14 h-18 object-cover rounded shadow"/>
+                  <div class="text-xs font-mono text-on-surface-variant truncate">
+                    <span class="text-secondary-fixed-dim font-bold block">Current Card Back</span>
+                    <span class="text-[10px] text-outline block">Reverse inspection active</span>
+                  </div>
+                </div>
+                <label class="flex items-center gap-1 font-mono text-[11px] text-error hover:underline cursor-pointer">
+                  <input type="checkbox" name="delete_back_image" value="1" class="rounded bg-surface-container-high accent-error"/>
+                  Remove
+                </label>
+              </div>
+            {% endif %}
+          </div>
+          <input type="file" name="image_back" accept="image/*"
+                 class="w-full px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-dashed border-surface-container-high text-on-surface font-body text-xs file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-mono file:bg-secondary-container file:text-on-secondary-container hover:file:bg-secondary-fixed transition-colors"/>
+        </div>
+      </div>
+
+      <!-- Additional Gallery Images -->
+      <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high">
+        <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Additional Gallery Images (Foils, Hologram Seals, Angles)</label>
+        {% if gallery_images %}
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-space-sm mb-space-sm">
+            {% for gimg in gallery_images %}
+              <div class="relative group rounded-lg overflow-hidden bg-surface-container border border-surface-container-high p-space-xs">
+                <img src="{{ gimg.image.url }}" alt="Gallery image" class="w-full h-24 object-cover rounded mb-space-2xs"/>
+                <label class="flex items-center gap-1 font-mono text-[10px] text-error cursor-pointer">
+                  <input type="checkbox" name="delete_image_ids" value="{{ gimg.pk }}" class="rounded bg-surface-container-high accent-error"/>
+                  Delete
+                </label>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        <input type="file" name="images" multiple accept="image/*"
+               class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-dashed border-surface-container-high text-on-surface font-body text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-surface-container-highest file:text-on-surface hover:file:bg-surface-container transition-colors"/>
+        <p class="text-on-surface-variant text-xs font-mono mt-space-2xs">Upload any extra high-res photos or angle perspectives.</p>
+      </div>
     </div>
 
     <!-- Form actions -->
@@ -270,24 +359,188 @@
 </div>
 
 <script>
-document.getElementById('game-select').addEventListener('change', function() {
-  const gameId = this.value;
-  const setSelect = document.getElementById('set-select');
-  if (gameId) {
-    setSelect.innerHTML = '<option value="">Loading...</option>';
-    fetch(`/api/sets/?game=${gameId}`)
-      .then(r => r.json())
-      .then(data => {
-        setSelect.innerHTML = '<option value="">Select a set...</option>';
-        data.forEach(s => {
-          setSelect.innerHTML += `<option value="${s.pk}">${s.game_name} — ${s.name}</option>`;
-        });
+// --- Initial Games & Sets Data ---
+const allGames = [
+  {% for g in games %}
+    { id: "{{ g.pk }}", name: "{{ g.name|escapejs }}" },
+  {% endfor %}
+];
+
+let allSets = [
+  {% for s in sets %}
+    { id: "{{ s.pk }}", game_id: "{{ s.game_id }}", game_name: "{{ s.game.name|escapejs }}", name: "{{ s.name|escapejs }}" },
+  {% endfor %}
+];
+
+// --- Searchable Game Typeahead ---
+const gameSearchInput = document.getElementById('game-search-input');
+const gameHiddenId = document.getElementById('game-hidden-id');
+const gameDropdown = document.getElementById('game-dropdown');
+const gameOptionsContainer = document.getElementById('game-options-container');
+
+function renderGameOptions(query = '') {
+  const q = query.trim().toLowerCase();
+  const filtered = q ? allGames.filter(g => g.name.toLowerCase().includes(q)) : allGames;
+
+  if (filtered.length === 0) {
+    gameOptionsContainer.innerHTML = `
+      <div class="px-space-md py-space-sm text-xs font-mono text-outline text-center">
+        No games matching "${query}".
+        <button type="button" onclick="document.getElementById('open-game-modal-btn').click()" class="text-primary hover:underline block mt-1">+ Create New Game</button>
+      </div>`;
+    return;
+  }
+
+  gameOptionsContainer.innerHTML = filtered.map(g => {
+    const isSelected = gameHiddenId.value === g.id;
+    return `
+      <div class="game-opt-item px-space-md py-space-sm cursor-pointer hover:bg-surface-container flex items-center justify-between text-sm ${isSelected ? 'bg-surface-container text-secondary-fixed-dim font-semibold' : 'text-on-surface'}"
+           data-id="${g.id}" data-name="${g.name}">
+        <span>${escapeHtml(g.name)}</span>
+        ${isSelected ? '<span class="material-symbols-outlined text-[16px] text-secondary-fixed-dim">check</span>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  gameOptionsContainer.querySelectorAll('.game-opt-item').forEach(el => {
+    el.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      selectGame(el.dataset.id, el.dataset.name);
+    });
+  });
+}
+
+function selectGame(id, name) {
+  gameHiddenId.value = id;
+  gameSearchInput.value = name;
+  gameDropdown.classList.add('hidden');
+
+  // Clear set selection if it doesn't belong to the newly selected game
+  const currentSetId = setHiddenId.value;
+  const currentSet = allSets.find(s => s.id === currentSetId);
+  if (currentSet && currentSet.game_id !== id) {
+    setHiddenId.value = '';
+    setSearchInput.value = '';
+  }
+
+  // Fetch updated sets for this game
+  fetch(`/api/sets/?game=${id}`)
+    .then(r => r.json())
+    .then(data => {
+      // Merge/update allSets
+      data.forEach(s => {
+        if (!allSets.some(existing => existing.id === String(s.pk))) {
+          allSets.push({ id: String(s.pk), game_id: String(id), game_name: s.game_name, name: s.name });
+        }
       });
-  } else {
-    setSelect.innerHTML = '<option value="">Select a set...</option>';
+      renderSetOptions(setSearchInput.value);
+    })
+    .catch(() => {});
+}
+
+gameSearchInput.addEventListener('focus', () => {
+  renderGameOptions(gameSearchInput.value);
+  gameDropdown.classList.remove('hidden');
+});
+
+gameSearchInput.addEventListener('input', () => {
+  renderGameOptions(gameSearchInput.value);
+  gameDropdown.classList.remove('hidden');
+  // If user clears input, clear hidden id
+  if (!gameSearchInput.value.trim()) {
+    gameHiddenId.value = '';
   }
 });
 
+gameSearchInput.addEventListener('blur', () => {
+  setTimeout(() => gameDropdown.classList.add('hidden'), 200);
+});
+
+// --- Searchable Set / Expansion Typeahead ---
+const setSearchInput = document.getElementById('set-search-input');
+const setHiddenId = document.getElementById('set-hidden-id');
+const setDropdown = document.getElementById('set-dropdown');
+const setOptionsContainer = document.getElementById('set-options-container');
+
+function renderSetOptions(query = '') {
+  const q = query.trim().toLowerCase();
+  const selectedGameId = gameHiddenId.value;
+
+  let pool = allSets;
+  if (selectedGameId) {
+    const gameSpecific = allSets.filter(s => s.game_id === selectedGameId);
+    if (gameSpecific.length > 0) {
+      pool = gameSpecific;
+    }
+  }
+
+  const filtered = q
+    ? pool.filter(s => s.name.toLowerCase().includes(q) || s.game_name.toLowerCase().includes(q))
+    : pool;
+
+  if (filtered.length === 0) {
+    setOptionsContainer.innerHTML = `
+      <div class="px-space-md py-space-sm text-xs font-mono text-outline text-center">
+        No expansions matching "${query}".
+        <button type="button" onclick="document.getElementById('open-set-modal-btn').click()" class="text-secondary-fixed-dim hover:underline block mt-1">+ Create New Set</button>
+      </div>`;
+    return;
+  }
+
+  setOptionsContainer.innerHTML = filtered.map(s => {
+    const isSelected = setHiddenId.value === s.id;
+    const displayName = `${s.game_name} — ${s.name}`;
+    return `
+      <div class="set-opt-item px-space-md py-space-sm cursor-pointer hover:bg-surface-container flex items-center justify-between text-sm ${isSelected ? 'bg-surface-container text-secondary-fixed-dim font-semibold' : 'text-on-surface'}"
+           data-id="${s.id}" data-name="${displayName}" data-game-id="${s.game_id}" data-game-name="${s.game_name}">
+        <span>${escapeHtml(displayName)}</span>
+        ${isSelected ? '<span class="material-symbols-outlined text-[16px] text-secondary-fixed-dim">check</span>' : ''}
+      </div>
+    `;
+  }).join('');
+
+  setOptionsContainer.querySelectorAll('.set-opt-item').forEach(el => {
+    el.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      selectSet(el.dataset.id, el.dataset.name, el.dataset.gameId, el.dataset.gameName);
+    });
+  });
+}
+
+function selectSet(id, displayName, gameId, gameName) {
+  setHiddenId.value = id;
+  setSearchInput.value = displayName;
+  setDropdown.classList.add('hidden');
+
+  // If game is not yet set or differs, auto-select the game
+  if (gameId && gameHiddenId.value !== gameId) {
+    gameHiddenId.value = gameId;
+    gameSearchInput.value = gameName || '';
+  }
+}
+
+setSearchInput.addEventListener('focus', () => {
+  renderSetOptions(setSearchInput.value);
+  setDropdown.classList.remove('hidden');
+});
+
+setSearchInput.addEventListener('input', () => {
+  renderSetOptions(setSearchInput.value);
+  setDropdown.classList.remove('hidden');
+  if (!setSearchInput.value.trim()) {
+    setHiddenId.value = '';
+  }
+});
+
+setSearchInput.addEventListener('blur', () => {
+  setTimeout(() => setDropdown.classList.add('hidden'), 200);
+});
+
+function escapeHtml(str) {
+  return (str || '').replace(/[&<>"']/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[m]));
+}
+
+// Single card section toggle
 document.querySelector('select[name="product_type"]').addEventListener('change', function() {
   document.getElementById('single-card-section').classList.toggle('hidden', this.value !== 'single_card');
 });
@@ -322,12 +575,9 @@ gameForm?.addEventListener('submit', function(e) {
     if (!ok || data.status !== 'success') {
       throw new Error(data.message || 'Error creating game');
     }
-    const gameSelect = document.getElementById('game-select');
-    const opt = document.createElement('option');
-    opt.value = data.id;
-    opt.textContent = data.name;
-    opt.selected = true;
-    gameSelect.appendChild(opt);
+    // Add to allGames and auto-select
+    allGames.push({ id: String(data.id), name: data.name });
+    selectGame(String(data.id), data.name);
 
     const quickSetGame = document.getElementById('quick-set-game');
     if (quickSetGame) {
@@ -338,11 +588,10 @@ gameForm?.addEventListener('submit', function(e) {
     }
 
     gameModal.classList.add('hidden');
-    gameSelect.dispatchEvent(new Event('change'));
 
     const toast = document.createElement('div');
     toast.className = 'fixed bottom-4 right-4 z-50 bg-secondary-container text-on-secondary-container px-4 py-2.5 rounded-xl font-mono text-xs shadow-2xl border border-secondary-fixed flex items-center gap-2';
-    toast.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Game "${data.name}" created and saved to database!`;
+    toast.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Game "${data.name}" created and selected!`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
   })
@@ -362,7 +611,7 @@ const setError = document.getElementById('set-modal-error');
 openSetBtn?.addEventListener('click', () => {
   setError.classList.add('hidden');
   setForm.reset();
-  const currentGame = document.getElementById('game-select').value;
+  const currentGame = gameHiddenId.value;
   if (currentGame) {
     document.getElementById('quick-set-game').value = currentGame;
   }
@@ -386,22 +635,14 @@ setForm?.addEventListener('submit', function(e) {
     if (!ok || data.status !== 'success') {
       throw new Error(data.message || 'Error creating set');
     }
-    const setSelect = document.getElementById('set-select');
-    const opt = document.createElement('option');
-    opt.value = data.id;
-    opt.textContent = data.display_name || `${data.game_name} — ${data.name}`;
-    opt.selected = true;
-    setSelect.appendChild(opt);
-
-    const gameSelect = document.getElementById('game-select');
-    if (gameSelect.value != data.game_id) {
-      gameSelect.value = data.game_id;
-    }
+    const displayName = data.display_name || `${data.game_name} — ${data.name}`;
+    allSets.push({ id: String(data.id), game_id: String(data.game_id), game_name: data.game_name, name: data.name });
+    selectSet(String(data.id), displayName, String(data.game_id), data.game_name);
 
     setModal.classList.add('hidden');
     const toast = document.createElement('div');
     toast.className = 'fixed bottom-4 right-4 z-50 bg-secondary-container text-on-secondary-container px-4 py-2.5 rounded-xl font-mono text-xs shadow-2xl border border-secondary-fixed flex items-center gap-2';
-    toast.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Set "${data.name}" created and saved to database!`;
+    toast.innerHTML = `<span class="material-symbols-outlined text-[16px]">check_circle</span> Set "${data.name}" created and selected!`;
     document.body.appendChild(toast);
     setTimeout(() => toast.remove(), 4000);
   })
