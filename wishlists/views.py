@@ -8,6 +8,8 @@ produces are Notifications. That is what this module implements.
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
+from django.http import JsonResponse
+from django.urls import reverse
 
 from cart.models import Cart, CartItem
 from products.models import Product
@@ -44,24 +46,40 @@ def add_to_wishlist(request, pk):
     """Wishlisting a product activates price-drop + restock monitoring."""
     product = get_object_or_404(Product, pk=pk, is_active=True)
     wl = _wishlist_for(request.user)
-    item, created = WishlistItem.objects.get_or_create(
-        wishlist=wl,
-        product=product,
-        defaults={
-            "added_price": product.price,
-            "was_out_of_stock": not product.is_available,
-        },
-    )
-    if not created and item.added_price != product.price:
-        # Re-watching resets the baseline the drop is measured against.
-        item.added_price = product.price
-        item.save()
-    messages.success(
-        request,
-        f"{product.name} added to wishlist — we'll notify you on a price "
-        f"drop or when it's back in stock.",
-    )
-    return redirect("product_detail", pk=pk)
+    is_ajax = request.headers.get("x-requested-with") == "XMLHttpRequest" or request.GET.get("format") == "json" or "application/json" in request.headers.get("Accept", "")
+
+    existing = WishlistItem.objects.filter(wishlist=wl, product=product).first()
+    if request.GET.get("toggle") == "1" and existing:
+        existing.delete()
+        in_wishlist = False
+        msg = f"Removed {product.name} from wishlist."
+    else:
+        item, created = WishlistItem.objects.get_or_create(
+            wishlist=wl,
+            product=product,
+            defaults={
+                "added_price": product.price,
+                "was_out_of_stock": not product.is_available,
+            },
+        )
+        if not created and item.added_price != product.price:
+            item.added_price = product.price
+            item.save()
+        in_wishlist = True
+        msg = f"Added {product.name} to wishlist."
+
+    if is_ajax:
+        return JsonResponse({
+            "status": "success",
+            "message": msg,
+            "in_wishlist": in_wishlist,
+            "product_id": product.pk,
+            "product_name": product.name,
+        })
+
+    messages.success(request, msg)
+    fallback = request.GET.get("next") or request.META.get("HTTP_REFERER") or reverse("catalogue")
+    return redirect(fallback)
 
 
 @login_required

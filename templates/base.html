@@ -552,6 +552,54 @@
         setTimeout(() => toast.remove(), 300);
       }, 3500);
     };
+
+    // Global wishlist toggle handler (prevents page jump/navigation, stays on page)
+    window.toggleWishlist = function(btn, event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (!btn || btn.disabled) return;
+      const url = btn.dataset.wishlistUrl;
+      const icon = btn.querySelector('.material-symbols-outlined');
+      btn.disabled = true;
+
+      fetch(url, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      })
+      .then(r => {
+        if (r.redirected && r.url.includes('/login/')) {
+          window.location.href = r.url;
+          return null;
+        }
+        return r.json();
+      })
+      .then(data => {
+        btn.disabled = false;
+        if (!data) return;
+        if (data.status === 'success') {
+          if (icon) {
+            if (data.in_wishlist) {
+              icon.style.fontVariationSettings = "'FILL' 1";
+              icon.classList.remove('text-outline');
+              icon.classList.add('text-error');
+              btn.classList.add('border-error/40');
+            } else {
+              icon.style.fontVariationSettings = "'FILL' 0";
+              icon.classList.remove('text-error');
+              icon.classList.add('text-outline');
+              btn.classList.remove('border-error/40');
+            }
+          }
+          window.showNovaToast(data.message, data.in_wishlist ? 'success' : 'info');
+        } else {
+          window.showNovaToast(data.message || 'Unable to update wishlist', 'error');
+        }
+      })
+      .catch(() => {
+        btn.disabled = false;
+      });
+    };
   </script>
   {% block extra_js %}{% endblock %}
 </body>

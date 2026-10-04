@@ -1,84 +1,181 @@
-{# NovaChrono market card: dual-layer slab, specular bevel, hover lift + glow, wishlist heart. #}
-<div class="rounded-xl bg-surface-container overflow-hidden group flex flex-col justify-between shadow-md hover:shadow-xl hover:shadow-primary-container/20 hover:-translate-y-1 hover:border hover:border-primary/40 border border-transparent transition-all duration-300">
+{# NovaChrono showcase card: full uncropped card canvas, alternating hover flip with delay, sold-out pill, clean typography #}
+<div class="rounded-2xl bg-surface-container overflow-hidden group flex flex-col justify-between border border-surface-container-high hover:border-primary/50 shadow-sm hover:shadow-xl hover:shadow-primary-container/10 hover:-translate-y-1 transition-all duration-300">
   <div>
-    <div class="relative h-60 bg-surface-container-high overflow-hidden">
-      {% with product.images.first as img %}
-        {% if img %}
-          <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="{{ img.image.url }}" alt="{{ product.name }}" loading="lazy"/>
+    <!-- Uncropped Full Card / Product Showcase Viewport -->
+    <a href="{% url 'product_detail' product.pk %}" class="relative block w-full aspect-[3/4] bg-surface-container-lowest p-3 flex items-center justify-center overflow-hidden border-b border-surface-container-high/60 cursor-pointer">
+      {% with product.images.first as front_img %}
+        {% if front_img %}
+          {% if product.has_back_image %}
+            <!-- Front Face Image (alternates with Back on hover with time delay) -->
+            <img class="nc-face-front w-full h-full object-contain drop-shadow-md select-none absolute inset-0 p-3 transition-transform duration-300"
+                 src="{{ front_img.image.url }}" alt="{{ product.name }} Front" loading="lazy"/>
+            <!-- Back Face Image (alternates with Front on hover with time delay) -->
+            <img class="nc-face-back w-full h-full object-contain drop-shadow-md select-none absolute inset-0 p-3 opacity-0 transition-transform duration-300"
+                 src="{{ product.back_image.image.url }}" alt="{{ product.name }} Back" loading="lazy"/>
+          {% else %}
+            <!-- Single / Sealed Uncropped Image -->
+            <img class="w-full h-full object-contain drop-shadow-md select-none group-hover:scale-105 transition-transform duration-300"
+                 src="{{ front_img.image.url }}" alt="{{ product.name }}" loading="lazy"/>
+          {% endif %}
         {% else %}
-          <div class="w-full h-full bg-surface-container-lowest flex items-center justify-center">
-            <span class="material-symbols-outlined text-4xl text-outline">style</span>
+          <div class="w-full h-full flex flex-col items-center justify-center text-outline">
+            <span class="material-symbols-outlined text-4xl mb-1">style</span>
+            <span class="font-mono text-[10px]">No Image</span>
           </div>
         {% endif %}
       {% endwith %}
-      <!-- Specular highlight pass across the upper bevel -->
-      <div class="absolute inset-x-0 top-0 h-10 bg-gradient-to-b from-white/10 to-transparent pointer-events-none opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <!-- Ambient reflection sweep on hover -->
-      <div class="absolute inset-0 bg-gradient-to-tr from-transparent via-white/0 group-hover:via-white/5 to-transparent pointer-events-none transition-all duration-500"></div>
-      <div class="absolute top-2.5 left-2.5 flex flex-col gap-space-2xs items-start">
-        {% if product.single_card %}
-          <span class="px-space-xs py-0.5 rounded bg-primary-container text-on-primary font-mono text-[10px] font-bold tracking-wider uppercase shadow-[0_0_20px_rgba(121,40,202,0.5)]">SINGLE CARD</span>
-        {% elif product.product_type == 'sealed' %}
-          <span class="px-space-xs py-0.5 rounded bg-tertiary-container text-on-tertiary font-mono text-[10px] font-bold tracking-wider uppercase">SEALED</span>
-        {% else %}
-          <span class="px-space-xs py-0.5 rounded bg-secondary-container/10 text-secondary-fixed-dim font-mono text-[10px] font-bold tracking-wider uppercase">RELATED</span>
-        {% endif %}
-        {% if product.stock <= 3 and product.stock > 0 %}
-          <span class="px-space-xs py-0.5 rounded bg-error-container text-on-error-container font-mono text-[10px] font-bold tracking-wider uppercase animate-pulse">LOW STOCK ({{ product.stock }})</span>
-        {% endif %}
-        {% if product.stock == 0 %}
-          <span class="px-space-xs py-0.5 rounded bg-surface-container-highest text-outline font-mono text-[10px] font-bold tracking-wider uppercase">OUT OF STOCK</span>
-        {% endif %}
+
+      <!-- Top Badges -->
+      <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+        <!-- Product Type / Condition Pill -->
+        <div class="flex items-center gap-1">
+          {% if product.single_card %}
+            <span class="px-2 py-0.5 rounded-full bg-primary-container/90 text-on-primary font-mono text-[9px] font-bold tracking-wider uppercase shadow-sm">
+              SINGLE
+            </span>
+            {% if product.has_back_image %}
+              <span class="px-1.5 py-0.5 rounded-full bg-surface-container/90 text-secondary-fixed-dim font-mono text-[9px] flex items-center gap-0.5 shadow-sm" title="Hover to inspect card back (auto-alternates)">
+                <span class="material-symbols-outlined text-[11px] animate-spin" style="animation-duration: 3.2s;">sync</span>
+                <span>AUTO-FLIP</span>
+              </span>
+            {% endif %}
+          {% elif product.product_type == 'sealed' %}
+            <span class="px-2 py-0.5 rounded-full bg-tertiary-container/90 text-on-tertiary font-mono text-[9px] font-bold tracking-wider uppercase shadow-sm">
+              SEALED
+            </span>
+          {% endif %}
+        </div>
+
+        <!-- Stock Status (Sold Out / Low Stock) -->
+        <div>
+          {% if product.stock == 0 %}
+            <span class="px-2.5 py-0.5 rounded-full bg-surface-container-high/95 text-on-surface-variant font-mono text-[10px] font-medium shadow-sm border border-surface-container-highest">
+              Sold Out
+            </span>
+          {% elif product.stock <= 3 %}
+            <span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-mono text-[9px] font-bold tracking-wider uppercase animate-pulse shadow-sm">
+              Only {{ product.stock }} Left
+            </span>
+          {% endif %}
+        </div>
       </div>
-      <a href="{% url 'wishlist_add' product.pk %}" aria-label="Add to Wishlist"
-         class="absolute top-2.5 right-2.5 w-8 h-8 rounded-full bg-surface-container-lowest/80 backdrop-blur text-on-surface-variant hover:text-primary flex items-center justify-center transition-all duration-200 hover:scale-110 hover:shadow-[0_0_16px_rgba(121,40,202,0.45)]">
-        <span class="material-symbols-outlined text-lg">favorite</span>
+    </a>
+
+    <!-- Card Information matching reference layout -->
+    <div class="p-space-md space-y-1.5">
+      <!-- Franchise / Game / Brand Tag -->
+      <span class="font-mono text-[10px] text-outline font-semibold tracking-widest uppercase block truncate">
+        {{ product.game.name|default:"TCG VAULT" }}
+        {% if product.set %} · {{ product.set.name }}{% endif %}
+      </span>
+
+      <!-- Title -->
+      <a href="{% url 'product_detail' product.pk %}" class="block group-hover:text-primary transition-colors">
+        <h3 class="font-display text-sm font-bold text-on-surface line-clamp-2 leading-snug">
+          {{ product.name }}
+        </h3>
       </a>
-      <div class="absolute bottom-2 left-2.5 right-2.5 flex items-center justify-between font-mono text-[10px] gap-space-2xs">
-        {% if product.set %}
-          <span class="text-on-surface-variant bg-surface-container-lowest/80 backdrop-blur px-space-xs py-1 rounded truncate">{{ product.set.game.name }} · {{ product.set.name }}</span>
-        {% endif %}
-        {% if product.avg_rating %}
-          <span class="text-secondary-fixed-dim bg-surface-container-lowest/80 backdrop-blur px-space-xs py-1 rounded shrink-0">★ {{ product.avg_rating|floatformat:1 }}</span>
-        {% endif %}
-      </div>
-    </div>
-    <a href="{% url 'product_detail' product.pk %}" class="block p-space-md space-y-space-xs">
-      <h3 class="font-display text-base font-bold text-on-surface group-hover:text-primary transition-colors line-clamp-2">
-        {{ product.name }}
-      </h3>
-      {% if product.description %}
-        <p class="text-on-surface-variant text-xs line-clamp-2">{{ product.description|truncatewords:15 }}</p>
-      {% endif %}
+
+      <!-- Single Card Specs (if card) -->
       {% if product.single_card %}
-        <div class="flex items-center gap-space-2xs font-mono text-[10px] text-outline">
-          {% if product.single_card.rarity %}<span class="text-primary">{{ product.single_card.rarity }}</span><span>·</span>{% endif %}
-          {% if product.single_card.language %}<span>{{ product.single_card.language }}</span><span>·</span>{% endif %}
-          {% if product.single_card.condition %}<span>{{ product.single_card.get_condition_display }}</span>{% endif %}
+        <div class="flex items-center gap-1 font-mono text-[10px] text-outline pt-0.5">
+          {% if product.single_card.rarity %}
+            <span class="text-primary capitalize">{{ product.single_card.rarity|title }}</span>
+            <span>·</span>
+          {% endif %}
+          {% if product.single_card.language %}
+            <span>{{ product.single_card.language }}</span>
+            <span>·</span>
+          {% endif %}
+          {% if product.single_card.condition %}
+            <span class="text-secondary-fixed-dim">{{ product.single_card.get_condition_display }}</span>
+          {% endif %}
         </div>
       {% endif %}
-    </a>
+    </div>
   </div>
+
+  <!-- Price & Quick Action Toolbar (Wishlist + Add to Cart) -->
   <div class="p-space-md pt-0">
-    <div class="flex items-center justify-between pt-space-xs border-t border-surface-container-high">
+    <div class="flex items-center justify-between pt-space-xs border-t border-surface-container-high gap-2">
       <div>
         <span class="font-mono text-[10px] text-outline block">PRICE</span>
-        <span class="font-display text-lg font-bold text-on-surface group-hover:text-secondary-fixed transition-colors">₹{{ product.price }}</span>
+        <span class="font-display text-base font-bold text-on-surface">Rs. {{ product.price }}</span>
       </div>
-      {% if product.is_available %}
+
+      <div class="flex items-center gap-1.5">
+        <!-- Wishlist Button: async toggle stays on catalogue page without navigating -->
         <button type="button"
-           data-cart-url="{% url 'cart_add' product.pk %}"
+           data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
            data-product-name="{{ product.name|escape }}"
-           onclick="quickAddToCart(this)"
-           class="quick-add-btn px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold flex items-center gap-space-2xs hover:bg-primary hover:text-on-primary-fixed hover:shadow-[0_0_20px_rgba(121,40,202,0.5)] active:scale-95 transition-all cursor-pointer">
-          <span class="material-symbols-outlined text-base">add_shopping_cart</span>
-          <span>ADD</span>
+           onclick="toggleWishlist(this, event)"
+           class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-primary flex items-center justify-center transition-all duration-200 hover:scale-105 border border-surface-container-high cursor-pointer"
+           aria-label="Add to Wishlist" title="Add to Wishlist">
+          <span class="material-symbols-outlined text-[17px]">favorite</span>
         </button>
-      {% else %}
-        <button class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-outline font-mono text-sm cursor-not-allowed" disabled>
-          SOLD OUT
-        </button>
-      {% endif %}
+
+        {% if product.is_available %}
+          <button type="button"
+             data-cart-url="{% url 'cart_add' product.pk %}"
+             data-product-name="{{ product.name|escape }}"
+             onclick="quickAddToCart(this)"
+             class="quick-add-btn px-space-md py-1.5 rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold flex items-center gap-1 hover:bg-primary hover:text-on-primary-fixed hover:shadow-[0_0_16px_rgba(121,40,202,0.4)] active:scale-95 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[16px]">add_shopping_cart</span>
+            <span>ADD</span>
+          </button>
+        {% else %}
+          <button class="px-space-md py-1.5 rounded-lg bg-surface-container-high text-outline font-mono text-xs cursor-not-allowed" disabled>
+            Sold Out
+          </button>
+        {% endif %}
+      </div>
     </div>
   </div>
 </div>
+
+<style>
+  /* 3D Alternating Card Flip with time delay on hover */
+  .group:hover .nc-face-front {
+    animation: ncFlipCycleFront 3.2s ease-in-out infinite;
+  }
+  .group:hover .nc-face-back {
+    animation: ncFlipCycleBack 3.2s ease-in-out infinite;
+  }
+
+  @keyframes ncFlipCycleFront {
+    0%, 42% {
+      opacity: 1;
+      transform: perspective(800px) rotateY(0deg);
+      visibility: visible;
+    }
+    48%, 92% {
+      opacity: 0;
+      transform: perspective(800px) rotateY(180deg);
+      visibility: hidden;
+    }
+    98%, 100% {
+      opacity: 1;
+      transform: perspective(800px) rotateY(360deg);
+      visibility: visible;
+    }
+  }
+
+  @keyframes ncFlipCycleBack {
+    0%, 42% {
+      opacity: 0;
+      transform: perspective(800px) rotateY(-180deg);
+      visibility: hidden;
+    }
+    48%, 92% {
+      opacity: 1;
+      transform: perspective(800px) rotateY(0deg);
+      visibility: visible;
+    }
+    98%, 100% {
+      opacity: 0;
+      transform: perspective(800px) rotateY(180deg);
+      visibility: hidden;
+    }
+  }
+</style>
+
