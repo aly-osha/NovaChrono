@@ -276,23 +276,27 @@
             <span class="material-symbols-outlined text-[20px]">add_shopping_cart</span>
             <span>ADD TO CART</span>
           </button>
-          <a href="{% url 'wishlist_add' product.pk %}" aria-label="Add to Wishlist"
-             class="w-11 h-11 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center hover:bg-surface-container hover:text-primary transition-all shrink-0" title="Add to wishlist">
-            <span class="material-symbols-outlined text-xl">favorite_border</span>
-          </a>
-        </div>
-        <!-- Auxiliary: price alert + watchlist -->
-        <div class="grid grid-cols-2 gap-space-sm">
-          <button class="flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high p-space-xs rounded-lg text-on-surface-variant hover:text-on-surface font-mono text-[12px] transition-colors" onclick="openAlertModal()" type="button">
-            <span class="material-symbols-outlined text-[16px] text-tertiary-fixed">notifications_active</span>
-            <span>{% if user_alert %}Alert: ₹{{ user_alert.target_price }}{% else %}Set Price Alert{% endif %}</span>
+          <button type="button"
+             data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
+             data-product-name="{{ product.name|escape }}"
+             data-wishlisted="{% if in_wishlist %}1{% else %}0{% endif %}"
+             onclick="toggleWishlist(this, event)"
+             aria-label="{% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}"
+             aria-pressed="{% if in_wishlist %}true{% else %}false{% endif %}"
+             title="{% if in_wishlist %}In your wishlist — you will be alerted on price drops and restocks{% else %}Add to wishlist — get price-drop and restock alerts{% endif %}"
+             class="w-11 h-11 rounded-lg bg-surface-container-high text-on-surface-variant flex items-center justify-center hover:bg-surface-container hover:text-primary transition-all shrink-0 border cursor-pointer {% if in_wishlist %}text-error border-error/40{% else %}border-transparent{% endif %}">
+            <span class="material-symbols-outlined text-xl {% if in_wishlist %}text-error{% else %}text-outline{% endif %}"
+                  {% if in_wishlist %}style="font-variation-settings: 'FILL' 1;"{% endif %}>favorite</span>
           </button>
-          <a href="{% url 'wishlist_add' product.pk %}"
-             class="flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high p-space-xs rounded-lg text-on-surface-variant hover:text-primary font-mono text-[12px] transition-colors">
-            <span class="material-symbols-outlined text-[16px] text-error">favorite</span>
-            <span>Watchlist</span>
-          </a>
         </div>
+        <!-- Wishlisting IS the alert subscription (schema rule 10): there is no
+             separate watch list and no target-price alert. FR-21 starts
+             monitoring on wishlist membership; FR-22 and FR-23 raise the
+             price-drop and restock notifications. -->
+        <p class="text-[11px] text-outline font-mono leading-relaxed flex items-start gap-1.5">
+          <span class="material-symbols-outlined text-[14px] text-tertiary-fixed shrink-0">notifications</span>
+          <span>Wishlist a card and we&rsquo;ll alert you when its price drops or it&rsquo;s back in stock.</span>
+        </p>
       </div>
       <p class="text-on-surface-variant text-xs font-mono text-center">
         Free shipping on orders above ₹5,000 · Secure checkout
@@ -499,38 +503,6 @@
     </div>
   </div>
 </section>
-
-<!-- Price alert modal (functional: POSTs to price_alert_add) -->
-<div class="fixed inset-0 z-50 bg-surface-container-lowest/80 backdrop-blur-md hidden items-center justify-center p-4" id="price-alert-modal">
-  <div class="w-full max-w-md bg-surface-container-low rounded-xl p-space-xl shadow-2xl flex flex-col gap-space-md">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-space-xs">
-        <span class="material-symbols-outlined text-tertiary-fixed text-[24px]">notifications_active</span>
-        <h3 class="font-display text-lg font-bold text-on-surface">Set Target Price Alert</h3>
-      </div>
-      <button class="text-outline hover:text-on-surface transition-colors" onclick="closeAlertModal()" type="button" aria-label="Close">
-        <span class="material-symbols-outlined text-[20px]">close</span>
-      </button>
-    </div>
-    <p class="text-sm text-on-surface-variant">Get notified when a certified copy drops to or below your target.</p>
-    <form method="post" action="{% url 'price_alert_add' product.pk %}" class="flex flex-col gap-space-md">
-      {% csrf_token %}
-      <div class="flex flex-col gap-space-2xs">
-        <label class="font-mono text-[11px] text-outline uppercase tracking-wider font-semibold">Target Price (INR)</label>
-        <div class="relative flex items-center">
-          <span class="absolute left-3 text-outline font-mono">₹</span>
-          <input name="target_price" type="number" min="1" step="0.01" value="{{ user_alert.target_price|default:product.price }}" required
-                 class="w-full pl-8 pr-4 py-space-xs bg-surface-container rounded-lg text-on-surface font-mono font-bold focus:outline-none focus:ring-1 focus:ring-secondary-fixed-dim"/>
-        </div>
-        <span class="text-[11px] text-outline mt-1">Current price: ₹{{ product.price }}</span>
-      </div>
-      <div class="flex items-center gap-space-sm pt-space-xs">
-        <button class="flex-1 py-space-xs rounded-lg bg-surface-container text-on-surface-variant font-mono text-sm font-semibold hover:bg-surface-container-high transition-colors" onclick="closeAlertModal()" type="button">Cancel</button>
-        <button class="flex-1 py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-sm font-bold shadow-[0_0_16px_rgba(121,40,202,0.4)] hover:bg-primary transition-all" type="submit">Activate Alert</button>
-      </div>
-    </form>
-  </div>
-</div>
 
 <!-- Condition rubric modal -->
 <div class="fixed inset-0 z-50 bg-surface-container-lowest/80 backdrop-blur-md hidden items-center justify-center p-4" id="condition-modal">
@@ -784,16 +756,6 @@
   }
 
   // ---- Modal handlers ----
-  function openAlertModal() {
-    const m = document.getElementById('price-alert-modal');
-    m.classList.remove('hidden');
-    m.classList.add('flex');
-  }
-  function closeAlertModal() {
-    const m = document.getElementById('price-alert-modal');
-    m.classList.add('hidden');
-    m.classList.remove('flex');
-  }
   function openConditionModal() {
     const m = document.getElementById('condition-modal');
     m.classList.remove('hidden');

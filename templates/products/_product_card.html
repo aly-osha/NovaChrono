@@ -1,8 +1,28 @@
-{# NovaChrono showcase card: full uncropped card canvas, alternating hover flip with delay, sold-out pill, clean typography #}
-<div class="rounded-2xl bg-surface-container overflow-hidden group flex flex-col justify-between border border-surface-container-high hover:border-primary/50 shadow-sm hover:shadow-xl hover:shadow-primary-container/10 hover:-translate-y-1 transition-all duration-300">
+<div class="nc-product-card rounded-2xl bg-surface-container overflow-hidden group flex flex-col justify-between border border-surface-container-high hover:border-primary/50 shadow-sm hover:shadow-xl hover:shadow-primary-container/10 hover:-translate-y-1 transition-all duration-300"
+     data-card-item="true"
+     data-detail-url="{% url 'product_detail' product.pk %}"
+     data-name="{{ product.name|escape }}"
+     data-game="{{ product.game.name|default:'TCG VAULT'|escape }}"
+     data-set="{{ product.set.name|default:''|escape }}"
+     data-price="{{ product.price }}"
+     data-product-type="{{ product.product_type }}"
+     data-rarity="{{ product.single_card.rarity|default:''|escape }}"
+     data-condition="{{ product.single_card.get_condition_display|default:''|escape }}"
+     data-language="{{ product.single_card.language|default:''|escape }}"
+     data-stock="{{ product.stock }}"
+     data-available="{{ product.is_available|yesno:'1,0' }}"
+     data-cart-url="{% url 'cart_add' product.pk %}"
+     data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
+     data-wishlisted="{% if product.pk in wishlisted_ids %}1{% else %}0{% endif %}"
+     {% with product.images.first as front_img %}
+       data-front-image="{% if front_img %}{{ front_img.image.url }}{% endif %}"
+     {% endwith %}
+     {% if product.has_back_image %}
+       data-back-image="{{ product.back_image.image.url }}"
+     {% endif %}>
   <div>
     <!-- Uncropped Full Card / Product Showcase Viewport -->
-    <a href="{% url 'product_detail' product.pk %}" class="relative block w-full aspect-[3/4] bg-surface-container-lowest p-3 flex items-center justify-center overflow-hidden border-b border-surface-container-high/60 cursor-pointer">
+    <a href="{% url 'product_detail' product.pk %}" class="nc-card-link relative block w-full aspect-[3/4] bg-surface-container-lowest p-3 flex items-center justify-center overflow-hidden border-b border-surface-container-high/60 cursor-pointer">
       {% with product.images.first as front_img %}
         {% if front_img %}
           {% if product.has_back_image %}
@@ -70,7 +90,7 @@
       </span>
 
       <!-- Title -->
-      <a href="{% url 'product_detail' product.pk %}" class="block group-hover:text-primary transition-colors">
+      <a href="{% url 'product_detail' product.pk %}" class="nc-card-link block group-hover:text-primary transition-colors">
         <h3 class="font-display text-sm font-bold text-on-surface line-clamp-2 leading-snug">
           {{ product.name }}
         </h3>
@@ -105,14 +125,27 @@
 
       <div class="flex items-center gap-1.5">
         <!-- Wishlist Button: async toggle stays on catalogue page without navigating -->
-        <button type="button"
-           data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
-           data-product-name="{{ product.name|escape }}"
-           onclick="toggleWishlist(this, event)"
-           class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-primary flex items-center justify-center transition-all duration-200 hover:scale-105 border border-surface-container-high cursor-pointer"
-           aria-label="Add to Wishlist" title="Add to Wishlist">
-          <span class="material-symbols-outlined text-[17px]">favorite</span>
-        </button>
+        {% if product.pk in wishlisted_ids %}
+          <button type="button"
+             data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
+             data-product-name="{{ product.name|escape }}"
+             data-wishlisted="1"
+             onclick="toggleWishlist(this, event)"
+             class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-error flex items-center justify-center transition-all duration-200 hover:scale-105 border border-error/40 cursor-pointer"
+             aria-label="Remove from Wishlist" aria-pressed="true" title="In your wishlist — click to remove">
+            <span class="material-symbols-outlined text-[17px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+          </button>
+        {% else %}
+          <button type="button"
+             data-wishlist-url="{% url 'wishlist_add' product.pk %}?toggle=1"
+             data-product-name="{{ product.name|escape }}"
+             data-wishlisted="0"
+             onclick="toggleWishlist(this, event)"
+             class="w-8 h-8 rounded-lg bg-surface-container-high hover:bg-surface-container-highest text-outline hover:text-primary flex items-center justify-center transition-all duration-200 hover:scale-105 border border-surface-container-high cursor-pointer"
+             aria-label="Add to Wishlist" aria-pressed="false" title="Add to wishlist — get price-drop and restock alerts">
+            <span class="material-symbols-outlined text-[17px]">favorite</span>
+          </button>
+        {% endif %}
 
         {% if product.is_available %}
           <button type="button"

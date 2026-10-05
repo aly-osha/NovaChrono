@@ -123,7 +123,7 @@
 
 <!-- Full-Width Product Showcase Grid -->
 <div class="w-full">
-  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-space-lg">
+  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-space-lg" id="catalogue-product-grid" data-spotlight-enabled="true">
     {% for product in products %}
       {% include "products/_product_card.html" with product=product %}
     {% empty %}
@@ -304,6 +304,222 @@
   </div>
 </div>
 
+<!-- Pokémon 30th Celebration Card 3D Showcase Spotlight Modal -->
+<div id="nc-card-spotlight-modal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-xl transition-opacity duration-300" role="dialog" aria-modal="true" aria-label="Card 3D Showcase">
+  <!-- Backdrop radial glow -->
+  <div class="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(121,40,202,0.25)_0%,rgba(6,182,212,0.1)_35%,rgba(0,0,0,0.85)_75%)]"></div>
+
+  <!-- Close button -->
+  <button type="button" id="nc-spotlight-close-btn" class="absolute top-4 right-4 z-50 w-11 h-11 rounded-full bg-surface-container-high/90 border border-surface-container-highest text-on-surface hover:text-primary hover:border-primary/50 hover:scale-105 active:scale-95 transition-all flex items-center justify-center cursor-pointer shadow-2xl" aria-label="Close Showcase">
+    <span class="material-symbols-outlined text-[22px]">close</span>
+  </button>
+
+  <!-- Spotlight Modal Stage Content -->
+  <div id="nc-spotlight-stage" class="relative z-10 w-full max-w-4xl max-h-[92vh] overflow-y-auto flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-10 p-2 sm:p-4 my-auto">
+    <!-- 3D Card Visualizer Column -->
+    <div class="flex flex-col items-center flex-shrink-0">
+      <!-- Perspective wrapper -->
+      <div id="nc-spotlight-perspective" class="relative select-none py-2" style="perspective: 1400px;">
+        <!-- Rotating 3D Card Box (First tap animated it in; second tap navigates to detail) -->
+        <div id="nc-spotlight-card"
+             class="nc-tappable-card relative w-[260px] xs:w-[290px] sm:w-[330px] aspect-[2.5/3.5] rounded-2xl cursor-pointer shadow-2xl transition-transform"
+             style="transform-style: preserve-3d;"
+             role="link" tabindex="0"
+             aria-label="Open full details for this card"
+             title="Tap or click again to open the full detail page">
+
+          <!-- Front Face -->
+          <div class="nc-spotlight-face nc-spotlight-front absolute inset-0 rounded-2xl overflow-hidden bg-surface-container-lowest border border-white/20 shadow-2xl flex items-center justify-center"
+               style="backface-visibility: hidden;">
+            <img id="nc-spotlight-front-img" src="" alt="Card Front" class="w-full h-full object-contain p-2 select-none pointer-events-none drop-shadow-xl"/>
+            <div id="nc-spotlight-no-img" class="w-full h-full hidden flex-col items-center justify-center text-outline select-none">
+              <span class="material-symbols-outlined text-5xl mb-2 text-primary">style</span>
+              <span class="font-mono text-xs">Certified Collectible</span>
+            </div>
+            <!-- Holographic Foil Glare Sheen -->
+            <div class="nc-holo-sheen pointer-events-none absolute inset-0 rounded-2xl"></div>
+          </div>
+
+          <!-- Back Face -->
+          <div class="nc-spotlight-face nc-spotlight-back absolute inset-0 rounded-2xl overflow-hidden bg-surface-container-lowest border border-white/20 shadow-2xl flex items-center justify-center"
+               style="backface-visibility: hidden; transform: rotateY(180deg);">
+            <img id="nc-spotlight-back-img" src="" alt="Card Back" class="w-full h-full object-contain p-2 select-none pointer-events-none drop-shadow-xl hidden"/>
+            <!-- Default NovaChrono Vault Holographic Card Back -->
+            <div id="nc-spotlight-default-back" class="w-full h-full p-4 flex flex-col items-center justify-between bg-gradient-to-br from-[#120f24] via-[#1b1433] to-[#0a0815] border-4 border-[#e9d5ff]/20 rounded-2xl relative overflow-hidden select-none">
+              <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(121,40,202,0.4)_0%,transparent_70%)]"></div>
+              <div class="w-full flex items-center justify-between border-b border-primary/30 pb-2 relative z-10">
+                <span class="font-mono text-[9px] tracking-[0.25em] text-secondary-fixed-dim uppercase">NOVACHRONO</span>
+                <span class="material-symbols-outlined text-[14px] text-tertiary-fixed">diamond</span>
+                <span class="font-mono text-[9px] tracking-[0.25em] text-secondary-fixed-dim uppercase">VAULT</span>
+              </div>
+              <div class="relative z-10 my-auto flex flex-col items-center text-center">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-secondary-fixed/40 bg-surface-container-high/60 flex items-center justify-center shadow-[0_0_30px_rgba(121,40,202,0.6)] mb-2">
+                  <span class="material-symbols-outlined text-3xl sm:text-4xl text-primary animate-pulse">style</span>
+                </div>
+                <span class="font-display font-extrabold text-xs sm:text-sm tracking-widest text-on-surface uppercase">COLLECTOR CARD</span>
+                <span class="font-mono text-[9px] text-outline tracking-wider mt-0.5">CERTIFIED AUTHENTIC</span>
+              </div>
+              <div class="w-full flex items-center justify-between border-t border-primary/30 pt-2 relative z-10">
+                <span class="font-mono text-[8px] text-outline">LIMITED EDITION</span>
+                <span class="font-mono text-[8px] text-outline">TCG COLLECTIBLE</span>
+              </div>
+            </div>
+            <!-- Holographic Foil Glare Sheen -->
+            <div class="nc-holo-sheen pointer-events-none absolute inset-0 rounded-2xl"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Controls below card: Tap again hint + Flip 3D button -->
+      <div class="mt-4 flex items-center gap-2.5 flex-wrap justify-center">
+        <button type="button" id="nc-spotlight-tap-action-btn"
+                class="px-4 py-2 rounded-full bg-primary/20 border border-primary/60 text-on-primary-container text-xs font-mono font-semibold flex items-center gap-1.5 hover:bg-primary/30 hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(121,40,202,0.4)] cursor-pointer">
+          <span class="material-symbols-outlined text-[16px] text-tertiary-fixed animate-pulse">touch_app</span>
+          <span>Tap card again for full details</span>
+          <span class="material-symbols-outlined text-[15px]">arrow_forward</span>
+        </button>
+        <button type="button" id="nc-spotlight-flip-btn"
+                class="px-3 py-2 rounded-full bg-surface-container-high border border-surface-container-highest text-on-surface-variant hover:text-on-surface text-xs font-mono flex items-center gap-1 hover:bg-surface-container hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-md">
+          <span class="material-symbols-outlined text-[15px]">sync</span>
+          <span>Flip 3D</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Card HUD / Information Card -->
+    <div class="w-full max-w-sm lg:w-80 bg-surface-container/95 border border-surface-container-high/80 rounded-2xl p-5 shadow-2xl backdrop-blur-md flex flex-col justify-between space-y-4">
+      <!-- Franchise / Set / Status -->
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-1.5 flex-wrap">
+          <span id="nc-spotlight-game-tag" class="px-2.5 py-0.5 rounded-full bg-surface-container-highest text-secondary-fixed-dim font-mono text-[10px] font-bold uppercase tracking-wider"></span>
+          <span id="nc-spotlight-set-tag" class="px-2 py-0.5 rounded-full bg-surface-container-high text-outline font-mono text-[10px]"></span>
+        </div>
+        <span id="nc-spotlight-rarity-pill" class="px-2 py-0.5 rounded-full bg-primary-container/90 text-on-primary font-mono text-[9px] font-bold uppercase"></span>
+      </div>
+
+      <!-- Title & Specs -->
+      <div>
+        <h2 id="nc-spotlight-title" class="font-display font-extrabold text-base sm:text-lg text-on-surface leading-snug"></h2>
+        <div id="nc-spotlight-condition-row" class="flex items-center gap-1.5 mt-2 font-mono text-xs text-outline">
+          <span id="nc-spotlight-condition" class="text-tertiary-fixed font-semibold"></span>
+          <span id="nc-spotlight-sep">·</span>
+          <span id="nc-spotlight-lang"></span>
+          <span id="nc-spotlight-type" class="uppercase"></span>
+        </div>
+      </div>
+
+      <!-- Price & Actions -->
+      <div class="pt-3 border-t border-surface-container-highest space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="font-mono text-xs text-outline">PRICE</span>
+          <span id="nc-spotlight-price" class="font-display font-extrabold text-xl text-on-surface"></span>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="grid grid-cols-2 gap-2 pt-1">
+          <button type="button" id="nc-spotlight-wishlist-btn"
+                  data-wishlisted="0"
+                  class="py-2.5 rounded-xl bg-surface-container-high hover:bg-surface-container-highest border border-surface-container-highest text-on-surface font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer">
+            <span id="nc-spotlight-wishlist-icon" class="material-symbols-outlined text-[17px] text-outline">favorite</span>
+            <span id="nc-spotlight-wishlist-label">Wishlist</span>
+          </button>
+          <button type="button" id="nc-spotlight-cart-btn"
+                  class="py-2.5 rounded-xl bg-primary-container text-on-primary font-mono text-xs font-semibold flex items-center justify-center gap-1.5 hover:bg-primary hover:text-on-primary-fixed shadow-lg shadow-primary-container/20 transition-all cursor-pointer">
+            <span class="material-symbols-outlined text-[17px]">add_shopping_cart</span>
+            <span>Add to Cart</span>
+          </button>
+        </div>
+
+        <!-- Direct Details Link -->
+        <a id="nc-spotlight-detail-link" href="#"
+           class="w-full py-2.5 rounded-xl bg-surface-container-lowest border border-surface-container-highest hover:border-secondary-fixed text-on-surface font-mono text-xs font-semibold flex items-center justify-center gap-1.5 transition-all group cursor-pointer text-center">
+          <span>View Full Specifications</span>
+          <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* Pokémon 30th Celebration 3D Rotation Animation */
+@keyframes ncPokemonSpinIn {
+  0% {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(-540deg) rotateX(16deg) scale(0.32);
+    filter: drop-shadow(0 0 0 rgba(121, 40, 202, 0));
+  }
+  65% {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(24deg) rotateX(-5deg) scale(1.04);
+    filter: drop-shadow(0 20px 40px rgba(121, 40, 202, 0.45));
+  }
+  82% {
+    transform: perspective(1400px) rotateY(-8deg) rotateX(2deg) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(0deg) rotateX(0deg) scale(1);
+    filter: drop-shadow(0 25px 50px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 35px rgba(121, 40, 202, 0.3));
+  }
+}
+
+.nc-spinning-in {
+  animation: ncPokemonSpinIn 0.85s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Holographic Glare Sheen */
+.nc-holo-sheen {
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0) 15%,
+    rgba(255, 255, 255, 0.28) 32%,
+    rgba(255, 0, 128, 0.32) 44%,
+    rgba(0, 255, 255, 0.35) 56%,
+    rgba(255, 215, 0, 0.32) 68%,
+    rgba(255, 255, 255, 0) 85%
+  );
+  background-size: 250% 250%;
+  background-position: var(--glare-pos, 0% 0%);
+  mix-blend-mode: color-dodge;
+  opacity: 0.65;
+  transition: background-position 0.12s ease, opacity 0.3s ease;
+}
+
+/* Second-tap affordance: a soft halo pulse on the appeared card, so it reads
+   as "tap me again" rather than as a static image. */
+.nc-tappable-card::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 1.25rem;
+  pointer-events: none;
+  border: 1px solid rgba(121, 40, 202, 0.55);
+  animation: ncTapHalo 2.4s ease-in-out infinite;
+}
+
+@keyframes ncTapHalo {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%      { opacity: 0.75; transform: scale(1.035); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nc-tappable-card::after { animation: none; opacity: 0.45; }
+  .nc-spinning-in { animation-duration: 0.01ms !important; }
+}
+
+/* Click/Tap feedback animation when navigating */
+.nc-card-clicked {
+  animation: ncCardClickPulse 0.25s ease-out forwards;
+}
+
+@keyframes ncCardClickPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.93) rotateY(6deg); }
+  100% { transform: scale(1.05) rotateY(0deg); }
+}
+</style>
+
 <script>
 // Filter Drawer interaction
 const filterDrawer = document.getElementById('filter-drawer-modal');
@@ -329,5 +545,324 @@ document.addEventListener('keydown', (e) => {
     filterDrawer.classList.add('hidden');
   }
 });
+
+// --- Pokémon 30th Celebration Spotlight Interaction ---
+(function() {
+  const spotlightModal = document.getElementById('nc-card-spotlight-modal');
+  const spotlightCard = document.getElementById('nc-spotlight-card');
+  const closeBtn = document.getElementById('nc-spotlight-close-btn');
+  const flipBtn = document.getElementById('nc-spotlight-flip-btn');
+  const tapActionBtn = document.getElementById('nc-spotlight-tap-action-btn');
+  const productGrid = document.getElementById('catalogue-product-grid');
+
+  let activeDetailUrl = '';
+  let isFlipped = false;
+  let isSpinning = false;
+  let currentCardData = {};
+
+  if (!spotlightModal || !spotlightCard || !productGrid) return;
+
+  function openCardSpotlight(cardEl) {
+    const d = cardEl.dataset;
+    currentCardData = {
+      detailUrl: d.detailUrl || '#',
+      name: d.name || 'Card',
+      game: d.game || 'TCG VAULT',
+      set: d.set || '',
+      price: d.price ? `Rs. ${d.price}` : '',
+      productType: d.productType || '',
+      rarity: d.rarity || '',
+      condition: d.condition || '',
+      language: d.language || '',
+      stock: d.stock || '0',
+      available: d.available === '1',
+      cartUrl: d.cartUrl || '',
+      wishlistUrl: d.wishlistUrl || '',
+      wishlisted: d.wishlisted === '1',
+      frontImage: d.frontImage || '',
+      backImage: d.backImage || ''
+    };
+    activeDetailUrl = currentCardData.detailUrl;
+
+    // Populate Images
+    const frontImg = document.getElementById('nc-spotlight-front-img');
+    const noImg = document.getElementById('nc-spotlight-no-img');
+    const backImg = document.getElementById('nc-spotlight-back-img');
+    const defaultBack = document.getElementById('nc-spotlight-default-back');
+
+    if (currentCardData.frontImage) {
+      frontImg.src = currentCardData.frontImage;
+      frontImg.alt = `${currentCardData.name} Front`;
+      frontImg.classList.remove('hidden');
+      noImg.classList.add('hidden');
+    } else {
+      frontImg.classList.add('hidden');
+      noImg.classList.remove('hidden');
+    }
+
+    if (currentCardData.backImage) {
+      backImg.src = currentCardData.backImage;
+      backImg.alt = `${currentCardData.name} Back`;
+      backImg.classList.remove('hidden');
+      defaultBack.classList.add('hidden');
+    } else {
+      backImg.classList.add('hidden');
+      defaultBack.classList.remove('hidden');
+    }
+
+    // Populate HUD Info
+    document.getElementById('nc-spotlight-title').textContent = currentCardData.name;
+    document.getElementById('nc-spotlight-game-tag').textContent = currentCardData.game;
+
+    const setTag = document.getElementById('nc-spotlight-set-tag');
+    if (currentCardData.set) {
+      setTag.textContent = currentCardData.set;
+      setTag.classList.remove('hidden');
+    } else {
+      setTag.classList.add('hidden');
+    }
+
+    const rarityPill = document.getElementById('nc-spotlight-rarity-pill');
+    if (currentCardData.rarity) {
+      rarityPill.textContent = currentCardData.rarity;
+      rarityPill.classList.remove('hidden');
+    } else {
+      rarityPill.classList.add('hidden');
+    }
+
+    const condEl = document.getElementById('nc-spotlight-condition');
+    if (currentCardData.condition) {
+      condEl.textContent = currentCardData.condition;
+      condEl.classList.remove('hidden');
+    } else {
+      condEl.classList.add('hidden');
+    }
+
+    const langEl = document.getElementById('nc-spotlight-lang');
+    if (currentCardData.language) {
+      langEl.textContent = `${currentCardData.language} · `;
+      langEl.classList.remove('hidden');
+    } else {
+      langEl.classList.add('hidden');
+    }
+
+    const typeEl = document.getElementById('nc-spotlight-type');
+    typeEl.textContent = currentCardData.productType === 'sealed' ? 'SEALED PRODUCT' : 'SINGLE CARD';
+
+    document.getElementById('nc-spotlight-price').textContent = currentCardData.price;
+    document.getElementById('nc-spotlight-detail-link').href = currentCardData.detailUrl;
+
+    // Reflect the card's saved state so the heart is filled for an item that
+    // is already on the wishlist, instead of always showing it empty.
+    paintSpotlightWishlist(currentCardData.wishlisted);
+
+    // Reset card transforms & state
+    isFlipped = false;
+    isSpinning = true;
+    spotlightCard.classList.remove('nc-card-clicked', 'nc-spinning-in');
+    spotlightCard.style.transition = 'none';
+    spotlightCard.style.transform = '';
+    spotlightCard.style.removeProperty('--glare-pos');
+
+    // Show the modal FIRST. While the parent is display:none the card has no
+    // layout box, so forcing a reflow on it reads offsetWidth 0 and the
+    // browser may skip the entrance animation altogether.
+    spotlightModal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    // Now the card is rendered: reflow, then play the rotation entrance.
+    void spotlightCard.offsetWidth;
+    spotlightCard.classList.add('nc-spinning-in');
+  }
+
+  // Single place that decides what the spotlight heart looks like.
+  function paintSpotlightWishlist(isWishlisted) {
+    const icon = document.getElementById('nc-spotlight-wishlist-icon');
+    const label = document.getElementById('nc-spotlight-wishlist-label');
+    const btn = document.getElementById('nc-spotlight-wishlist-btn');
+    if (!icon) return;
+    if (isWishlisted) {
+      icon.style.fontVariationSettings = "'FILL' 1";
+      icon.classList.remove('text-outline');
+      icon.classList.add('text-error');
+      if (label) label.textContent = 'Wishlisted';
+      if (btn) {
+        btn.dataset.wishlisted = '1';
+        btn.classList.add('border-error/40');
+      }
+    } else {
+      icon.style.fontVariationSettings = "'FILL' 0";
+      icon.classList.remove('text-error');
+      icon.classList.add('text-outline');
+      if (label) label.textContent = 'Wishlist';
+      if (btn) {
+        btn.dataset.wishlisted = '0';
+        btn.classList.remove('border-error/40');
+      }
+    }
+  }
+
+  function closeCardSpotlight() {
+    spotlightModal.classList.add('hidden');
+    document.body.style.overflow = '';
+    spotlightCard.classList.remove('nc-spinning-in', 'nc-card-clicked');
+    isSpinning = false;
+  }
+
+  // Animation end on card
+  spotlightCard.addEventListener('animationend', (e) => {
+    if (e.animationName === 'ncPokemonSpinIn') {
+      isSpinning = false;
+      spotlightCard.classList.remove('nc-spinning-in');
+      spotlightCard.style.transform = 'perspective(1400px) rotateY(0deg) rotateX(0deg) scale(1)';
+    }
+  });
+
+  // First tap on a card plays the 3D rotation and opens the spotlight.
+  // Second tap, on the card that just appeared, navigates to the detail page.
+  productGrid.addEventListener('click', (e) => {
+    // Buttons inside the card (cart, wishlist) act immediately.
+    if (e.target.closest('button')) return;
+
+    // Respect the ways a user deliberately asks for the detail page:
+    // ctrl/cmd/shift/alt-click, middle-click, or keyboard activation of the
+    // link (detail === 0). Intercepting these would break open-in-new-tab
+    // and leave keyboard users unable to reach the product at all.
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    if (e.detail === 0) return;
+
+    const cardItem = e.target.closest('[data-card-item="true"]');
+    if (!cardItem) return;
+
+    e.preventDefault();
+    openCardSpotlight(cardItem);
+  });
+
+  // Second Tap: tapping the appeared card navigates to the detail page!
+  function navigateToDetail() {
+    if (!activeDetailUrl || activeDetailUrl === '#') return;
+    spotlightCard.classList.add('nc-card-clicked');
+    setTimeout(() => {
+      window.location.href = activeDetailUrl;
+    }, 180);
+  }
+
+  spotlightCard.addEventListener('click', () => {
+    navigateToDetail();
+  });
+
+  // Keyboard parity for the role="link" card.
+  spotlightCard.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      navigateToDetail();
+    }
+  });
+
+  tapActionBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navigateToDetail();
+  });
+
+  // 3D Flip Card button
+  flipBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (isSpinning) return;
+    isFlipped = !isFlipped;
+    spotlightCard.style.transition = 'transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    const baseRotY = isFlipped ? 180 : 0;
+    spotlightCard.style.transform = `perspective(1400px) rotateX(0deg) rotateY(${baseRotY}deg) scale(1)`;
+  });
+
+  // Interactive 3D tilt & glare on hover
+  spotlightCard.addEventListener('mousemove', (e) => {
+    if (isSpinning) return;
+    const rect = spotlightCard.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotX = -((y - centerY) / centerY) * 14;
+    const rotY = ((x - centerX) / centerX) * 14;
+    const baseRotY = isFlipped ? 180 : 0;
+
+    spotlightCard.style.transition = 'transform 0.08s ease-out';
+    spotlightCard.style.transform = `perspective(1400px) rotateX(${rotX.toFixed(2)}deg) rotateY(${(baseRotY + rotY).toFixed(2)}deg) scale(1.03)`;
+
+    const glareX = ((x / rect.width) * 100).toFixed(1);
+    const glareY = ((y / rect.height) * 100).toFixed(1);
+    spotlightCard.style.setProperty('--glare-pos', `${glareX}% ${glareY}%`);
+  });
+
+  spotlightCard.addEventListener('mouseleave', () => {
+    if (isSpinning) return;
+    spotlightCard.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+    const baseRotY = isFlipped ? 180 : 0;
+    spotlightCard.style.transform = `perspective(1400px) rotateX(0deg) rotateY(${baseRotY}deg) scale(1)`;
+  });
+
+  // Quick Cart & Wishlist inside modal
+  const cartBtn = document.getElementById('nc-spotlight-cart-btn');
+  const wishlistBtn = document.getElementById('nc-spotlight-wishlist-btn');
+
+  cartBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (currentCardData.cartUrl) {
+      cartBtn.dataset.cartUrl = currentCardData.cartUrl;
+      cartBtn.dataset.productName = currentCardData.name;
+      if (window.quickAddToCart) {
+        window.quickAddToCart(cartBtn);
+      } else {
+        window.location.href = currentCardData.cartUrl;
+      }
+    }
+  });
+
+  wishlistBtn?.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (!currentCardData.wishlistUrl) return;
+    wishlistBtn.dataset.wishlistUrl = currentCardData.wishlistUrl;
+    wishlistBtn.dataset.productName = currentCardData.name;
+
+    // window.toggleWishlist restyles the icon from the response; mirror the
+    // new state onto the label and keep the grid card's heart in step.
+    const gridCard = document.querySelector(
+      `[data-card-item="true"][data-detail-url="${currentCardData.detailUrl}"]`
+    );
+
+    if (window.toggleWishlist) {
+      const result = window.toggleWishlist(wishlistBtn, e);
+      const sync = (data) => {
+        if (!data || data.status !== 'success') return;
+        paintSpotlightWishlist(data.in_wishlist);
+        currentCardData.wishlisted = data.in_wishlist;
+        if (gridCard) {
+          gridCard.dataset.wishlisted = data.in_wishlist ? '1' : '0';
+          const gridBtn = gridCard.querySelector('[data-wishlisted]');
+          if (gridBtn) paintWishlistButton(gridBtn, data.in_wishlist);
+        }
+      };
+      // toggleWishlist returns the fetch promise when it runs; guard for both.
+      if (result && typeof result.then === 'function') result.then(sync);
+    } else {
+      window.location.href = currentCardData.wishlistUrl;
+    }
+  });
+
+  // Close handlers
+  closeBtn?.addEventListener('click', closeCardSpotlight);
+
+  spotlightModal.addEventListener('click', (e) => {
+    if (e.target === spotlightModal) {
+      closeCardSpotlight();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !spotlightModal.classList.contains('hidden')) {
+      closeCardSpotlight();
+    }
+  });
+})();
 </script>
 {% endblock %}

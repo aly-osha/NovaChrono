@@ -553,18 +553,42 @@
       }, 3500);
     };
 
-    // Global wishlist toggle handler (prevents page jump/navigation, stays on page)
+    // Single source of truth for how a wishlist heart looks in a given state.
+    // The filled/red treatment is applied identically on first paint (server
+    // render) and after an async toggle, so the two can never disagree.
+    window.paintWishlistButton = function(btn, isWishlisted) {
+      if (!btn) return;
+      const icon = btn.querySelector('.material-symbols-outlined');
+      btn.dataset.wishlisted = isWishlisted ? '1' : '0';
+      btn.setAttribute('aria-pressed', isWishlisted ? 'true' : 'false');
+      btn.setAttribute('aria-label', isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist');
+      if (!icon) return;
+      if (isWishlisted) {
+        icon.style.fontVariationSettings = "'FILL' 1";
+        icon.classList.remove('text-outline');
+        icon.classList.add('text-error');
+        btn.classList.add('text-error', 'border-error/40');
+        btn.classList.remove('text-outline');
+      } else {
+        icon.style.fontVariationSettings = "'FILL' 0";
+        icon.classList.remove('text-error');
+        icon.classList.add('text-outline');
+        btn.classList.remove('text-error', 'border-error/40');
+      }
+    };
+
+    // Global wishlist toggle handler (prevents page jump/navigation, stays on page).
+    // Returns the fetch promise so callers can chain off the new state.
     window.toggleWishlist = function(btn, event) {
       if (event) {
         event.preventDefault();
         event.stopPropagation();
       }
-      if (!btn || btn.disabled) return;
+      if (!btn || btn.disabled) return Promise.resolve(null);
       const url = btn.dataset.wishlistUrl;
-      const icon = btn.querySelector('.material-symbols-outlined');
       btn.disabled = true;
 
-      fetch(url, {
+      return fetch(url, {
         headers: { 'X-Requested-With': 'XMLHttpRequest' }
       })
       .then(r => {
@@ -576,28 +600,18 @@
       })
       .then(data => {
         btn.disabled = false;
-        if (!data) return;
+        if (!data) return null;
         if (data.status === 'success') {
-          if (icon) {
-            if (data.in_wishlist) {
-              icon.style.fontVariationSettings = "'FILL' 1";
-              icon.classList.remove('text-outline');
-              icon.classList.add('text-error');
-              btn.classList.add('border-error/40');
-            } else {
-              icon.style.fontVariationSettings = "'FILL' 0";
-              icon.classList.remove('text-error');
-              icon.classList.add('text-outline');
-              btn.classList.remove('border-error/40');
-            }
-          }
+          window.paintWishlistButton(btn, data.in_wishlist);
           window.showNovaToast(data.message, data.in_wishlist ? 'success' : 'info');
         } else {
           window.showNovaToast(data.message || 'Unable to update wishlist', 'error');
         }
+        return data;
       })
       .catch(() => {
         btn.disabled = false;
+        return null;
       });
     };
   </script>
