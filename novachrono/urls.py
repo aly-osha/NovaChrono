@@ -70,9 +70,6 @@ urlpatterns = [
     path("reviews/add/<int:pk>/", reviews.add_review, name="add_review"),
     path("reviews/edit/<int:pk>/", reviews.edit_review, name="edit_review"),
 
-    # ---- Price alerts (schema rule 10: monitoring derives from wishlist) ----
-    path("alerts/add/<int:pk>/", wishlists.price_alert_create, name="price_alert_add"),
-
     # ---- Certificates (public + admin) ----
     path("certify/verify/", certs.public_verify, name="certify_verify"),
 

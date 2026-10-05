@@ -49,8 +49,9 @@ class WishlistItem(models.Model):
     product = models.ForeignKey(
         "products.Product", on_delete=models.CASCADE, related_name="wishlist_items",
     )
-    # Price at the moment the buyer started watching. Monitoring compares
-    # against this; a drop below it raises a price-drop Notification.
+    # Price at the moment the buyer started watching. This is an immutable
+    # baseline: monitoring never overwrites it, so the wishlist can show the
+    # original price struck through against the current one.
     added_price = models.DecimalField(
         max_digits=10, decimal_places=2, null=True, blank=True
     )

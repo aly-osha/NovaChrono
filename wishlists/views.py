@@ -78,7 +78,7 @@ def add_to_wishlist(request, pk):
         })
 
     messages.success(request, msg)
-    fallback = request.GET.get("next") or request.META.get("HTTP_REFERER") or reverse("catalogue")
+    fallback = request.GET.get("next") or request.META.get("HTTP_REFERER") or reverse("product_detail", args=[pk])
     return redirect(fallback)
 
 
@@ -113,52 +113,6 @@ def wishlist_to_cart(request, pk):
     item.delete()
     messages.success(request, f"Moved {product.name} to cart.")
     return redirect("cart")
-
-
-@login_required
-def price_alert_create(request, pk):
-    """Legacy route (detail page "Watch Price" button).
-
-    The schema removed the price_alerts table, so setting a price alert now
-    means joining the wishlist — which is what activates monitoring. The
-    posted target price is recorded as the watch baseline.
-    """
-    from decimal import Decimal, InvalidOperation
-
-    product = get_object_or_404(Product, pk=pk, is_active=True)
-    if request.method == "POST":
-        wl = _wishlist_for(request.user)
-        target = None
-        try:
-            raw = request.POST.get("target_price", "").strip()
-            if raw:
-                parsed = Decimal(raw)
-                if parsed > 0:
-                    target = parsed
-        except (InvalidOperation, ValueError, AttributeError):
-            target = None
-
-        WishlistItem.objects.update_or_create(
-            wishlist=wl,
-            product=product,
-            defaults={
-                "added_price": target or product.price,
-                "was_out_of_stock": not product.is_available,
-            },
-        )
-        if target:
-            messages.success(
-                request,
-                f"Watching {product.name} — we'll notify you if it drops "
-                f"to ₹{target} or comes back in stock.",
-            )
-        else:
-            messages.success(
-                request,
-                f"{product.name} added to your wishlist — price-drop and "
-                f"restock alerts are now active.",
-            )
-    return redirect("product_detail", pk=pk)
 
 
 @login_required

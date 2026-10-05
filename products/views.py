@@ -16,9 +16,29 @@ from .models import Product, Game, Set, Category, SingleCardDetail, ProductImage
 PAGINATE_BY = 12
 
 
+def _wishlisted_ids(user, products):
+    """Ids from `products` the buyer already has on their wishlist.
+
+    One query per page — the product card template is rendered once per card,
+    so asking the database per card would be an N+1 across the whole grid.
+    Returns an empty set for anonymous visitors.
+    """
+    if not user.is_authenticated:
+        return set()
+    from wishlists.models import WishlistItem
+    return set(
+        WishlistItem.objects
+        .filter(wishlist__buyer=user, product__in=products)
+        .values_list("product_id", flat=True)
+    )
+
+
 def home(request):
     featured = Product.objects.filter(is_active=True).order_by("-created_at")[:8]
-    return render(request, "home.html", {"featured": featured})
+    return render(request, "home.html", {
+        "featured": featured,
+        "wishlisted_ids": _wishlisted_ids(request.user, featured),
+    })
 
 
 def catalogue(request):
@@ -143,6 +163,7 @@ def catalogue(request):
 
     return render(request, "products/catalogue.html", {
         "products": products,
+        "wishlisted_ids": _wishlisted_ids(request.user, products),
         "games": games,
         "categories": categories,
         "query_params": params,
@@ -164,22 +185,21 @@ def product_detail(request, pk):
     related = Product.objects.filter(
         set=product.set, is_active=True
     ).exclude(pk=pk)[:4]
-    # Monitoring state derives from wishlist membership (schema rule 10).
-    user_alert = None
+    # Wishlist membership is the whole monitoring state (schema rule 10) —
+    # there is no separate alert row to load.
     in_wishlist = False
     if request.user.is_authenticated:
         from wishlists.models import WishlistItem
-        user_alert = WishlistItem.objects.filter(
+        in_wishlist = WishlistItem.objects.filter(
             wishlist__buyer=request.user, product=product,
-        ).first()
-        in_wishlist = user_alert is not None
+        ).exists()
     return render(request, "products/detail.html", {
         "product": product,
         "images": images,
         "reviews": reviews,
         "related": related,
-        "user_alert": user_alert,
         "in_wishlist": in_wishlist,
+        "wishlisted_ids": _wishlisted_ids(request.user, related),
     })
 
 
@@ -200,13 +220,6 @@ def api_sets(request):
         for s in sets
     ]
     return JsonResponse(data, safe=False)
-
-
-@login_required
-def price_alert_create(request, pk):
-    """Deprecated shim — see wishlists.views.price_alert_create."""
-    from wishlists.views import price_alert_create as _impl
-    return _impl(request, pk)
 
 
 @login_required

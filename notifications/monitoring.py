@@ -54,31 +54,40 @@ def check_wishlist_item(item):
     # time. If the buyer was told about ₹500 already, staying at ₹500 must
     # not notify again; dropping to ₹400 must.
     current = product.price
-    last_reported = item.added_price
 
-    if last_reported is not None and current < last_reported:
-        already_told = Notification.objects.filter(
+    # added_price is the price the buyer started watching at and must stay
+    # that way: the wishlist page reads it to show "was X, now Y". Dedup
+    # therefore compares against the LOWEST price we have already reported
+    # to this buyer, taken from the notifications themselves.
+    prior = (
+        Notification.objects
+        .filter(
             buyer=item.wishlist.buyer,
             product=product,
             notification_type="price_drop",
+        )
+        .order_by("event_price")
+        .values_list("event_price", flat=True)
+        .first()
+    )
+    baseline = min([p for p in (item.added_price, prior) if p is not None], default=None)
+
+    if baseline is not None and current < baseline:
+        saved = current - baseline
+        pct = (saved / baseline * Decimal("100")) if baseline else Decimal("0")
+        n = Notification.objects.create(
+            buyer=item.wishlist.buyer,
+            product=product,
+            notification_type="price_drop",
+            title=f"Price drop: {product.name}",
+            message=(
+                f"{product.name} dropped from {_fmt(baseline)} to "
+                f"{_fmt(current)} — a saving of {_fmt(saved)} "
+                f"({pct:.1f}%)."
+            ),
             event_price=current,
-        ).exists()
-        if not already_told:
-            saved = current - last_reported
-            pct = (saved / last_reported * Decimal("100")) if last_reported else Decimal("0")
-            n = Notification.objects.create(
-                buyer=item.wishlist.buyer,
-                product=product,
-                notification_type="price_drop",
-                title=f"Price drop: {product.name}",
-                message=(
-                    f"{product.name} dropped from {_fmt(last_reported)} to "
-                    f"{_fmt(current)} — a saving of {_fmt(saved)} "
-                    f"({pct:.1f}%)."
-                ),
-                event_price=current,
-            )
-            created.append(n)
+        )
+        created.append(n)
 
     # ---- FR-23: back in stock -------------------------------------------
     # Only fires when the item is actually purchasable AND was previously out of stock.
@@ -102,11 +111,6 @@ def check_wishlist_item(item):
         if not item.was_out_of_stock:
             item.was_out_of_stock = True
             item.save(update_fields=["was_out_of_stock"])
-
-    # Advance the reported-price baseline so the same drop cannot re-fire.
-    if last_reported is None or current < last_reported:
-        item.added_price = current
-        item.save(update_fields=["added_price"])
 
     return created
 
