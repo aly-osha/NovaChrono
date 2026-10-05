@@ -358,19 +358,25 @@
   </div>
 </div>
 
+<script id="initial-games-data" type="application/json">
+[
+  {% for g in games %}
+    {"id": "{{ g.pk }}", "name": "{{ g.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+  {% endfor %}
+]
+</script>
+<script id="initial-sets-data" type="application/json">
+[
+  {% for s in sets %}
+    {"id": "{{ s.pk }}", "game_id": "{{ s.game_id }}", "game_name": "{{ s.game.name|escapejs }}", "name": "{{ s.name|escapejs }}"}{% if not forloop.last %},{% endif %}
+  {% endfor %}
+]
+</script>
+
 <script>
 // --- Initial Games & Sets Data ---
-const allGames = [
-  {% for g in games %}
-    { id: "{{ g.pk }}", name: "{{ g.name|escapejs }}" },
-  {% endfor %}
-];
-
-let allSets = [
-  {% for s in sets %}
-    { id: "{{ s.pk }}", game_id: "{{ s.game_id }}", game_name: "{{ s.game.name|escapejs }}", name: "{{ s.name|escapejs }}" },
-  {% endfor %}
-];
+const allGames = JSON.parse(document.getElementById('initial-games-data')?.textContent || '[]');
+let allSets = JSON.parse(document.getElementById('initial-sets-data')?.textContent || '[]');
 
 // --- Searchable Game Typeahead ---
 const gameSearchInput = document.getElementById('game-search-input');
