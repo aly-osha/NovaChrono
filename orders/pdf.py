@@ -155,7 +155,7 @@ def generate_invoice_pdf(order):
     story = []
 
     # 1. Header: Store info with Logo (left) & Invoice info (right)
-    logo_path = os.path.join(settings.BASE_DIR, "static", "img", "novachrono-logo.jpg")
+    logo_path = os.path.join(settings.BASE_DIR, "static", "img", "novachrono-logo.png")
     logo_flowable = None
     if os.path.exists(logo_path):
         try:
