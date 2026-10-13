@@ -157,12 +157,26 @@ class Product(models.Model):
         return imgs[0] if imgs else None
 
     @property
+    def is_card_type(self):
+        """Only single cards have a card reverse (back face) to inspect.
+
+        Sealed products and related/accessory items have no card back, so the
+        front/back flip is meaningless for them — see the admin form note
+        "Sealed items do not require this."
+        """
+        return self.product_type == "single_card"
+
+    @property
     def back_image(self):
+        if not self.is_card_type:
+            return None
         imgs = list(self.images.all())
         return imgs[1] if len(imgs) > 1 else None
 
     @property
     def has_back_image(self):
+        if not self.is_card_type:
+            return False
         imgs = list(self.images.all())
         return len(imgs) > 1 and bool(imgs[1].image)
 

@@ -97,10 +97,12 @@
           <span class="material-symbols-outlined text-[16px]">visibility</span>
           <span>Front 4K Face</span>
         </button>
+        {% if product.is_card_type %}
         <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(1)" type="button">
           <span class="material-symbols-outlined text-[16px]">flip</span>
           <span>Reverse Centering</span>
         </button>
+        {% endif %}
         <button class="view-mode-btn px-space-sm py-space-xs rounded-lg font-mono text-[11px] text-on-surface-variant hover:text-on-surface flex items-center gap-space-2xs transition-all shrink-0 cursor-pointer" onclick="switchPerspective(2)" type="button">
           <span class="material-symbols-outlined text-[16px]">wb_twilight</span>
           <span>Foil Angle Dynamic</span>
@@ -113,7 +115,7 @@
     </div>
 
     <!-- Thumbnail micro carousel (bound to perspective views) -->
-    <div class="grid grid-cols-4 gap-space-sm">
+    <div class="grid {% if product.is_card_type %}grid-cols-4{% else %}grid-cols-3{% endif %} gap-space-sm">
       <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(0)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
           {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} front"/>{% endif %}
@@ -121,6 +123,7 @@
         <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Front Face (4K)</span>
         <span class="block font-mono text-[10px] text-secondary-fixed-dim">Surface Inspection</span>
       </button>
+      {% if product.is_card_type %}
       <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(1)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest">
           <img class="w-full h-full object-contain group-hover:scale-105 transition-transform" src="{% if product.has_back_image %}{{ product.back_image.image.url }}{% else %}{% static 'img/novachrono-logo.png' %}{% endif %}" alt="{{ product.name }} reverse"/>
@@ -128,6 +131,7 @@
         <span class="block font-mono text-[11px] text-on-surface font-semibold truncate">Card Back</span>
         <span class="block font-mono text-[10px] text-outline">Centering Check</span>
       </button>
+      {% endif %}
       <button class="group rounded-lg bg-surface-container p-space-2xs text-left transition-all hover:bg-surface-container-high focus:outline-none cursor-pointer" onclick="switchPerspective(2)" type="button">
         <div class="aspect-[4/3] rounded overflow-hidden mb-space-2xs bg-surface-container-lowest relative">
           {% if images.first %}<img class="w-full h-full object-cover group-hover:scale-105 transition-transform" src="{{ images.first.image.url }}" alt="{{ product.name }} foil angle"/>{% endif %}

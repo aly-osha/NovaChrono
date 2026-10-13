@@ -346,23 +346,58 @@
                style="backface-visibility: hidden; transform: rotateY(180deg);">
             <img id="nc-spotlight-back-img" src="" alt="Card Back" class="w-full h-full object-contain p-2 select-none pointer-events-none drop-shadow-xl hidden"/>
             <!-- Default NovaChrono Vault Holographic Card Back -->
-            <div id="nc-spotlight-default-back" class="w-full h-full p-4 flex flex-col items-center justify-between bg-gradient-to-br from-[#120f24] via-[#1b1433] to-[#0a0815] border-4 border-[#e9d5ff]/20 rounded-2xl relative overflow-hidden select-none">
-              <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(121,40,202,0.4)_0%,transparent_70%)]"></div>
-              <div class="w-full flex items-center justify-between border-b border-primary/30 pb-2 relative z-10">
-                <span class="font-mono text-[9px] tracking-[0.25em] text-secondary-fixed-dim uppercase">NOVACHRONO</span>
-                <span class="material-symbols-outlined text-[14px] text-tertiary-fixed">diamond</span>
-                <span class="font-mono text-[9px] tracking-[0.25em] text-secondary-fixed-dim uppercase">VAULT</span>
+            <div id="nc-spotlight-default-back" class="nc-vault-back w-full h-full p-4 flex flex-col items-center justify-between bg-gradient-to-br from-[#171130] via-[#241a45] to-[#0b0819] border-4 border-[#e9d5ff]/25 rounded-2xl relative overflow-hidden select-none">
+              <!-- Depth: corner aurora + centre bloom -->
+              <div class="absolute -top-12 -left-12 w-40 h-40 rounded-full bg-secondary-fixed-dim/20 blur-2xl pointer-events-none"></div>
+              <div class="absolute -bottom-14 -right-10 w-44 h-44 rounded-full bg-primary-container/30 blur-2xl pointer-events-none"></div>
+              <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(121,40,202,0.45)_0%,transparent_68%)] pointer-events-none"></div>
+
+              <!-- Guilloche hairline frame -->
+              <div class="absolute inset-[6px] rounded-xl border border-secondary-fixed/35 pointer-events-none"></div>
+              <div class="absolute inset-[11px] rounded-lg border border-primary/20 pointer-events-none"></div>
+              <!-- corner ticks -->
+              <div class="absolute top-[6px] left-[6px] w-6 h-6 border-t-2 border-l-2 border-tertiary-fixed/50 rounded-tl-xl pointer-events-none"></div>
+              <div class="absolute top-[6px] right-[6px] w-6 h-6 border-t-2 border-r-2 border-tertiary-fixed/50 rounded-tr-xl pointer-events-none"></div>
+              <div class="absolute bottom-[6px] left-[6px] w-6 h-6 border-b-2 border-l-2 border-tertiary-fixed/50 rounded-bl-xl pointer-events-none"></div>
+              <div class="absolute bottom-[6px] right-[6px] w-6 h-6 border-b-2 border-r-2 border-tertiary-fixed/50 rounded-br-xl pointer-events-none"></div>
+
+              <!-- Header -->
+              <div class="w-full flex items-center justify-between relative z-10 pt-1">
+                <span class="font-mono text-[10px] font-semibold tracking-[0.28em] text-secondary-fixed uppercase">NOVACHRONO</span>
+                <span class="flex items-center gap-1.5">
+                  <span class="h-px w-5 bg-gradient-to-r from-transparent to-tertiary-fixed/70"></span>
+                  <span class="material-symbols-outlined text-[13px] text-tertiary-fixed">diamond</span>
+                  <span class="h-px w-5 bg-gradient-to-l from-transparent to-tertiary-fixed/70"></span>
+                </span>
+                <span class="font-mono text-[10px] font-semibold tracking-[0.28em] text-secondary-fixed uppercase">VAULT</span>
               </div>
+
+              <!-- Emblem with orbital ring -->
               <div class="relative z-10 my-auto flex flex-col items-center text-center">
-                <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-secondary-fixed/40 bg-surface-container-high/60 flex items-center justify-center shadow-[0_0_30px_rgba(121,40,202,0.6)] mb-2 overflow-hidden">
-                  <img src="{% static 'img/novachrono-logo.png' %}" alt="NovaChrono Emblem" class="w-full h-full object-contain p-1 select-none pointer-events-none drop-shadow-[0_0_12px_rgba(121,40,202,0.8)]"/>
+                <div class="relative mb-3 flex items-center justify-center">
+                  <!-- rotating orbital ring -->
+                  <svg class="nc-orbit-spin absolute -inset-3 sm:-inset-4 w-auto h-auto" viewBox="0 0 120 120" fill="none" aria-hidden="true">
+                    <circle cx="60" cy="60" r="56" stroke="rgba(125,244,255,0.28)" stroke-width="0.8" stroke-dasharray="3 7"/>
+                    <circle cx="60" cy="60" r="48" stroke="rgba(219,184,255,0.22)" stroke-width="0.8" stroke-dasharray="14 10"/>
+                    <circle cx="60" cy="4" r="2.2" fill="rgba(125,244,255,0.85)"/>
+                  </svg>
+                  <!-- emblem plate -->
+                  <div class="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border border-secondary-fixed/35 bg-[#120d24]/80 backdrop-blur-sm flex items-center justify-center shadow-[0_0_34px_rgba(121,40,202,0.55),inset_0_1px_0_rgba(255,255,255,0.08)] overflow-hidden">
+                    <img src="{% static 'img/novachrono-logo.png' %}" alt="NovaChrono Emblem" class="w-full h-full object-contain p-1.5 select-none pointer-events-none drop-shadow-[0_0_14px_rgba(121,40,202,0.85)]"/>
+                  </div>
                 </div>
-                <span class="font-display font-extrabold text-xs sm:text-sm tracking-widest text-on-surface uppercase">COLLECTOR CARD</span>
-                <span class="font-mono text-[9px] text-outline tracking-wider mt-0.5">CERTIFIED AUTHENTIC</span>
+                <span class="font-display font-extrabold text-sm sm:text-base tracking-[0.2em] text-on-surface uppercase drop-shadow-[0_0_10px_rgba(121,40,202,0.5)]">COLLECTOR CARD</span>
+                <span class="mt-1.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-tertiary-fixed/40 bg-tertiary-fixed/10">
+                  <span class="material-symbols-outlined text-[12px] text-tertiary-fixed">verified</span>
+                  <span class="font-mono text-[9px] font-semibold text-tertiary-fixed tracking-[0.12em] uppercase">Certified Authentic</span>
+                </span>
               </div>
-              <div class="w-full flex items-center justify-between border-t border-primary/30 pt-2 relative z-10">
-                <span class="font-mono text-[8px] text-outline">LIMITED EDITION</span>
-                <span class="font-mono text-[8px] text-outline">TCG COLLECTIBLE</span>
+
+              <!-- Footer -->
+              <div class="w-full flex items-center justify-between relative z-10 pb-1">
+                <span class="font-mono text-[10px] font-bold text-on-surface/90 tracking-[0.08em] uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Limited Edition</span>
+                <span class="h-px flex-1 mx-3 bg-gradient-to-r from-transparent via-primary/30 to-transparent"></span>
+                <span class="font-mono text-[10px] font-bold text-on-surface/90 tracking-[0.08em] uppercase drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">TCG Collectible</span>
               </div>
             </div>
             <!-- Holographic Foil Glare Sheen -->
@@ -509,6 +544,17 @@
   .nc-spinning-in { animation-duration: 0.01ms !important; }
 }
 
+/* Vault card back: slow orbital ring around the emblem */
+@keyframes ncOrbitSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.nc-orbit-spin { animation: ncOrbitSpin 22s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .nc-orbit-spin { animation: none; }
+}
+
 /* Click/Tap feedback animation when navigating */
 .nc-card-clicked {
   animation: ncCardClickPulse 0.25s ease-out forwards;
@@ -652,6 +698,12 @@ document.addEventListener('keydown', (e) => {
 
     document.getElementById('nc-spotlight-price').textContent = currentCardData.price;
     document.getElementById('nc-spotlight-detail-link').href = currentCardData.detailUrl;
+
+    // The card reverse only exists for single cards. Hide the 3D flip control
+    // for sealed products and accessories; the state reset below clears any
+    // flipped transform so it can't leak between cards.
+    const canFlip = currentCardData.productType === 'single_card';
+    if (flipBtn) flipBtn.classList.toggle('hidden', !canFlip);
 
     // Reflect the card's saved state so the heart is filled for an item that
     // is already on the wishlist, instead of always showing it empty.

@@ -47,15 +47,15 @@ class AdminGameSetManagementTests(TestCase):
         self.assertTrue(s.is_active)
 
     def test_admin_create_set_ajax_post(self):
-        game = Game.objects.create(name="Magic Test")
+        game = Game.objects.create(name="Test TCG")
         url = reverse("admin_set_create")
         response = self.client.post(
             url,
-            {"game": game.pk, "name": "Modern Horizons 3", "code": "MH3", "is_ajax": "1"},
+            {"game": game.pk, "name": "Test Expansion", "code": "TST", "is_ajax": "1"},
             HTTP_X_REQUESTED_WITH="XMLHttpRequest",
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "success")
-        self.assertTrue(Set.objects.filter(name="Modern Horizons 3", game=game).exists())
+        self.assertTrue(Set.objects.filter(name="Test Expansion", game=game).exists())
 

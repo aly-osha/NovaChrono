@@ -313,9 +313,11 @@ def admin_product_create(request):
                     condition=request.POST.get("condition", "near_mint"),
                 )
 
-            # images: front image, back image (for single cards/inspection), and additional gallery images
+            # images: front image, back image (single cards only), and additional gallery images
             image_front = request.FILES.get("image_front")
-            image_back = request.FILES.get("image_back")
+            # A card reverse only exists for single cards; ignore any back image
+            # submitted for a sealed product or accessory.
+            image_back = request.FILES.get("image_back") if product_type == "single_card" else None
             extra_images = request.FILES.getlist("images")
 
             order = 0
@@ -352,8 +354,15 @@ def admin_product_edit(request, pk):
     categories = Category.objects.filter(is_active=True).all()
     existing_images = list(product.images.all())
     front_image = existing_images[0] if len(existing_images) > 0 else None
-    back_image = existing_images[1] if len(existing_images) > 1 else None
-    gallery_images = existing_images[2:] if len(existing_images) > 2 else []
+    # The card reverse slot only applies to single cards. For anything else,
+    # every image past the front is just gallery — otherwise a product whose
+    # type changed from single_card to sealed would hide its old back image.
+    if product.is_card_type:
+        back_image = existing_images[1] if len(existing_images) > 1 else None
+        gallery_images = existing_images[2:]
+    else:
+        back_image = None
+        gallery_images = existing_images[1:]
 
     if request.method == "POST":
         product.name = request.POST.get("name", "").strip()
@@ -393,16 +402,18 @@ def admin_product_edit(request, pk):
             else:
                 ProductImage.objects.create(product=product, image=request.FILES.get("image_front"), sort_order=0)
 
-        # Handle back image update or removal
-        if request.POST.get("delete_back_image") == "1":
-            if back_image:
-                back_image.delete()
-        elif request.FILES.get("image_back"):
-            if back_image:
-                back_image.image = request.FILES.get("image_back")
-                back_image.save()
-            else:
-                ProductImage.objects.create(product=product, image=request.FILES.get("image_back"), sort_order=1)
+        # Handle back image update or removal (single cards only — a sealed
+        # product or accessory has no card reverse).
+        if product.is_card_type:
+            if request.POST.get("delete_back_image") == "1":
+                if back_image:
+                    back_image.delete()
+            elif request.FILES.get("image_back"):
+                if back_image:
+                    back_image.image = request.FILES.get("image_back")
+                    back_image.save()
+                else:
+                    ProductImage.objects.create(product=product, image=request.FILES.get("image_back"), sort_order=1)
 
         # Handle deleting individual gallery images
         delete_ids = request.POST.getlist("delete_image_ids")
