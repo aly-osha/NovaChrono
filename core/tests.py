@@ -27,14 +27,13 @@ class NovaChronoIntegrationTests(TestCase):
             email="buyer@example.com",
             password="Password123!",
             name="Ash Ketchum",
-            role="buyer",
         )
         self.admin = User.objects.create_user(
             username="admin@novachrono.com",
             email="admin@novachrono.com",
             password="AdminPassword123!",
             name="NovaChrono Admin",
-            role="admin",
+            is_superuser=True,
         )
 
         # Address
@@ -418,7 +417,7 @@ class NovaChronoIntegrationTests(TestCase):
         response = self.client.post(reverse("admin_certificate_create", args=[self.product1.pk]))
         self.assertRedirects(response, reverse("admin_certificate_list"))
 
-        cert = AuthenticityCertificate.objects.filter(product=self.product1, is_active=True).first()
+        cert = AuthenticityCertificate.objects.filter(product=self.product1, status="valid").first()
         self.assertIsNotNone(cert)
         self.assertTrue(cert.is_active)
         self.assertEqual(cert.status, "valid")
@@ -563,7 +562,6 @@ class NovaChronoIntegrationTests(TestCase):
             username="other@example.com",
             email="other@example.com",
             password="OtherPassword123!",
-            role="buyer",
         )
         self.client.login(username="other@example.com", password="OtherPassword123!")
         response = self.client.get(reverse("order_invoice_pdf", args=[order.pk]))

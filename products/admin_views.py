@@ -10,7 +10,7 @@ from analytics.models import ActivityLog
 
 
 def _is_admin(user):
-    return user.is_authenticated and user.role in ("admin", "super_admin")
+    return user.is_authenticated and user.is_superuser
 
 
 def admin_required(view_func):

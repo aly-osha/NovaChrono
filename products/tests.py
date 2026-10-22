@@ -11,7 +11,7 @@ class AdminGameSetManagementTests(TestCase):
             username="admin_gameset",
             email="admin_gameset@example.com",
             password="securePassword123!",
-            role="admin",
+            is_superuser=True,
         )
         self.client.force_login(self.admin_user)
 

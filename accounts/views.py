@@ -61,7 +61,7 @@ class RegisterForm(forms.ModelForm):
         # email only — mirror the (unique, validated) email into username.
         user.username = user.email
         user.set_password(self.cleaned_data["password1"])
-        user.role = "buyer"
+        user.is_superuser = False
         if commit:
             user.save()
         return user

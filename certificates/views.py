@@ -26,7 +26,7 @@ def public_verify(request):
     if code:
         try:
             cert = AuthenticityCertificate.objects.get(
-                verification_code=code, is_active=True,
+                verification_code=code, status="valid",
             )
             found = True
         except AuthenticityCertificate.DoesNotExist:
@@ -46,7 +46,7 @@ def public_verify(request):
 
 
 def _is_admin(user):
-    return user.is_authenticated and user.role in ("admin", "super_admin")
+    return user.is_authenticated and user.is_superuser
 
 
 @login_required
@@ -75,7 +75,7 @@ def admin_certificate_create(request, pk):
 
     # check existing active cert
     existing = AuthenticityCertificate.objects.filter(
-        product=product, is_active=True,
+        product=product, status="valid",
     ).first()
 
     if request.method == "POST":
@@ -86,7 +86,6 @@ def admin_certificate_create(request, pk):
             verification_code=code,
             issued_by=request.user,
             status="valid",
-            is_active=True,
         )
         ActivityLog.objects.create(
             admin_user=request.user,
@@ -108,7 +107,6 @@ def admin_certificate_create(request, pk):
 def admin_certificate_revoke(request, pk):
     """Revoke an active certificate."""
     cert = get_object_or_404(AuthenticityCertificate, pk=pk)
-    cert.is_active = False
     cert.status = "revoked"
     cert.save()
 

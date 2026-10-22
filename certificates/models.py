@@ -30,7 +30,6 @@ class AuthenticityCertificate(models.Model):
     verification_code = models.CharField(
         max_length=100, unique=True, db_column="verification_code",
     )
-    issue_date = models.DateField(null=True, blank=True)
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="valid",
     )
@@ -39,7 +38,6 @@ class AuthenticityCertificate(models.Model):
         User, on_delete=models.SET_NULL, null=True, related_name="issued_certificates",
     )
     issued_at = models.DateTimeField(auto_now_add=True)
-    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -50,22 +48,19 @@ class AuthenticityCertificate(models.Model):
     def __str__(self):
         return f"{self.verification_code} — {self.product.name}"
 
+    @property
+    def is_active(self):
+        return self.status == "valid"
+
+    @property
+    def issue_date(self):
+        return self.issued_at.date() if self.issued_at else None
+
     def save(self, *args, **kwargs):
-        # issue_date defaults to the issued_at date when not supplied.
-        if not self.issue_date:
-            from django.utils import timezone
-            self.issue_date = timezone.now().date()
         # certificate_number is UNIQUE in the schema, so it must be populated
         # on every insert. It is derived from verification_code, which the
         # view sets before saving. The guard below keeps the column unique
         # even when verification_code is assigned after construction.
         if not self.certificate_number and self.verification_code:
             self.certificate_number = f"NC-{self.verification_code}"
-        # Keep the schema's status column and the is_active flag in sync.
-        if not self.is_active or self.status in ("revoked", "expired"):
-            self.is_active = False
-            if self.status == "valid":
-                self.status = "revoked"
-        elif self.status == "valid":
-            self.is_active = True
         super().save(*args, **kwargs)

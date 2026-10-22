@@ -15,19 +15,11 @@ class User(AbstractUser):
     Django's auth machinery requires it — `status` is the business-facing
     field and the two are kept in sync in save().
     """
-    ROLE_CHOICES = [
-        ("buyer", "Buyer"),
-        ("admin", "Admin"),
-        ("super_admin", "Super Admin"),
-    ]
-
     STATUS_CHOICES = [
         ("active", "Active"),
         ("inactive", "Inactive"),
         ("suspended", "Suspended"),
     ]
-
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="buyer")
     phone = models.CharField(max_length=20, blank=True, default="")
     status = models.CharField(
         max_length=20, choices=STATUS_CHOICES, default="active",
@@ -52,9 +44,13 @@ class User(AbstractUser):
         return f"{self.name or self.username} ({self.email})"
 
     def save(self, *args, **kwargs):
-        # Keep Django's auth flag and the schema's status column consistent.
-        self.is_active = self.status == "active"
+        # Keep is_staff in sync with is_superuser.
+        self.is_staff = self.is_superuser
         super().save(*args, **kwargs)
+
+    @property
+    def is_active(self):
+        return self.status == "active"
 
     @property
     def user_id(self):
@@ -69,7 +65,7 @@ class User(AbstractUser):
 
     @property
     def is_admin_role(self):
-        return self.role in ("admin", "super_admin")
+        return self.is_superuser
 
 
 class Address(models.Model):

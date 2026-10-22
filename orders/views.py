@@ -213,7 +213,7 @@ def order_invoice_pdf(request, pk):
 # ---- Admin order views ----
 
 def _is_admin(user):
-    return user.is_authenticated and user.role in ("admin", "super_admin")
+    return user.is_authenticated and user.is_superuser
 
 
 @login_required

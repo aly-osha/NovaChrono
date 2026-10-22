@@ -149,7 +149,7 @@ class Product(models.Model):
 
     @property
     def active_certificate(self):
-        return self.certificates.filter(is_active=True).first()
+        return self.certificates.filter(status="valid").first()
 
     @property
     def primary_image(self):

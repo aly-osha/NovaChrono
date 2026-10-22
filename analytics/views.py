@@ -16,7 +16,7 @@ from analytics.models import ActivityLog, SystemSetting
 
 
 def _is_admin(user):
-    return user.is_authenticated and user.role in ("admin", "super_admin")
+    return user.is_authenticated and user.is_superuser
 
 
 def admin_required(view_func):
@@ -84,7 +84,7 @@ def dashboard(request):
     ).aggregate(avg=Avg("r"))["avg"] or 0
 
     # certificate stats
-    total_certs = AuthenticityCertificate.objects.filter(is_active=True).count()
+    total_certs = AuthenticityCertificate.objects.filter(status="valid").count()
 
     return render(request, "analytics/dashboard.html", {
         "daily_sales": daily_sales,

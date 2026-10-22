@@ -9,8 +9,8 @@ from accounts.models import Address, User
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
-    list_display = ("get_full_name", "email", "role", "is_active", "date_joined")
-    list_filter = ("role", "is_active")
+    list_display = ("get_full_name", "email", "is_superuser", "is_active", "date_joined")
+    list_filter = ("is_superuser", "status")
     search_fields = ("email", "name", "username")
     ordering = ("-date_joined",)
 
