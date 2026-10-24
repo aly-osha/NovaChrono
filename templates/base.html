@@ -284,11 +284,11 @@
 
             <!-- Floating Glassmorphic Dropdown Menu -->
             <div id="user-menu-dropdown"
-                 class="hidden absolute right-0 mt-2 w-64 rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-surface-container-high p-space-xs shadow-[0_12px_36px_rgba(0,0,0,0.6)] z-50 transform origin-top-right transition-all duration-150">
+                 class="hidden absolute right-0 mt-2 w-72 rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-surface-container-high p-space-sm shadow-[0_12px_36px_rgba(0,0,0,0.25)] z-50 transform origin-top-right transition-all duration-150">
               <!-- Account Header Card -->
-              <div class="px-space-sm py-space-sm border-b border-surface-container-high mb-space-xs">
+              <div class="px-space-xs py-space-xs border-b border-surface-container-high mb-space-xs">
                 <div class="flex items-center gap-space-sm">
-                  <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary-fixed-dim text-white font-mono font-bold text-sm flex items-center justify-center uppercase shrink-0">
+                  <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary-fixed text-white font-mono font-bold text-sm flex items-center justify-center uppercase shrink-0">
                     {{ user.get_full_name|default:user.username|slice:":1" }}
                   </div>
                   <div class="min-w-0 flex-1">
@@ -304,45 +304,93 @@
                 </div>
               </div>
 
-              <!-- Admin Zone (Highlighted) -->
+              <!-- Admin Suite Links -->
               {% if user.is_staff or user.is_superuser or user.role in "admin,super_admin" %}
-                <div class="mb-space-md pb-space-md border-b border-surface-container-high">
-                  <span class="px-space-sm text-[10px] font-mono uppercase tracking-wider text-primary font-semibold block mb-2">Admin Panel</span>
+                <div class="mb-space-xs pb-space-xs border-b border-surface-container-high">
+                  <div class="flex items-center justify-between px-space-xs mb-1.5">
+                    <span class="text-[10px] font-mono uppercase tracking-widest text-primary font-bold">Admin Suite</span>
+                    <span class="text-[9px] font-mono bg-primary-container/15 text-primary px-1.5 py-0.2 rounded font-semibold">Staff Console</span>
+                  </div>
+                  <div class="grid grid-cols-2 gap-1">
+                    <a href="{% url 'admin_dashboard' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-primary">dashboard</span>
+                      <span>Dashboard</span>
+                    </a>
+                    <a href="{% url 'admin_product_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-primary">inventory_2</span>
+                      <span>Products</span>
+                    </a>
+                    <a href="{% url 'admin_inventory' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-tertiary">warehouse</span>
+                      <span>Inventory</span>
+                    </a>
+                    <a href="{% url 'admin_order_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-secondary">receipt_long</span>
+                      <span>Orders</span>
+                    </a>
+                    <a href="{% url 'admin_game_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-outline">sports_esports</span>
+                      <span>Games</span>
+                    </a>
+                    <a href="{% url 'admin_set_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-outline">auto_awesome_motion</span>
+                      <span>Sets</span>
+                    </a>
+                    <a href="{% url 'admin_category_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-outline">category</span>
+                      <span>Categories</span>
+                    </a>
+                    <a href="{% url 'admin_certificate_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-tertiary">verified</span>
+                      <span>Certificates</span>
+                    </a>
+                    <a href="{% url 'admin_review_list' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-outline">rate_review</span>
+                      <span>Reviews</span>
+                    </a>
+                    <a href="{% url 'admin_activity_log' %}" class="flex items-center gap-1.5 px-2 py-1 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px] text-outline">history</span>
+                      <span>Audit Log</span>
+                    </a>
+                  </div>
                 </div>
               {% endif %}
 
               <!-- Collector Links -->
-              <div class="space-y-space-lg">
+              <div class="space-y-0.5">
                 <a href="{% url 'profile' %}"
-                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
-                  <span class="material-symbols-outlined text-[18px] text-outline">badge</span>
+                   class="flex items-center gap-2 px-space-xs py-1.5 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[16px] text-outline">badge</span>
                   <span>Collector Profile</span>
                 </a>
                 <a href="{% url 'order_list' %}"
-                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
-                  <span class="material-symbols-outlined text-[18px] text-outline">receipt_long</span>
+                   class="flex items-center gap-2 px-space-xs py-1.5 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[16px] text-outline">receipt_long</span>
                   <span>Order History</span>
                 </a>
                 <a href="{% url 'wishlist' %}"
-                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
-                  <span class="material-symbols-outlined text-[18px] text-outline">favorite</span>
+                   class="flex items-center gap-2 px-space-xs py-1.5 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[16px] text-outline">favorite</span>
                   <span>Wishlist</span>
                 </a>
                 <a href="{% url 'address_list' %}"
-                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
-                  <span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+                   class="flex items-center gap-2 px-space-xs py-1.5 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
                   <span>Delivery Addresses</span>
                 </a>
               </div>
 
               <!-- Sign Out -->
-              <div class="pt-space-lg mt-space-lg border-t border-surface-container-high">
+              <div class="pt-space-xs mt-space-xs border-t border-surface-container-high">
                 <form method="post" action="{% url 'logout' %}">
                   {% csrf_token %}
                   <button type="submit"
-                          class="w-full flex items-center gap-2 px-space-sm py-2 rounded-lg text-error hover:bg-error/10 font-mono text-[12px] transition-colors text-left">
-                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                          class="w-full flex items-center gap-2 px-space-xs py-1.5 rounded-lg text-error hover:bg-error/10 font-mono text-[12px] transition-colors text-left">
+                    <span class="material-symbols-outlined text-[16px]">logout</span>
                     <span>Sign Out</span>
+                  </button>
+                </form>
+              </div>
                   </button>
                 </form>
               </div>

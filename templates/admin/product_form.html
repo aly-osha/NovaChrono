@@ -3,15 +3,17 @@
 {% block ticker %}{% endblock %}
 
 {% block content %}
-<div class="max-w-3xl mx-auto">
-  <div class="flex items-center justify-between gap-space-sm mb-space-xl">
+<div class="max-w-4xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="products" subtitle="Product Listing & Grading Attributes" %}
+  <div class="flex items-center justify-between gap-space-sm mb-space-lg">
     <div class="flex items-center gap-space-sm">
-      <a href="{% url 'admin_product_list' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
-        <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+      <a href="{% url 'admin_product_list' %}" class="flex items-center gap-1 text-on-surface-variant hover:text-primary font-mono text-xs transition-colors bg-surface-container px-3 py-1.5 rounded-lg border border-surface-container-high">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        <span>Back to Products</span>
       </a>
       <div>
-        <h1 class="font-display text-2xl font-bold text-on-surface">{{ title|default:'Product' }}</h1>
-        <p class="text-on-surface-variant text-sm font-mono">{% if product %}Update existing product details{% else %}Create a new product listing{% endif %}</p>
+        <h1 class="font-display text-xl font-bold text-on-surface">{{ title|default:'Product' }}</h1>
+        <p class="text-on-surface-variant text-xs font-mono">{% if product %}Update listing details &amp; inventory rules{% else %}Create a new trading card or box listing{% endif %}</p>
       </div>
     </div>
     {% if product %}

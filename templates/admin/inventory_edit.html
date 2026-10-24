@@ -3,14 +3,16 @@
 {% block ticker %}{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto mt-space-2xl">
-  <div class="flex items-center gap-space-sm mb-space-xl">
-    <a href="{% url 'admin_inventory' %}" class="text-on-surface-variant hover:text-primary font-mono text-sm transition-colors">
-      <span class="material-symbols-outlined text-[18px] inline">arrow_back</span>
+<div class="max-w-4xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="inventory" subtitle="Update Product Stock & Replenishment" %}
+  <div class="flex items-center gap-space-sm mb-space-lg">
+    <a href="{% url 'admin_inventory' %}" class="flex items-center gap-1 text-on-surface-variant hover:text-primary font-mono text-xs transition-colors bg-surface-container px-3 py-1.5 rounded-lg border border-surface-container-high">
+      <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+      <span>Back to Inventory</span>
     </a>
     <div>
-      <h1 class="font-display text-2xl font-bold text-on-surface">Update Stock</h1>
-      <p class="text-on-surface-variant text-sm font-mono">{{ product.name }}</p>
+      <h1 class="font-display text-xl font-bold text-on-surface">Update Stock</h1>
+      <p class="text-on-surface-variant text-xs font-mono">{{ product.name }}</p>
     </div>
   </div>
 

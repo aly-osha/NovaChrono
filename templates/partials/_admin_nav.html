@@ -1,0 +1,140 @@
+{% comment %}
+  Reusable Unified Admin Navigation Header
+  Usage:
+    {% include "partials/_admin_nav.html" with active="products" subtitle="Manage card singles, boxes, and sets" %}
+{% endcomment %}
+
+<div class="mb-space-lg">
+  <!-- Top Command Header -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md pb-space-md border-b border-surface-container-high/80">
+    <div class="flex items-center gap-space-sm flex-wrap">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+        <span class="font-mono text-[11px] font-bold text-primary uppercase tracking-widest">NovaChrono Admin</span>
+      </div>
+      <span class="text-outline/40">•</span>
+      <span class="px-2 py-0.5 rounded-full bg-primary-container/20 text-primary-fixed font-mono text-[10px] font-semibold uppercase tracking-wider">
+        Central Console
+      </span>
+      {% if subtitle %}
+        <span class="text-outline/40 hidden sm:inline">•</span>
+        <span class="text-on-surface-variant font-mono text-xs hidden sm:inline">{{ subtitle }}</span>
+      {% endif %}
+    </div>
+
+    <!-- Quick Action Launcher & Storefront Switcher -->
+    <div class="flex items-center gap-space-xs flex-wrap">
+      <div class="relative group">
+        <button type="button" class="px-3 py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-container text-on-surface font-mono text-xs font-semibold border border-surface-container-highest transition-all flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px] text-primary">add_circle</span>
+          <span>+ Quick Create</span>
+          <span class="material-symbols-outlined text-[14px] text-outline">expand_more</span>
+        </button>
+        <div class="hidden group-hover:block absolute right-0 mt-1 w-48 rounded-xl bg-surface-container-lowest border border-surface-container-high p-1 shadow-2xl z-50">
+          <a href="{% url 'admin_product_create' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-primary">style</span>
+            <span>New Product</span>
+          </a>
+          <a href="{% url 'admin_game_create' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-secondary">sports_esports</span>
+            <span>New Game</span>
+          </a>
+          <a href="{% url 'admin_set_create' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-tertiary">auto_awesome_motion</span>
+            <span>New Set / Expansion</span>
+          </a>
+          <a href="{% url 'admin_category_create' %}" class="flex items-center gap-2 px-3 py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+            <span class="material-symbols-outlined text-[16px] text-outline">category</span>
+            <span>New Category</span>
+          </a>
+        </div>
+      </div>
+
+      <a href="{% url 'catalogue' %}" target="_blank" class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface-variant hover:text-on-surface font-mono text-xs flex items-center gap-1.5 transition-colors border border-transparent hover:border-surface-container-high" title="Preview Public Marketplace in New Tab">
+        <span class="material-symbols-outlined text-[15px] text-tertiary">storefront</span>
+        <span>Storefront</span>
+        <span class="material-symbols-outlined text-[12px] text-outline">open_in_new</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Horizontal Unified Module Tabs Bar -->
+  <nav class="flex items-center gap-1.5 py-2.5 overflow-x-auto no-scrollbar scroll-smooth">
+    <!-- 1. Dashboard -->
+    <a href="{% url 'admin_dashboard' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'dashboard' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">dashboard</span>
+      <span>Dashboard</span>
+    </a>
+
+    <!-- 2. Products -->
+    <a href="{% url 'admin_product_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'products' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">inventory_2</span>
+      <span>Products</span>
+    </a>
+
+    <!-- 3. Inventory -->
+    <a href="{% url 'admin_inventory' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'inventory' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">warehouse</span>
+      <span>Inventory</span>
+    </a>
+
+    <!-- 4. Orders -->
+    <a href="{% url 'admin_order_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'orders' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">receipt_long</span>
+      <span>Orders</span>
+    </a>
+
+    <!-- 5. Games -->
+    <a href="{% url 'admin_game_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'games' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">sports_esports</span>
+      <span>Games</span>
+    </a>
+
+    <!-- 6. Sets -->
+    <a href="{% url 'admin_set_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'sets' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">auto_awesome_motion</span>
+      <span>Sets</span>
+    </a>
+
+    <!-- 7. Categories -->
+    <a href="{% url 'admin_category_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'categories' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">category</span>
+      <span>Categories</span>
+    </a>
+
+    <!-- 8. Certificates -->
+    <a href="{% url 'admin_certificate_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'certificates' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">verified</span>
+      <span>Certificates</span>
+    </a>
+
+    <!-- 9. Reviews -->
+    <a href="{% url 'admin_review_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'reviews' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">rate_review</span>
+      <span>Reviews</span>
+    </a>
+
+    <!-- 10. Audit Log -->
+    <a href="{% url 'admin_activity_log' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'activity' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">history</span>
+      <span>Audit Log</span>
+    </a>
+
+    <!-- 11. Settings -->
+    <a href="{% url 'system_settings' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'settings' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">settings</span>
+      <span>Settings</span>
+    </a>
+  </nav>
+</div>

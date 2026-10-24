@@ -3,20 +3,14 @@
 {% block ticker %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
-  {% url 'admin_dashboard' as url_dashboard %}
-  <div class="mb-space-md">
-    {% include "partials/_back_link.html" with target=url_dashboard label="Dashboard" %}
-  </div>
-  <div class="flex items-center justify-between mb-space-xl">
+<div class="max-w-6xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="inventory" subtitle="Stock Levels, Replenishment & Alerts" %}
+
+  <div class="flex items-center justify-between mb-space-lg">
     <div>
-      <h1 class="font-display text-2xl font-bold text-on-surface">INVENTORY</h1>
-      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Monitor stock levels and manage product availability</p>
+      <h1 class="font-display text-2xl font-bold text-on-surface">INVENTORY MONITOR</h1>
+      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Monitor stock levels, set replenishment thresholds &amp; manage availability</p>
     </div>
-    <a href="{% url 'admin_product_list' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
-      <span class="material-symbols-outlined text-[16px] mr-space-2xs">arrow_back</span>
-      Products
-    </a>
   </div>
 
   <!-- Summary Cards -->

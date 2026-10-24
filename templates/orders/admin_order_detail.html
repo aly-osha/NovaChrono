@@ -3,16 +3,18 @@
 {% block ticker %}{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-  {% url 'admin_order_list' as url_admin_orders %}
-  <div class="mb-space-md">
-    {% include "partials/_back_link.html" with target=url_admin_orders label="All Orders" %}
-  </div>
-
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-md mb-space-xl">
-    <div>
-      <h1 class="font-display text-2xl font-bold text-on-surface">Order #{{ order.pk }}</h1>
-      <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Placed {{ order.created_at|date:"M d, Y · H:i" }} by {{ order.buyer.email }}</p>
+<div class="max-w-5xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="orders" subtitle="Fulfillment Processing & Order Details" %}
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-md mb-space-lg">
+    <div class="flex items-center gap-space-sm">
+      <a href="{% url 'admin_order_list' %}" class="flex items-center gap-1 text-on-surface-variant hover:text-primary font-mono text-xs transition-colors bg-surface-container px-3 py-1.5 rounded-lg border border-surface-container-high">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        <span>Back to Orders</span>
+      </a>
+      <div>
+        <h1 class="font-display text-xl font-bold text-on-surface">Order #{{ order.pk }}</h1>
+        <p class="text-on-surface-variant text-xs font-mono">Placed {{ order.created_at|date:"M d, Y · H:i" }} by {{ order.buyer.email }}</p>
+      </div>
     </div>
     <div class="flex items-center gap-space-xs">
       <a href="{% url 'order_invoice_pdf' order.pk %}"

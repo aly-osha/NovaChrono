@@ -3,17 +3,15 @@
 {% block ticker %}{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto">
-  {% url 'admin_dashboard' as url_dashboard %}
-  <div class="mb-space-md">
-    {% include "partials/_back_link.html" with target=url_dashboard label="Dashboard" %}
-  </div>
-  <div class="flex items-center justify-between mb-space-xl">
+<div class="max-w-7xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="categories" subtitle="Category Hierarchy & Catalog Taxonomy" %}
+
+  <div class="flex items-center justify-between mb-space-lg">
     <div>
       <h1 class="font-display text-2xl font-bold text-on-surface">CATEGORIES</h1>
       <p class="text-on-surface-variant text-sm font-mono mt-space-2xs">Manage product categorization and hierarchy</p>
     </div>
-    <a href="{% url 'admin_category_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs">
+    <a href="{% url 'admin_category_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center gap-space-xs shadow-sm">
       <span class="material-symbols-outlined text-[16px]">add</span>
       Add Category
     </a>
