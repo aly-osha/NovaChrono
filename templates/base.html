@@ -226,33 +226,145 @@
                class="w-full pl-9 pr-3 py-1.5 rounded-full bg-surface-container border border-surface-container-high text-on-surface placeholder:text-outline font-mono text-[12px] focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
       </form>
 
-      <div class="flex items-center gap-space-md">
+      <div class="flex items-center gap-space-sm sm:gap-space-md">
         {% if user.is_authenticated %}
+          <!-- Alerts -->
           <a href="{% url 'notification_list' %}"
-             class="relative flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-mono text-[12px] hover:bg-surface-container-high transition-colors">
+             class="relative flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-mono text-[12px] hover:bg-surface-container-high transition-colors"
+             title="Notifications & Market Alerts">
             <span class="material-symbols-outlined text-[18px]">notifications</span>
-            <span>Alerts</span>
+            <span class="hidden sm:inline">Alerts</span>
             {% if NOTIFICATION_UNREAD > 0 %}
               <span class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold flex items-center justify-center">{{ NOTIFICATION_UNREAD }}</span>
             {% endif %}
           </a>
+
+          <!-- Cart -->
           <a href="{% url 'cart' %}" id="nav-cart-link"
-             class="relative flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-mono text-[12px] hover:bg-surface-container-high transition-colors">
+             class="relative flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container text-on-surface font-mono text-[12px] hover:bg-surface-container-high transition-colors"
+             title="Shopping Cart">
             <span class="material-symbols-outlined text-[18px]">shopping_cart</span>
-            <span>Cart</span>
+            <span class="hidden sm:inline">Cart</span>
             <span id="nav-cart-badge" class="{% if not CART_COUNT or CART_COUNT == 0 %}hidden {% endif %}absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary-container text-on-primary text-[10px] font-bold flex items-center justify-center">{{ CART_COUNT|default:0 }}</span>
           </a>
-          <a href="{% url 'profile' %}"
-             class="w-8 h-8 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors overflow-hidden">
-            <span class="text-[14px] truncate w-5">{{ user.get_full_name|default:user.email|truncatechars:10 }}</span>
-          </a>
-          {% if user.role in "admin,super_admin" %}
+
+          <!-- Admin Quick Action Button (Placed appropriately BEFORE profile menu) -->
+          {% if user.is_staff or user.is_superuser or user.role in "admin,super_admin" %}
             <a href="{% url 'admin_dashboard' %}"
-               class="px-space-sm py-space-xs rounded-lg bg-primary-container text-on-primary-container font-mono text-[12px] font-semibold hover:bg-inverse-primary transition-colors flex items-center gap-space-2xs">
+               class="flex items-center gap-2 px-space-sm py-space-xs rounded-lg bg-primary-container/20 border border-primary/50 text-primary-fixed hover:bg-primary hover:text-on-primary font-mono text-[12px] font-semibold transition-all shadow-[0_0_12px_rgba(121,40,202,0.25)]"
+               title="Admin Dashboard">
               <span class="material-symbols-outlined text-[16px]">dashboard</span>
-              <span class="hidden sm:inline">Admin</span>
+              <span class="hidden sm:inline">Dashboard</span>
             </a>
           {% endif %}
+
+          <!-- Collector Account Dropdown Pill -->
+          <div class="relative" id="user-menu-root">
+            <button id="user-menu-btn"
+                    type="button"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                    class="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-surface-container border border-surface-container-high hover:border-primary/50 text-on-surface hover:bg-surface-container-high transition-all group focus:outline-none focus:ring-1 focus:ring-primary/40">
+              <!-- Avatar Circle -->
+              <div class="w-7 h-7 rounded-full bg-gradient-to-tr from-primary to-secondary-fixed-dim text-white font-mono font-bold text-xs flex items-center justify-center shadow-inner uppercase">
+                {{ user.get_full_name|default:user.username|slice:":1" }}
+              </div>
+              <!-- User Name Display -->
+              <span class="font-mono text-[12px] font-medium text-on-surface max-w-[110px] truncate">
+                {{ user.get_full_name|default:user.username }}
+              </span>
+              {% if user.is_staff or user.is_superuser or user.role in "admin,super_admin" %}
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-mono font-bold bg-primary-container text-on-primary uppercase tracking-wider hidden sm:inline-block">
+                  Admin
+                </span>
+              {% endif %}
+              <!-- Chevron -->
+              <span class="material-symbols-outlined text-[16px] text-outline group-hover:text-primary transition-transform duration-200" id="user-menu-chevron">expand_more</span>
+            </button>
+
+            <!-- Floating Glassmorphic Dropdown Menu -->
+            <div id="user-menu-dropdown"
+                 class="hidden absolute right-0 mt-2 w-64 rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-surface-container-high p-space-xs shadow-[0_12px_36px_rgba(0,0,0,0.6)] z-50 transform origin-top-right transition-all duration-150">
+              <!-- Account Header Card -->
+              <div class="px-space-sm py-space-sm border-b border-surface-container-high mb-space-xs">
+                <div class="flex items-center gap-space-sm">
+                  <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-primary to-secondary-fixed-dim text-white font-mono font-bold text-sm flex items-center justify-center uppercase shrink-0">
+                    {{ user.get_full_name|default:user.username|slice:":1" }}
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <span class="font-display text-sm font-bold text-on-surface block truncate">{{ user.get_full_name|default:user.username }}</span>
+                    <span class="font-mono text-[11px] text-outline block truncate">{{ user.email }}</span>
+                  </div>
+                </div>
+                <div class="mt-2 flex items-center justify-between">
+                  <span class="text-[10px] font-mono uppercase tracking-wider text-outline">Status</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold {% if user.is_superuser or user.role in 'admin,super_admin' %}bg-primary-container text-on-primary{% else %}bg-surface-container text-secondary-fixed-dim{% endif %}">
+                    {{ user.role|default:'Collector'|title }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Admin Zone (Highlighted) -->
+              {% if user.is_staff or user.is_superuser or user.role in "admin,super_admin" %}
+                <div class="mb-space-md pb-space-md border-b border-surface-container-high">
+                  <span class="px-space-sm text-[10px] font-mono uppercase tracking-wider text-primary font-semibold block mb-2">Admin Panel</span>
+                  <a href="{% url 'admin_dashboard' %}"
+                     class="flex items-center gap-2 px-space-sm py-2.5 rounded-xl bg-primary-container/20 hover:bg-primary-container text-on-surface hover:text-on-primary font-mono text-[12px] font-semibold border border-primary/30 transition-all group">
+                    <span class="material-symbols-outlined text-[18px] text-primary group-hover:text-on-primary">dashboard</span>
+                    <span>Dashboard</span>
+                  </a>
+                  <div class="grid grid-cols-2 gap-1 mt-2">
+                    <a href="{% url 'admin_inventory' %}"
+                       class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px]">warehouse</span>
+                      Inventory
+                    </a>
+                    <a href="{% url 'admin_order_list' %}"
+                       class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
+                      <span class="material-symbols-outlined text-[15px]">shopping_bag</span>
+                      Orders
+                    </a>
+                  </div>
+                </div>
+              {% endif %}
+
+              <!-- Collector Links -->
+              <div class="space-y-space-lg">
+                <a href="{% url 'profile' %}"
+                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[18px] text-outline">badge</span>
+                  <span>Collector Profile</span>
+                </a>
+                <a href="{% url 'order_list' %}"
+                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[18px] text-outline">receipt_long</span>
+                  <span>Order History</span>
+                </a>
+                <a href="{% url 'wishlist' %}"
+                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[18px] text-outline">favorite</span>
+                  <span>Wishlist</span>
+                </a>
+                <a href="{% url 'address_list' %}"
+                   class="flex items-center gap-2.5 px-space-sm py-2 rounded-lg text-on-surface hover:text-primary hover:bg-surface-container font-mono text-[12px] transition-colors">
+                  <span class="material-symbols-outlined text-[18px] text-outline">location_on</span>
+                  <span>Delivery Addresses</span>
+                </a>
+              </div>
+
+              <!-- Sign Out -->
+              <div class="pt-space-lg mt-space-lg border-t border-surface-container-high">
+                <form method="post" action="{% url 'logout' %}">
+                  {% csrf_token %}
+                  <button type="submit"
+                          class="w-full flex items-center gap-2 px-space-sm py-2 rounded-lg text-error hover:bg-error/10 font-mono text-[12px] transition-colors text-left">
+                    <span class="material-symbols-outlined text-[18px]">logout</span>
+                    <span>Sign Out</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         {% else %}
           <a href="{% url 'login' %}"
              class="font-mono text-[12px] text-on-surface-variant hover:text-primary transition-colors uppercase tracking-wider">Sign In</a>
@@ -464,6 +576,43 @@
       const nav = document.querySelector('nav');
       if (nav) nav.classList.toggle('hidden');
     });
+
+    // Collector Profile User Menu dropdown toggle & accessibility
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userMenuDropdown = document.getElementById('user-menu-dropdown');
+    const userMenuChevron = document.getElementById('user-menu-chevron');
+
+    if (userMenuBtn && userMenuDropdown) {
+      userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isHidden = userMenuDropdown.classList.contains('hidden');
+        if (isHidden) {
+          userMenuDropdown.classList.remove('hidden');
+          userMenuBtn.setAttribute('aria-expanded', 'true');
+          if (userMenuChevron) userMenuChevron.style.transform = 'rotate(180deg)';
+        } else {
+          userMenuDropdown.classList.add('hidden');
+          userMenuBtn.setAttribute('aria-expanded', 'false');
+          if (userMenuChevron) userMenuChevron.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      document.addEventListener('click', function(e) {
+        if (!userMenuDropdown.classList.contains('hidden') && !userMenuDropdown.contains(e.target) && e.target !== userMenuBtn) {
+          userMenuDropdown.classList.add('hidden');
+          userMenuBtn.setAttribute('aria-expanded', 'false');
+          if (userMenuChevron) userMenuChevron.style.transform = 'rotate(0deg)';
+        }
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !userMenuDropdown.classList.contains('hidden')) {
+          userMenuDropdown.classList.add('hidden');
+          userMenuBtn.setAttribute('aria-expanded', 'false');
+          if (userMenuChevron) userMenuChevron.style.transform = 'rotate(0deg)';
+        }
+      });
+    }
 
     // Vault micro-interactions (ported from Stitch UI system):
     // wishlist hearts fill + pop on click for instant feedback.

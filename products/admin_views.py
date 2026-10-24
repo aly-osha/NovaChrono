@@ -32,6 +32,7 @@ def admin_game_create(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
         description = request.POST.get("description", "").strip()
+        image = request.FILES.get("image")
         if not name:
             if is_ajax:
                 return JsonResponse({"status": "error", "message": "Game name is required."}, status=400)
@@ -41,7 +42,7 @@ def admin_game_create(request):
                 return JsonResponse({"status": "error", "message": "A game with this name already exists."}, status=400)
             messages.error(request, "A game with this name already exists.")
         else:
-            game = Game.objects.create(name=name, description=description, is_active=True)
+            game = Game.objects.create(name=name, description=description, image=image, is_active=True)
             ActivityLog.objects.create(
                 admin_user=request.user,
                 action=f"Game created: {name}",
@@ -63,8 +64,13 @@ def admin_game_edit(request, pk):
     game = get_object_or_404(Game, pk=pk)
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
+        description = request.POST.get("description", "").strip()
+        image = request.FILES.get("image")
         if name and not Game.objects.filter(name__iexact=name).exclude(pk=pk).exists():
             game.name = name
+            game.description = description
+            if image:
+                game.image = image
             game.save()
             messages.success(request, f"Game updated to '{name}'.")
             return redirect("admin_game_list")

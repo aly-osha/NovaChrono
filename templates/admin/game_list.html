@@ -65,9 +65,13 @@
             <tr>
               <td class="px-space-md py-space-md">
                 <div class="flex items-center gap-space-3">
-                  <div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center shrink-0">
-                    <span class="font-display text-lg font-bold text-primary">{{ game.name|truncatechars:2|upper }}</span>
-                  </div>
+                  {% if game.image_url %}
+                    <img src="{{ game.image_url }}" alt="{{ game.name }} logo" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-surface-container-high">
+                  {% else %}
+                    <div class="w-10 h-10 rounded-lg bg-primary-container/20 flex items-center justify-center shrink-0">
+                      <span class="font-display text-lg font-bold text-primary">{{ game.name|truncatechars:2|upper }}</span>
+                    </div>
+                  {% endif %}
                   <span class="font-display text-base font-bold text-on-surface">{{ game.name }}</span>
                 </div>
               </td>

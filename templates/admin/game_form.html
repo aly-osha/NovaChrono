@@ -14,7 +14,7 @@
   </div>
 
   <div class="bg-surface-container rounded-xl p-space-lg border border-surface-container-high">
-    <form method="post" class="space-y-space-md">
+    <form method="post" enctype="multipart/form-data" class="space-y-space-md">
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next|default:'' }}">
       <div>
@@ -28,6 +28,16 @@
         <textarea name="description" rows="2"
                   class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 resize-none"
                   placeholder="Trading card game universe details...">{{ game.description|default:'' }}</textarea>
+      </div>
+      {% if game and game.image_url %}
+      <div>
+        <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Current Image</label>
+        <img src="{{ game.image_url }}" alt="{{ game.name }} logo" class="w-20 h-20 rounded-lg object-cover mb-space-sm">
+      </div>
+      {% endif %}
+      <div>
+        <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Logo Image (Optional)</label>
+        <input type="file" name="image" accept="image/*" class="w-full text-on-surface">
       </div>
       <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
         {% if title == 'Add Game' %}Create Game{% else %}Update Game{% endif %}

@@ -231,17 +231,23 @@
     {% for game in games %}
       {% with count=game.active_product_count %}
       <a href="{% url 'catalogue' %}?game={{ game.pk }}"
-         class="{% if forloop.counter0 == 0 %}lg:col-span-7{% elif forloop.counter0 == 1 %}lg:col-span-5{% else %}lg:col-span-4{% endif %} relative rounded-2xl overflow-hidden bg-surface-container group h-72 flex flex-col justify-end p-space-xl cursor-pointer shadow-lg hover:shadow-primary-container/20 transition-all border border-surface-container-high/60 hover:border-primary/50">
-        <div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/60 to-transparent"></div>
-        <div class="relative z-10 space-y-space-xs">
-          <div class="flex items-center gap-space-xs">
-            <span class="px-space-xs py-space-3xs rounded bg-surface-container-highest/90 text-primary font-mono text-[11px] font-semibold">{{ count }}+ PRODUCTS</span>
-          </div>
-          <h3 class="font-display text-2xl md:text-3xl font-bold text-on-surface">{{ game.name }}</h3>
-          <p class="text-on-surface-variant text-sm max-w-sm line-clamp-2">Explore the full catalogue of sealed products, singles, and accessories.</p>
-          <div class="pt-space-xs flex items-center gap-space-xs text-secondary-fixed-dim font-mono text-sm font-semibold group-hover:translate-x-1 transition-transform">
-            <span>Browse Collection</span>
-            <span class="material-symbols-outlined text-[16px]">north_east</span>
+         class="{% if forloop.counter0 == 0 %}lg:col-span-7{% elif forloop.counter0 == 1 %}lg:col-span-5{% else %}lg:col-span-4{% endif %} group relative rounded-2xl overflow-hidden bg-surface-container shadow-lg hover:shadow-primary-container/20 transition-all border border-surface-container-high/60 hover:border-primary/50">
+        {% if game.image_url %}
+          <img src="{{ game.image_url }}" alt="{{ game.name }} logo" class="absolute inset-0 w-full h-full object-cover z-0">
+        {% else %}
+          <div class="absolute inset-0 w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-container/20 to-secondary-fixed-dim/10 z-0"></div>
+        {% endif %}
+        <div class="relative z-10 flex flex-col h-full justify-end bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/80 to-transparent p-space-xl">
+          <div class="space-y-space-xs">
+            <div class="flex items-center gap-space-xs">
+              <span class="px-space-xs py-space-3xs rounded bg-surface-container-highest/90 text-primary font-mono text-[11px] font-semibold">{{ count }}+ PRODUCTS</span>
+            </div>
+            <h3 class="font-display text-2xl md:text-3xl font-bold text-on-surface">{{ game.name }}</h3>
+            <p class="text-on-surface-variant text-sm max-w-sm line-clamp-2">Explore the full catalogue of sealed products, singles, and accessories.</p>
+            <div class="pt-space-xs flex items-center gap-space-xs text-secondary-fixed-dim font-mono text-sm font-semibold group-hover:translate-x-1 transition-transform">
+              <span>Browse Collection</span>
+              <span class="material-symbols-outlined text-[16px]">north_east</span>
+            </div>
           </div>
         </div>
       </a>

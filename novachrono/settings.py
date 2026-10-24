@@ -32,13 +32,12 @@ else:
         if h.strip()
     ]
 
-# Behind the OpenShift route the edge terminates TLS and forwards plain HTTP
-# to the pod, so Django must trust X-Forwarded-Proto to see the real scheme
-# (otherwise request.is_secure() is False and CSRF origin checks fail).
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-USE_X_FORWARDED_HOST = True
-
 if not DEBUG:
+    # Behind the OpenShift route the edge terminates TLS and forwards plain HTTP
+    # to the pod, so Django must trust X-Forwarded-Proto to see the real scheme
+    # (otherwise request.is_secure() is False and CSRF origin checks fail).
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
     SECURE_SSL_REDIRECT = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
@@ -68,6 +67,33 @@ LOGIN_URL = "login"
 LOGIN_REDIRECT_URL = "home"
 # After signing out, land on the public home page rather than a protected one.
 LOGOUT_REDIRECT_URL = "home"
+
+# --- Session & CSRF Settings (dev-friendly) ---------------------------------
+# Allow localhost to be a trusted CSRF origin for local development
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "http://localhost:8001",
+    "http://127.0.0.1:8001",
+]
+
+# Production CSRF origins (OpenShift route)
+if not DEBUG:
+    # Behind the OpenShift route the edge terminates TLS and forwards plain HTTP
+    # to the pod, so Django must trust X-Forwarded-Proto to see the real scheme
+    # (otherwise request.is_secure() is False and CSRF origin checks fail).
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+    CSRF_TRUSTED_ORIGINS.extend([
+        "https://novachrono-ajaymmathewxyz-dev.apps.rm3.7wse.p1.openshiftapps.com",
+    ])
 
 INSTALLED_APPS = [
     "django.contrib.admin",

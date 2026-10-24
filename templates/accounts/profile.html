@@ -29,7 +29,7 @@
 
       <form method="post" class="space-y-space-md">
         {% csrf_token %}
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-lg">
           <div>
             <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Full Name</label>
             <input type="text" name="name" value="{{ user.get_full_name }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
@@ -38,9 +38,9 @@
             <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Email</label>
             <input type="email" name="email" value="{{ user.email }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" readonly/>
           </div>
-          <div>
+          <div class="sm:col-span-2">
             <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Phone</label>
-            <input type="tel" name="phone" value="{{ user.phone }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
+            <input type="tel" name="phone" value="{{ user.phone }}" placeholder="+1 (555) 123-4567" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
           </div>
         </div>
         <button type="submit" class="px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
@@ -50,35 +50,36 @@
     </div>
 
     <!-- Sidebar -->
-    <div class="space-y-space-md">
-      <a href="{% url 'address_list' %}"
-         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
-        <span class="flex items-center gap-space-xs">
+    <div class="space-y-space-lg">
+      <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:bg-surface-container-high transition-colors">
+        <a href="{% url 'address_list' %}" class="flex items-center gap-space-sm">
           <span class="material-symbols-outlined text-secondary-fixed-dim">location_on</span>
           <span class="font-mono text-sm text-on-surface">Delivery Addresses</span>
-        </span>
-      </a>
-      <a href="{% url 'wishlist' %}"
-         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
-        <span class="flex items-center gap-space-xs">
+        </a>
+      </div>
+      <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:bg-surface-container-high transition-colors">
+        <a href="{% url 'wishlist' %}" class="flex items-center gap-space-sm">
           <span class="material-symbols-outlined text-secondary-fixed-dim">favorite</span>
           <span class="font-mono text-sm text-on-surface">Wishlist</span>
-        </span>
-      </a>
-      <a href="{% url 'order_list' %}"
-         class="block p-space-md rounded-xl bg-surface-container hover:bg-surface-container-high border border-surface-container-high transition-colors">
-        <span class="flex items-center gap-space-xs">
+        </a>
+      </div>
+      <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:bg-surface-container-high transition-colors">
+        <a href="{% url 'order_list' %}" class="flex items-center gap-space-sm">
           <span class="material-symbols-outlined text-secondary-fixed-dim">receipt_long</span>
           <span class="font-mono text-sm text-on-surface">Order History</span>
-        </span>
-      </a>
-      <form method="post" action="{% url 'logout' %}" class="pt-space-md">
-        {% csrf_token %}
-        <button type="submit" class="w-full py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-error transition-colors">
-          LOG OUT
-        </button>
-      </form>
+        </a>
+      </div>
+      <div class="pt-space-lg">
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="w-full py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-error transition-colors">
+            LOG OUT
+          </button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 {% endblock %}
+
+{% block messages %}{% endblock %}

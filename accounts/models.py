@@ -64,8 +64,16 @@ class User(AbstractUser):
         return self.name or self.get_username()
 
     @property
+    def role(self):
+        if self.is_superuser:
+            return "super_admin"
+        if self.is_staff:
+            return "admin"
+        return "buyer"
+
+    @property
     def is_admin_role(self):
-        return self.is_superuser
+        return self.is_superuser or self.is_staff
 
 
 class Address(models.Model):

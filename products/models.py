@@ -19,6 +19,7 @@ class Game(models.Model):
     """Schema table: games (game_id, name UNIQUE, description, is_active, ts)."""
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True, default="")
+    image = models.ImageField(upload_to="games/", blank=True, null=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -30,6 +31,11 @@ class Game(models.Model):
 
     def __str__(self):
         return self.name
+
+    @property
+    def image_url(self):
+        """Safely get image URL, returns None if no image."""
+        return self.image.url if self.image and self.image.name else None
 
     @property
     def active_product_count(self):
