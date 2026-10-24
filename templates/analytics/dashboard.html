@@ -14,14 +14,23 @@
       <h1 class="font-display text-2xl font-bold text-on-surface tracking-tight">Dashboard Overview</h1>
       <p class="text-on-surface-variant text-sm mt-space-1 max-w-2xl">Sales, inventory, and system metrics in real-time.</p>
     </div>
-    <div class="flex gap-space-sm">
-      <a href="{% url 'admin_inventory' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-sm hover:bg-surface-container hover:text-primary transition-colors">
+    <!-- Quick Action Buttons -->
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'admin_inventory' %}" class="px-space-md py-space-sm rounded-lg bg-secondary-container/20 text-secondary-fixed-dim font-mono text-sm hover:bg-secondary-container hover:text-on-secondary transition-colors">
         <span class="material-symbols-outlined text-[18px] mr-space-2xs">inventory_2</span>
         Inventory
       </a>
       <a href="{% url 'admin_product_create' %}" class="px-space-md py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
         <span class="material-symbols-outlined text-[18px]">add_circle</span>
         + Add Product
+      </a>
+      <a href="{% url 'admin_game_list' %}" class="px-space-md py-space-sm rounded-lg bg-tertiary-container/20 text-tertiary-fixed-dim font-mono text-sm hover:bg-tertiary-container hover:text-on-tertiary transition-colors">
+        <span class="material-symbols-outlined text-[18px] mr-space-2xs">sports_esports</span>
+        Games
+      </a>
+      <a href="{% url 'admin_order_list' %}" class="px-space-md py-space-sm rounded-lg bg-success/20 text-success font-mono text-sm hover:bg-success hover:text-on-success transition-colors">
+        <span class="material-symbols-outlined text-[18px] mr-space-2xs">receipt_long</span>
+        Orders
       </a>
     </div>
   </div>
