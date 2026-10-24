@@ -308,21 +308,63 @@
               {% if user.is_staff or user.is_superuser or user.role in "admin,super_admin" %}
                 <div class="mb-space-md pb-space-md border-b border-surface-container-high">
                   <span class="px-space-sm text-[10px] font-mono uppercase tracking-wider text-primary font-semibold block mb-2">Admin Panel</span>
-                  <a href="{% url 'admin_dashboard' %}"
-                     class="flex items-center gap-2 px-space-sm py-2.5 rounded-xl bg-primary-container/20 hover:bg-primary-container text-on-surface hover:text-on-primary font-mono text-[12px] font-semibold border border-primary/30 transition-all group">
-                    <span class="material-symbols-outlined text-[18px] text-primary group-hover:text-on-primary">dashboard</span>
-                    <span>Dashboard</span>
-                  </a>
-                  <div class="grid grid-cols-2 gap-1 mt-2">
+                  
+                  <!-- All Admin Links in a Clean Grid -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-x space-x-sm gap-y-1">
+                    <a href="{% url 'admin_dashboard' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-primary-container/20 hover:bg-primary-container text-on-surface hover:text-on-primary font-mono text-[12px] font-semibold border border-primary/30 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-primary group-hover:text-on-primary">dashboard</span>
+                      Dashboard
+                    </a>
                     <a href="{% url 'admin_inventory' %}"
-                       class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
-                      <span class="material-symbols-outlined text-[15px]">warehouse</span>
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-secondary-container/20 hover:bg-secondary-container text-on-surface hover:text-on-secondary font-mono text-[12px] font-semibold border border-secondary/30 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-secondary-fixed-dim group-hover:text-on-secondary">inventory_2</span>
                       Inventory
                     </a>
+                    <a href="{% url 'admin_game_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-tertiary-container/20 hover:bg-tertiary-container text-on-surface hover:text-on-tertiary font-mono text-[12px] font-semibold border border-tertiary/30 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-tertiary-fixed group-hover:text-on-tertiary">sports_esports</span>
+                      Games
+                    </a>
+                    <a href="{% url 'admin_product_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-primary/20 hover:bg-primary text-on-primary font-mono text-[12px] font-semibold border border-primary/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-primary group-hover:text-on-primary">shopping_cart</span>
+                      Products
+                    </a>
+                    <a href="{% url 'admin_set_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-error/20 hover:bg-error text-on-error font-mono text-[12px] font-semibold border border-error/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-error group-hover:text-on-error">inventory_2</span>
+                      Sets
+                    </a>
                     <a href="{% url 'admin_order_list' %}"
-                       class="flex items-center gap-1.5 px-space-sm py-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container font-mono text-[11px] transition-colors">
-                      <span class="material-symbols-outlined text-[15px]">shopping_bag</span>
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-success/20 hover:bg-success text-on-success font-mono text-[12px] font-semibold border border-success/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px] text-success group-hover:text-on-success">receipt_long</span>
                       Orders
+                    </a>
+                    <a href="{% url 'admin_category_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-purple-500/20 hover:bg-purple-500 text-on-surface font-mono text-[12px] font-semibold border border-purple-500/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px]">list</span>
+                      Categories
+                    </a>
+                    <a href="{% url 'admin_review_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500 text-on-surface font-mono text-[12px] font-semibold border border-cyan-500/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px]">star</span>
+                      Reviews
+                    </a>
+                    <a href="{% url 'admin_certificate_list' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-amber-500/20 hover:bg-amber-500 text-on-surface font-mono text-[12px] font-semibold border border-amber-500/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                      Certificates
+                    </a>
+                    <a href="{% url 'admin_activity_log' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-red-500/20 hover:bg-red-500 text-on-surface font-mono text-[12px] font-semibold border border-red-500/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px]">history</span>
+                      Activity Log
+                    </a>
+                    <a href="{% url 'system_settings' %}"
+                       class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-indigo-500/20 hover:bg-indigo-500 text-on-surface font-mono text-[12px] font-semibold border border-indigo-500/40 transition-all group">
+                      <span class="material-symbols-outlined text-[18px]">settings</span>
+                      Settings
                     </a>
                   </div>
                 </div>
