@@ -20,7 +20,7 @@
     <div class="space-y-space-md">
       {% for order in orders %}
         <div class="bg-surface-container rounded-xl overflow-hidden border border-surface-container-high hover:border-surface-container-high transition-colors">
-          <div class="flex">
+          <div class="flex flex-col md:flex-row">
             <!-- Order info -->
             <div class="flex-1 p-space-lg">
               <div class="flex items-center justify-between mb-space-sm">
@@ -35,16 +35,48 @@
                 </span>
               </div>
 
-              <div class="flex flex-wrap gap-space-2xs mt-space-md">
-                {% for item in order.items.all %}
-                  <span class="bg-surface-container-high px-space-sm py-space-2xs rounded-full font-mono text-[11px] text-on-surface-variant">
-                    {{ item.quantity }}× {{ item.product.name|truncatechars:20 }}
-                  </span>
-                {% endfor %}
+              <!-- Product items with small image boxes -->
+              <div class="mt-space-md">
+                <div class="font-mono text-[10px] text-outline uppercase tracking-wider mb-space-xs">Items in this order</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-xs">
+                  {% for item in order.items.all %}
+                    <a href="{% url 'product_detail' item.product.pk %}"
+                       class="group flex items-center gap-space-sm p-2 rounded-lg bg-surface-container-high/60 hover:bg-surface-container-high border border-surface-container-highest/60 hover:border-primary/40 transition-all">
+                      <!-- Small Image Box -->
+                      <div class="w-12 h-12 rounded-lg bg-surface-container-lowest overflow-hidden shrink-0 border border-surface-container-highest/80 flex items-center justify-center relative shadow-inner">
+                        {% if item.product.images.first %}
+                          <img src="{{ item.product.images.first.image.url }}"
+                               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                               alt="{{ item.product.name }}"/>
+                        {% elif item.product.primary_image %}
+                          <img src="{{ item.product.primary_image.image.url }}"
+                               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                               alt="{{ item.product.name }}"/>
+                        {% else %}
+                          <div class="w-full h-full flex items-center justify-center bg-surface-container-high text-outline">
+                            <span class="material-symbols-outlined text-[18px]">image</span>
+                          </div>
+                        {% endif %}
+                      </div>
+
+                      <div class="min-w-0 flex-1">
+                        <span class="font-display text-xs font-bold text-on-surface truncate block group-hover:text-primary transition-colors">
+                          {{ item.product.name }}
+                        </span>
+                        <div class="flex items-center gap-space-xs mt-0.5 font-mono text-[11px]">
+                          <span class="text-on-surface-variant font-medium">Qty: {{ item.quantity }}</span>
+                          <span class="text-outline text-[10px]">·</span>
+                          <span class="text-secondary-fixed font-semibold">₹{{ item.unit_price }}</span>
+                        </div>
+                      </div>
+                    </a>
+                  {% endfor %}
+                </div>
               </div>
 
               <div class="mt-space-md flex items-center gap-space-2xs text-sm">
-                <span class="text-on-surface-variant font-mono">Shipping to:</span>
+                <span class="material-symbols-outlined text-[16px] text-outline">local_shipping</span>
+                <span class="text-on-surface-variant font-mono text-xs">Shipping to:</span>
                 <span class="text-on-surface font-mono text-xs truncate max-w-[300px]">
                   {{ order.shipping_address.line1 }}, {{ order.shipping_address.city }}
                 </span>
@@ -52,9 +84,12 @@
             </div>
 
             <!-- Amount -->
-            <div class="p-space-lg text-right border-l border-surface-container-high">
-              <div class="font-display text-2xl font-bold text-secondary-fixed">₹{{ order.total_amount }}</div>
-              <div class="mt-space-sm flex items-center justify-end gap-space-xs">
+            <div class="p-space-lg flex flex-col justify-between sm:w-48 shrink-0 border-t md:border-t-0 md:border-l border-surface-container-high text-right">
+              <div>
+                <span class="block font-mono text-[10px] text-outline uppercase tracking-wider mb-1">Total</span>
+                <div class="font-display text-2xl font-bold text-secondary-fixed">₹{{ order.total_amount }}</div>
+              </div>
+              <div class="mt-space-md flex items-center justify-end gap-space-xs">
                 <a href="{% url 'order_invoice_pdf' order.pk %}"
                    title="Download Invoice PDF"
                    class="inline-flex items-center gap-space-2xs px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container hover:text-primary transition-colors">

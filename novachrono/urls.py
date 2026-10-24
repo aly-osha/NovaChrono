@@ -31,6 +31,7 @@ urlpatterns = [
     path("login/", accounts.login_view, name="login"),
     path("logout/", accounts.logout_view, name="logout"),
     path("profile/", accounts.profile, name="profile"),
+    path("password-change/", accounts.password_change, name="password_change"),
     path("addresses/", accounts.address_list, name="address_list"),
     path("addresses/add/", accounts.address_create, name="address_create"),
     path("addresses/<int:pk>/edit/", accounts.address_edit, name="address_edit"),

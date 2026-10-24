@@ -166,7 +166,7 @@ def order_list(request):
     orders = (
         request.user.orders
         .select_related("shipping_address")
-        .prefetch_related("items__product")
+        .prefetch_related("items__product__images")
         .all()
     )
     return render(request, "orders/order_list.html", {"orders": orders})
@@ -224,7 +224,7 @@ def admin_order_list(request):
         Order.objects
         .select_related("buyer", "shipping_address")
         .annotate(item_count=Count("items"))
-        .prefetch_related("items__product")
+        .prefetch_related("items__product__images")
         .all()
     )
     return render(request, "orders/admin_order_list.html", {"orders": orders})

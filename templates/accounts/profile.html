@@ -43,14 +43,29 @@
             <input type="tel" name="phone" value="{{ user.phone }}" placeholder="+1 (555) 123-4567" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all"/>
           </div>
         </div>
-        <button type="submit" class="px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
-          SAVE CHANGES
-        </button>
+        <div class="flex items-center gap-space-sm flex-wrap pt-space-xs">
+          <button type="submit" class="px-space-lg py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors shadow-sm">
+            SAVE CHANGES
+          </button>
+          <a href="{% url 'password_change' %}" class="px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-highest text-on-surface hover:text-primary hover:border-primary font-mono text-sm font-medium transition-all inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px] text-primary">lock_reset</span>
+            <span>Change Password</span>
+          </a>
+        </div>
       </form>
     </div>
 
     <!-- Sidebar -->
-    <div class="space-y-space-lg">
+    <div class="space-y-space-md">
+      <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:bg-surface-container-high transition-colors">
+        <a href="{% url 'password_change' %}" class="flex items-center justify-between">
+          <div class="flex items-center gap-space-sm">
+            <span class="material-symbols-outlined text-primary">lock_reset</span>
+            <span class="font-mono text-sm text-on-surface font-medium">Change Password</span>
+          </div>
+          <span class="material-symbols-outlined text-[16px] text-outline">chevron_right</span>
+        </a>
+      </div>
       <div class="bg-surface-container rounded-xl p-space-md border border-surface-container-high hover:bg-surface-container-high transition-colors">
         <a href="{% url 'address_list' %}" class="flex items-center gap-space-sm">
           <span class="material-symbols-outlined text-secondary-fixed-dim">location_on</span>
