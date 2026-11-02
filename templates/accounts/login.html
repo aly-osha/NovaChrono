@@ -28,8 +28,13 @@
         <input type="email" name="email" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="collector@example.com" required/>
       </div>
       <div>
-        <label class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Password</label>
-        <input type="password" name="password" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="••••••••" required/>
+        <label for="id_password" class="font-mono text-[11px] uppercase tracking-widest text-outline block mb-space-2xs">Password</label>
+        <div class="relative">
+          <input type="password" id="id_password" name="password" class="w-full pl-space-md pr-11 py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-body text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30 transition-all" placeholder="••••••••" required/>
+          <button type="button" onclick="togglePasswordVisibility('id_password', this)" class="absolute inset-y-0 right-0 flex items-center pr-space-md text-outline hover:text-on-surface focus:outline-none transition-colors" title="Show password" aria-label="Show password">
+            <span class="material-symbols-outlined text-[20px] select-none">visibility</span>
+          </button>
+        </div>
       </div>
       <button type="submit" class="w-full py-space-sm rounded-lg bg-primary-container text-on-primary font-mono text-sm font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors flex items-center justify-center gap-space-xs">
         <span class="material-symbols-outlined">login</span>

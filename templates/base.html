@@ -800,6 +800,21 @@
         return null;
       });
     };
+
+    // Global password visibility toggle handler
+    window.togglePasswordVisibility = function(inputId, btn) {
+      const input = document.getElementById(inputId);
+      if (!input) return;
+      const icon = btn.querySelector('.material-symbols-outlined');
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      if (icon) {
+        icon.textContent = isPassword ? 'visibility_off' : 'visibility';
+      }
+      const label = isPassword ? 'Hide password' : 'Show password';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    };
   </script>
   {% block extra_js %}{% endblock %}
 </body>
