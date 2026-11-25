@@ -269,33 +269,40 @@ def admin_product_create(request):
     if request.method == "POST":
         name = request.POST.get("name", "").strip()
         description = request.POST.get("description", "")
-        price = request.POST.get("price", "0")
-        stock = request.POST.get("stock", "0")
+        price = request.POST.get("price", "0").strip()
+        raw_stock = request.POST.get("stock", "").strip()
         product_type = request.POST.get("product_type", "sealed")
         game_id = request.POST.get("game")
         set_id = request.POST.get("set")
         category_id = request.POST.get("category")
 
+        error_ctx = {
+            "games": games,
+            "sets": sets,
+            "categories": categories,
+            "title": "Add Product",
+            "form_data": request.POST,
+        }
+
         if not name or not price:
             messages.error(request, "Name and price are required.")
-            return render(request, "admin/product_form.html", {
-                "games": games, "sets": sets, "categories": categories,
-                "title": "Add Product",
-            })
+            return render(request, "admin/product_form.html", error_ctx)
+
+        try:
+            stock = int(raw_stock)
+            if stock < 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Stock quantity must be a non-negative whole number.")
+            return render(request, "admin/product_form.html", error_ctx)
 
         if not game_id:
             messages.error(request, "Game is required.")
-            return render(request, "admin/product_form.html", {
-                "games": games, "sets": sets, "categories": categories,
-                "title": "Add Product",
-            })
+            return render(request, "admin/product_form.html", error_ctx)
 
         if not category_id:
             messages.error(request, "Category is required.")
-            return render(request, "admin/product_form.html", {
-                "games": games, "sets": sets, "categories": categories,
-                "title": "Add Product",
-            })
+            return render(request, "admin/product_form.html", error_ctx)
 
         with transaction.atomic():
             product = Product.objects.create(
@@ -371,10 +378,19 @@ def admin_product_edit(request, pk):
         gallery_images = existing_images[1:]
 
     if request.method == "POST":
+        raw_stock = request.POST.get("stock", "").strip()
+        try:
+            new_stock = int(raw_stock)
+            if new_stock < 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Stock quantity must be a non-negative whole number.")
+            return redirect("admin_product_edit", pk=pk)
+
         product.name = request.POST.get("name", "").strip()
         product.description = request.POST.get("description", "")
         product.price = request.POST.get("price", "0")
-        product.stock = request.POST.get("stock", "0")
+        product.stock = new_stock
         product.product_type = request.POST.get("product_type", "sealed")
         game_id = request.POST.get("game")
         if game_id:
@@ -435,6 +451,9 @@ def admin_product_edit(request, pk):
                 ProductImage.objects.create(product=product, image=img, sort_order=curr_order)
                 curr_order += 1
 
+        from notifications.monitoring import run_monitoring_for_product
+        run_monitoring_for_product(product)
+
         ActivityLog.objects.create(
             admin_user=request.user,
             action=f"Product updated: {product.name}",
@@ -474,6 +493,8 @@ def admin_product_toggle(request, pk):
     p = get_object_or_404(Product, pk=pk)
     p.is_active = not p.is_active
     p.save(update_fields=["is_active", "updated_at"])
+    from notifications.monitoring import run_monitoring_for_product
+    run_monitoring_for_product(p)
     messages.success(
         request,
         f"{p.name} {'activated' if p.is_active else 'deactivated'}.",
@@ -574,12 +595,8 @@ def admin_inventory_update(request, pk):
         p.stock = new_stock
         p.save(update_fields=["stock", "updated_at"])
 
-        if new_stock == 0:
-            from wishlists.models import WishlistItem
-            WishlistItem.objects.filter(product=p).update(was_out_of_stock=True)
-        elif old_stock == 0 and new_stock > 0:
-            from notifications.monitoring import run_monitoring
-            run_monitoring()
+        from notifications.monitoring import run_monitoring_for_product
+        run_monitoring_for_product(p)
 
         ActivityLog.objects.create(
             admin_user=request.user,

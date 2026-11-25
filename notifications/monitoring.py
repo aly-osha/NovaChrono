@@ -130,6 +130,19 @@ def run_monitoring():
     return checked, created
 
 
+def run_monitoring_for_product(product):
+    """Evaluate wishlist watchers for a single product after a stock/price/active change."""
+    items = (
+        WishlistItem.objects
+        .filter(product=product)
+        .select_related("product", "wishlist", "wishlist__buyer")
+    )
+    created = []
+    for item in items:
+        created.extend(check_wishlist_item(item))
+    return created
+
+
 def unread_count(user):
     """Badge count for the nav bell."""
     return user.notifications.filter(is_read=False).count()

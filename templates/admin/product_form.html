@@ -58,11 +58,11 @@
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
         <div>
           <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Price (₹) *</label>
-          <input type="number" name="price" step="0.01" min="0" value="{{ product.price|default:'' }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="5000.00" required/>
+          <input type="number" name="price" step="0.01" min="0" value="{% if product %}{{ product.price }}{% elif form_data.price %}{{ form_data.price }}{% endif %}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="5000.00" required/>
         </div>
         <div>
           <label class="font-mono text-[11px] text-outline uppercase tracking-widest block mb-space-2xs">Stock Quantity *</label>
-          <input type="number" name="stock" min="0" value="{{ product.stock|default:0 }}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="100" required/>
+          <input type="number" name="stock" min="0" value="{% if product %}{{ product.stock }}{% elif form_data.stock is not None %}{{ form_data.stock }}{% endif %}" class="w-full px-space-md py-space-sm rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-sm focus:outline-none focus:border-secondary-fixed focus:ring-1 focus:ring-secondary-fixed/30" placeholder="100" required/>
         </div>
       </div>
     </div>
