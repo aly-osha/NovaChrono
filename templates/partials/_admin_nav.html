@@ -88,6 +88,13 @@
       <span>Orders</span>
     </a>
 
+    <!-- 5. Users -->
+    <a href="{% url 'admin_user_list' %}"
+       class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'users' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">
+      <span class="material-symbols-outlined text-[17px]">group</span>
+      <span>Users</span>
+    </a>
+
     <!-- 5. Games -->
     <a href="{% url 'admin_game_list' %}"
        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-mono text-xs font-semibold shrink-0 transition-all {% if active == 'games' %}bg-primary-container text-on-primary shadow-sm{% else %}text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high{% endif %}">

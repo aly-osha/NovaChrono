@@ -2,11 +2,12 @@
 accounts/views.py
 """
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db import transaction
+from django.db.models import Count, Q
 from django.views.decorators.http import require_http_methods, require_POST
 from django import forms
 from django.urls import reverse
@@ -255,3 +256,118 @@ def address_delete(request, pk):
                 replacement.save(update_fields=["is_default", "updated_at"])
     messages.success(request, "Address removed.")
     return redirect("address_list")
+
+
+# ---- Admin user management views ----
+
+def _is_admin(user):
+    return user.is_authenticated and user.is_superuser
+
+
+class AdminUserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["name", "phone", "status", "is_superuser"]
+
+
+@login_required
+@user_passes_test(_is_admin)
+def admin_user_list(request):
+    q = request.GET.get("q", "").strip()
+    role_filter = request.GET.get("role", "").strip()
+    status_filter = request.GET.get("status", "").strip()
+
+    users_qs = User.objects.annotate(
+        order_count=Count("orders", distinct=True),
+        address_count=Count("addresses", distinct=True),
+    ).order_by("-date_joined")
+
+    if q:
+        users_qs = users_qs.filter(
+            Q(email__icontains=q) | Q(name__icontains=q) | Q(phone__icontains=q)
+        )
+    if role_filter == "admin":
+        users_qs = users_qs.filter(is_superuser=True)
+    elif role_filter == "buyer":
+        users_qs = users_qs.filter(is_superuser=False)
+    if status_filter in {"active", "inactive", "suspended"}:
+        users_qs = users_qs.filter(status=status_filter)
+
+    stats = {
+        "total": User.objects.count(),
+        "active": User.objects.filter(status="active").count(),
+        "suspended": User.objects.filter(status="suspended").count(),
+        "admins": User.objects.filter(is_superuser=True).count(),
+    }
+
+    return render(request, "admin/user_list.html", {
+        "users": users_qs,
+        "stats": stats,
+        "q": q,
+        "role_filter": role_filter,
+        "status_filter": status_filter,
+    })
+
+
+@login_required
+@user_passes_test(_is_admin)
+def admin_user_detail(request, pk):
+    target_user = get_object_or_404(User, pk=pk)
+    if request.method == "POST":
+        form = AdminUserEditForm(request.POST, instance=target_user)
+        if form.is_valid():
+            updated = form.save(commit=False)
+            if target_user.pk == request.user.pk:
+                if updated.status != "active":
+                    messages.error(request, "You cannot suspend or deactivate your own admin account.")
+                    return redirect("admin_user_detail", pk=pk)
+                if not updated.is_superuser:
+                    messages.error(request, "You cannot remove your own admin privileges.")
+                    return redirect("admin_user_detail", pk=pk)
+            updated.save()
+            messages.success(request, f"Updated user {target_user.email}.")
+            return redirect("admin_user_detail", pk=pk)
+    else:
+        form = AdminUserEditForm(instance=target_user)
+
+    addresses = target_user.addresses.order_by("-is_default", "-updated_at")
+    orders = target_user.orders.order_by("-created_at")[:10]
+    return render(request, "admin/user_detail.html", {
+        "target_user": target_user,
+        "form": form,
+        "addresses": addresses,
+        "orders": orders,
+    })
+
+
+@login_required
+@user_passes_test(_is_admin)
+@require_POST
+def admin_user_toggle_status(request, pk):
+    target_user = get_object_or_404(User, pk=pk)
+    if target_user.pk == request.user.pk:
+        messages.error(request, "You cannot suspend your own admin account.")
+        return redirect("admin_user_list")
+
+    target_user.status = "suspended" if target_user.status == "active" else "active"
+    target_user.save(update_fields=["status", "updated_at"])
+    messages.success(request, f"{target_user.email} is now {target_user.get_status_display()}.")
+    next_url = _safe_next_url(request.POST.get("next", ""), request) if request.POST.get("next") else ""
+    return redirect(next_url or "admin_user_list")
+
+
+@login_required
+@user_passes_test(_is_admin)
+@require_POST
+def admin_user_toggle_role(request, pk):
+    target_user = get_object_or_404(User, pk=pk)
+    if target_user.pk == request.user.pk:
+        messages.error(request, "You cannot remove your own admin privileges.")
+        return redirect("admin_user_list")
+
+    target_user.is_superuser = not target_user.is_superuser
+    target_user.save()
+    role_label = "Admin" if target_user.is_superuser else "Customer"
+    messages.success(request, f"{target_user.email} role set to {role_label}.")
+    next_url = _safe_next_url(request.POST.get("next", ""), request) if request.POST.get("next") else ""
+    return redirect(next_url or "admin_user_list")

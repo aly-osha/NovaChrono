@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}User Management — NovaChrono Admin{% endblock %}
+{% block ticker %}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+  {% include "partials/_admin_nav.html" with active="users" subtitle="Manage customer accounts, roles, and access" %}
+
+  <!-- Stats Row -->
+  <div class="grid grid-cols-2 sm:grid-cols-4 gap-space-md mb-space-xl">
+    <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high">
+      <span class="font-mono text-[10px] text-outline uppercase tracking-widest block">Total Users</span>
+      <span class="font-display text-2xl font-bold text-on-surface">{{ stats.total }}</span>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high">
+      <span class="font-mono text-[10px] text-outline uppercase tracking-widest block">Active</span>
+      <span class="font-display text-2xl font-bold text-tertiary">{{ stats.active }}</span>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high">
+      <span class="font-mono text-[10px] text-outline uppercase tracking-widest block">Suspended</span>
+      <span class="font-display text-2xl font-bold text-error">{{ stats.suspended }}</span>
+    </div>
+    <div class="p-space-md rounded-xl bg-surface-container-low border border-surface-container-high">
+      <span class="font-mono text-[10px] text-outline uppercase tracking-widest block">Admins</span>
+      <span class="font-display text-2xl font-bold text-primary">{{ stats.admins }}</span>
+    </div>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <form method="get" class="bg-surface-container rounded-xl p-space-md border border-surface-container-high mb-space-lg flex flex-col sm:flex-row gap-space-sm items-stretch sm:items-center">
+    <div class="flex-1 relative">
+      <input type="text" name="q" value="{{ q }}" placeholder="Search by email, name, or phone..."
+             class="w-full px-space-md py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-xs focus:outline-none focus:border-primary"/>
+    </div>
+    <select name="role" class="px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-xs">
+      <option value="">All Roles</option>
+      <option value="buyer" {% if role_filter == 'buyer' %}selected{% endif %}>Customers</option>
+      <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+    </select>
+    <select name="status" class="px-space-sm py-space-xs rounded-lg bg-surface-container-high border border-surface-container-high text-on-surface font-mono text-xs">
+      <option value="">All Statuses</option>
+      <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+      <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+      <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+    </select>
+    <button type="submit" class="px-space-md py-space-xs rounded-lg bg-primary-container text-on-primary font-mono text-xs font-semibold hover:bg-primary hover:text-on-primary-fixed transition-colors">
+      Filter
+    </button>
+    {% if q or role_filter or status_filter %}
+      <a href="{% url 'admin_user_list' %}" class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs text-center hover:text-on-surface">
+        Reset
+      </a>
+    {% endif %}
+  </form>
+
+  <!-- Users Table -->
+  <div class="bg-surface-container rounded-xl border border-surface-container-high overflow-hidden">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-surface-container-high bg-surface-container-low font-mono text-[10px] uppercase tracking-widest text-outline">
+            <th class="px-space-md py-space-sm">User</th>
+            <th class="px-space-md py-space-sm">Role</th>
+            <th class="px-space-md py-space-sm">Status</th>
+            <th class="px-space-md py-space-sm text-center">Orders</th>
+            <th class="px-space-md py-space-sm text-center">Addresses</th>
+            <th class="px-space-md py-space-sm">Joined</th>
+            <th class="px-space-md py-space-sm text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-surface-container-high text-sm">
+          {% for u in users %}
+            <tr class="hover:bg-surface-container-high/40 transition-colors">
+              <td class="px-space-md py-space-sm">
+                <a href="{% url 'admin_user_detail' u.pk %}" class="font-display font-bold text-on-surface hover:text-primary transition-colors block">
+                  {{ u.name|default:u.username }}
+                </a>
+                <span class="font-mono text-xs text-on-surface-variant">{{ u.email }}</span>
+                {% if u.phone %}
+                  <span class="font-mono text-[11px] text-outline block">{{ u.phone }}</span>
+                {% endif %}
+              </td>
+              <td class="px-space-md py-space-sm">
+                {% if u.is_superuser %}
+                  <span class="px-2 py-0.5 rounded bg-primary-container/20 text-primary font-mono text-[10px] font-bold uppercase">Admin</span>
+                {% else %}
+                  <span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-mono text-[10px] uppercase">Customer</span>
+                {% endif %}
+              </td>
+              <td class="px-space-md py-space-sm">
+                {% if u.status == 'active' %}
+                  <span class="px-2 py-0.5 rounded bg-tertiary-container/20 text-tertiary font-mono text-[10px] font-bold uppercase">Active</span>
+                {% elif u.status == 'suspended' %}
+                  <span class="px-2 py-0.5 rounded bg-error/15 text-error font-mono text-[10px] font-bold uppercase">Suspended</span>
+                {% else %}
+                  <span class="px-2 py-0.5 rounded bg-surface-container-high text-outline font-mono text-[10px] uppercase">{{ u.get_status_display }}</span>
+                {% endif %}
+              </td>
+              <td class="px-space-md py-space-sm text-center font-mono text-xs text-on-surface">{{ u.order_count }}</td>
+              <td class="px-space-md py-space-sm text-center font-mono text-xs text-on-surface">{{ u.address_count }}</td>
+              <td class="px-space-md py-space-sm font-mono text-xs text-on-surface-variant">{{ u.date_joined|date:"M d, Y" }}</td>
+              <td class="px-space-md py-space-sm text-right">
+                <div class="inline-flex items-center gap-space-xs">
+                  <a href="{% url 'admin_user_detail' u.pk %}" class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface-variant hover:text-primary font-mono text-[11px] transition-colors">
+                    Manage
+                  </a>
+                  {% if u.pk != request.user.pk %}
+                    <form method="post" action="{% url 'admin_user_toggle_status' u.pk %}" class="inline">
+                      {% csrf_token %}
+                      <button type="submit" class="px-2.5 py-1 rounded-lg font-mono text-[11px] transition-colors {% if u.status == 'active' %}bg-error/15 text-error hover:bg-error hover:text-white{% else %}bg-tertiary-container/20 text-tertiary hover:bg-tertiary hover:text-on-tertiary{% endif %}">
+                        {% if u.status == 'active' %}Suspend{% else %}Activate{% endif %}
+                      </button>
+                    </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="7" class="px-space-md py-space-xl text-center font-mono text-sm text-on-surface-variant">
+                No users match your filters.
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

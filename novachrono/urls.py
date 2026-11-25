@@ -108,6 +108,12 @@ urlpatterns = [
     path("admin/certificates/<int:pk>/create/", certs.admin_certificate_create, name="admin_certificate_create"),
     path("admin/certificates/<int:pk>/revoke/", certs.admin_certificate_revoke, name="admin_certificate_revoke"),
 
+    # users admin
+    path("admin/users/", accounts.admin_user_list, name="admin_user_list"),
+    path("admin/users/<int:pk>/", accounts.admin_user_detail, name="admin_user_detail"),
+    path("admin/users/<int:pk>/toggle-status/", accounts.admin_user_toggle_status, name="admin_user_toggle_status"),
+    path("admin/users/<int:pk>/toggle-role/", accounts.admin_user_toggle_role, name="admin_user_toggle_role"),
+
     # analytics
     path("admin/dashboard/", analytics.dashboard, name="admin_dashboard"),
     path("admin/activity/", analytics.activity_log, name="admin_activity_log"),

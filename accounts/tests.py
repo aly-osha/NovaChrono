@@ -164,3 +164,67 @@ class AddressManagementAndIntegrityTests(TestCase):
         resp = self.client.get(reverse("address_delete", args=[addr.pk]))
         self.assertEqual(resp.status_code, 405)
         self.assertTrue(Address.objects.filter(pk=addr.pk).exists())
+
+
+class AdminUserManagementTests(TestCase):
+    def setUp(self):
+        self.admin = User.objects.create_superuser(
+            email="admin@example.com",
+            username="admin@example.com",
+            password="AdminPassword123!",
+            name="Admin User",
+        )
+        self.customer = User.objects.create_user(
+            email="cust@example.com",
+            username="cust@example.com",
+            password="CustPassword123!",
+            name="Customer User",
+        )
+
+    def test_non_admin_cannot_access_user_management(self):
+        self.client.force_login(self.customer)
+        resp = self.client.get(reverse("admin_user_list"))
+        self.assertEqual(resp.status_code, 302)
+
+    def test_admin_can_list_and_search_users(self):
+        self.client.force_login(self.admin)
+        resp = self.client.get(reverse("admin_user_list"), {"q": "cust@example.com"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "cust@example.com")
+        self.assertEqual(list(resp.context["users"]), [self.customer])
+
+    def test_admin_can_toggle_customer_status_and_role(self):
+        self.client.force_login(self.admin)
+        resp = self.client.post(reverse("admin_user_toggle_status", args=[self.customer.pk]))
+        self.assertRedirects(resp, reverse("admin_user_list"))
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.status, "suspended")
+
+        resp2 = self.client.post(reverse("admin_user_toggle_role", args=[self.customer.pk]))
+        self.assertRedirects(resp2, reverse("admin_user_list"))
+        self.customer.refresh_from_db()
+        self.assertTrue(self.customer.is_superuser)
+
+    def test_admin_cannot_suspend_or_demote_self(self):
+        self.client.force_login(self.admin)
+        self.client.post(reverse("admin_user_toggle_status", args=[self.admin.pk]))
+        self.client.post(reverse("admin_user_toggle_role", args=[self.admin.pk]))
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.status, "active")
+        self.assertTrue(self.admin.is_superuser)
+
+    def test_admin_user_detail_edit(self):
+        self.client.force_login(self.admin)
+        resp = self.client.post(
+            reverse("admin_user_detail", args=[self.customer.pk]),
+            {
+                "name": "Updated Customer",
+                "phone": "9876543210",
+                "status": "inactive",
+            },
+        )
+        self.assertRedirects(resp, reverse("admin_user_detail", args=[self.customer.pk]))
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.name, "Updated Customer")
+        self.assertEqual(self.customer.phone, "9876543210")
+        self.assertEqual(self.customer.status, "inactive")
