@@ -194,6 +194,8 @@ def address_list(request):
 
 @login_required
 def address_create(request):
+    raw_next = request.GET.get("next") or request.POST.get("next") or ""
+    next_url = _safe_next_url(raw_next, request) if raw_next else ""
     if request.method == "POST":
         form = AddressForm(request.POST)
         if form.is_valid():
@@ -203,10 +205,14 @@ def address_create(request):
                 request.user.addresses.update(is_default=False)
             addr.save()
             messages.success(request, "Address saved.")
-            return redirect("address_list")
+            return redirect(next_url or "address_list")
     else:
         form = AddressForm()
-    return render(request, "accounts/address_form.html", {"form": form, "title": "Add Address"})
+    return render(
+        request,
+        "accounts/address_form.html",
+        {"form": form, "title": "Add Address", "next": next_url},
+    )
 
 
 @login_required

@@ -3,6 +3,7 @@ orders/views.py
 """
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
 from django.http import HttpResponse
 from django.contrib import messages
 from django.db import transaction
@@ -47,7 +48,7 @@ def checkout(request):
             request,
             "Add a delivery address before placing your order.",
         )
-        return redirect("address_create")
+        return redirect(f"{reverse('address_create')}?next={reverse('checkout')}")
 
     if request.method == "POST":
         address_id = request.POST.get("address")
