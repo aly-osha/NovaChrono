@@ -78,7 +78,7 @@
                 <span class="material-symbols-outlined text-[16px] text-outline">local_shipping</span>
                 <span class="text-on-surface-variant font-mono text-xs">Shipping to:</span>
                 <span class="text-on-surface font-mono text-xs truncate max-w-[300px]">
-                  {{ order.shipping_address.line1 }}, {{ order.shipping_address.city }}
+                  {% if order.shipping_address_line1 %}{{ order.shipping_address_line1 }}, {{ order.shipping_city }}{% elif order.shipping_address %}{{ order.shipping_address.line1 }}, {{ order.shipping_address.city }}{% endif %}
                 </span>
               </div>
             </div>

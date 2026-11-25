@@ -48,7 +48,11 @@ class Order(models.Model):
         User, on_delete=models.CASCADE, related_name="orders",
     )
     shipping_address = models.ForeignKey(
-        "accounts.Address", on_delete=models.PROTECT, related_name="orders",
+        "accounts.Address",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
     )
     # --- immutable snapshot of the address at checkout time ---
     shipping_name = models.CharField(max_length=200, blank=True, default="")

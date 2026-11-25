@@ -39,7 +39,7 @@ def checkout(request):
             )
             return redirect("cart")
 
-    addresses = list(request.user.addresses.all())
+    addresses = list(request.user.addresses.order_by("-is_default", "-updated_at"))
 
     # No saved address: show the page with an explanation instead of rendering
     # a payment form that cannot succeed.

@@ -39,9 +39,9 @@
               <span class="material-symbols-outlined text-[14px]">edit</span>
               Edit
             </a>
-            <form method="post" action="{% url 'address_delete' addr.pk %}" class="inline">
+            <form method="post" action="{% url 'address_delete' addr.pk %}" class="inline js-delete-address-form" data-address-label="{{ addr.line1 }}, {{ addr.city }}">
               {% csrf_token %}
-              <button type="submit" class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-error hover:text-white transition-colors flex items-center gap-space-2xs">
+              <button type="button" onclick="openDeleteAddressModal(this.closest('form'))" class="px-space-sm py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-[11px] hover:bg-error hover:text-white transition-colors flex items-center gap-space-2xs">
                 <span class="material-symbols-outlined text-[14px]">delete</span>
                 Remove
               </button>
@@ -60,4 +60,66 @@
     </div>
   {% endif %}
 </div>
+<!-- Delete Address Confirmation Modal -->
+<div id="delete-address-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="delete-address-title">
+  <div class="bg-surface-container rounded-xl border border-surface-container-high max-w-md w-full p-space-lg shadow-2xl">
+    <div class="flex items-center justify-between mb-space-md">
+      <div class="flex items-center gap-space-xs">
+        <span class="material-symbols-outlined text-error">warning</span>
+        <h2 id="delete-address-title" class="font-display text-lg font-bold text-on-surface">Remove Address?</h2>
+      </div>
+      <button type="button" onclick="closeDeleteAddressModal()" class="text-outline hover:text-on-surface transition-colors" aria-label="Close">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <p class="text-on-surface-variant text-sm mb-space-xs">
+      Are you sure you want to remove <span id="delete-address-label" class="font-semibold text-on-surface"></span>?
+    </p>
+    <p class="text-outline font-mono text-xs mb-space-lg">
+      Existing orders and invoices will keep their original delivery address.
+    </p>
+    <div class="flex justify-end gap-space-sm">
+      <button type="button" onclick="closeDeleteAddressModal()" class="px-space-md py-space-xs rounded-lg bg-surface-container-high text-on-surface-variant font-mono text-xs hover:bg-surface-container transition-colors">
+        Cancel
+      </button>
+      <button type="button" id="confirm-delete-address-btn" class="px-space-md py-space-xs rounded-lg bg-error text-white font-mono text-xs font-semibold hover:bg-error/90 transition-colors">
+        Remove Address
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+let pendingDeleteAddressForm = null;
+const deleteAddressModal = document.getElementById('delete-address-modal');
+const deleteAddressLabel = document.getElementById('delete-address-label');
+const confirmDeleteAddressBtn = document.getElementById('confirm-delete-address-btn');
+
+function openDeleteAddressModal(form) {
+  pendingDeleteAddressForm = form;
+  deleteAddressLabel.textContent = form.dataset.addressLabel || 'this address';
+  deleteAddressModal.classList.remove('hidden');
+}
+
+function closeDeleteAddressModal() {
+  pendingDeleteAddressForm = null;
+  deleteAddressModal.classList.add('hidden');
+}
+
+confirmDeleteAddressBtn.addEventListener('click', () => {
+  if (pendingDeleteAddressForm) {
+    pendingDeleteAddressForm.submit();
+  }
+});
+
+deleteAddressModal.addEventListener('click', (e) => {
+  if (e.target === deleteAddressModal) closeDeleteAddressModal();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && !deleteAddressModal.classList.contains('hidden')) {
+    closeDeleteAddressModal();
+  }
+});
+</script>
 {% endblock %}

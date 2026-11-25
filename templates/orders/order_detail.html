@@ -178,12 +178,21 @@
           <h3 class="font-mono text-[11px] text-outline uppercase tracking-widest">Shipping Address</h3>
         </div>
         <div class="text-on-surface text-sm space-y-space-2xs">
-          <p>{{ order.shipping_address_line1|default:order.shipping_address.line1 }}</p>
-          {% if order.shipping_address_line2 or order.shipping_address.line2 %}
-            <p>{{ order.shipping_address_line2|default:order.shipping_address.line2 }}</p>
+          {% if order.shipping_address_line1 %}
+            <p>{{ order.shipping_address_line1 }}</p>
+            {% if order.shipping_address_line2 %}
+              <p>{{ order.shipping_address_line2 }}</p>
+            {% endif %}
+            <p>{{ order.shipping_city }}, {{ order.shipping_state }} — {{ order.shipping_postal_code }}</p>
+            <p>{{ order.shipping_country }}</p>
+          {% elif order.shipping_address %}
+            <p>{{ order.shipping_address.line1 }}</p>
+            {% if order.shipping_address.line2 %}
+              <p>{{ order.shipping_address.line2 }}</p>
+            {% endif %}
+            <p>{{ order.shipping_address.city }}, {{ order.shipping_address.state }} — {{ order.shipping_address.postal_code }}</p>
+            <p>{{ order.shipping_address.country }}</p>
           {% endif %}
-          <p>{{ order.shipping_city|default:order.shipping_address.city }}, {{ order.shipping_state|default:order.shipping_address.state }} — {{ order.shipping_postal_code|default:order.shipping_address.postal_code }}</p>
-          <p>{{ order.shipping_country|default:order.shipping_address.country }}</p>
         </div>
       </div>
     </div>

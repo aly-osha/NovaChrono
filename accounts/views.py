@@ -6,7 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
-from django.views.decorators.http import require_http_methods
+from django.db import transaction
+from django.views.decorators.http import require_http_methods, require_POST
 from django import forms
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -188,7 +189,7 @@ def password_change(request):
 
 @login_required
 def address_list(request):
-    addresses = request.user.addresses.all()
+    addresses = request.user.addresses.order_by("-is_default", "-updated_at")
     return render(request, "accounts/addresses.html", {"addresses": addresses})
 
 
@@ -199,11 +200,12 @@ def address_create(request):
     if request.method == "POST":
         form = AddressForm(request.POST)
         if form.is_valid():
-            addr = form.save(commit=False)
-            addr.buyer = request.user
-            if addr.is_default:
-                request.user.addresses.update(is_default=False)
-            addr.save()
+            with transaction.atomic():
+                addr = form.save(commit=False)
+                addr.buyer = request.user
+                if addr.is_default:
+                    request.user.addresses.update(is_default=False)
+                addr.save()
             messages.success(request, "Address saved.")
             return redirect(next_url or "address_list")
     else:
@@ -221,10 +223,11 @@ def address_edit(request, pk):
     if request.method == "POST":
         form = AddressForm(request.POST, instance=addr)
         if form.is_valid():
-            addr = form.save(commit=False)
-            if addr.is_default:
-                request.user.addresses.exclude(pk=pk).update(is_default=False)
-            addr.save()
+            with transaction.atomic():
+                addr = form.save(commit=False)
+                if addr.is_default:
+                    request.user.addresses.exclude(pk=pk).update(is_default=False)
+                addr.save()
             messages.success(request, "Address updated.")
             return redirect("address_list")
     else:
@@ -233,8 +236,22 @@ def address_edit(request, pk):
 
 
 @login_required
+@require_POST
 def address_delete(request, pk):
+    from orders.models import Order
+
     addr = get_object_or_404(request.user.addresses, pk=pk)
-    addr.delete()
+    was_default = addr.is_default
+    with transaction.atomic():
+        # Preserve snapshot on any legacy orders before SET_NULL clears the FK.
+        Order.objects.filter(
+            shipping_address=addr, shipping_address_line1="",
+        ).update(**addr.as_dict)
+        addr.delete()
+        if was_default:
+            replacement = request.user.addresses.order_by("-updated_at", "-id").first()
+            if replacement:
+                replacement.is_default = True
+                replacement.save(update_fields=["is_default", "updated_at"])
     messages.success(request, "Address removed.")
     return redirect("address_list")
